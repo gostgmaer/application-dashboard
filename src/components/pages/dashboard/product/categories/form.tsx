@@ -156,7 +156,7 @@ export function CategoryCreate({ data, id }: any) {
   };
 
   // Form submission
-  const onSubmit = (
+  const onSubmit = async (
     data: CategoryData,
     status: "draft" | "published" | "update"
   ) => {
@@ -175,19 +175,19 @@ export function CategoryCreate({ data, id }: any) {
     switch (status) {
       case "draft":
         {
-          res = CategoryServices.createCategory({ ...updateData, status }, {});
+          res = await CategoryServices.createCategory({ ...updateData, status }, {});
         }
 
         break;
       case "update":
         {
-          res = CategoryServices.updateCategoryPatch(id, updateData, {});
+          res = await CategoryServices.updateCategoryPatch(id, updateData, {});
         }
         break;
 
       default:
         {
-         res = CategoryServices.createCategory(updateData, {});
+         res = await CategoryServices.createCategory(updateData, {});
         }
         break;
     }

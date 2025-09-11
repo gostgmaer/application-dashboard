@@ -150,7 +150,7 @@ export function BrandForm({ data, id }: any) {
   };
 
   // Form submission
-  const onSubmit = (
+  const onSubmit = async (
     data: BrandData,
     status: "draft" | "published" | "update"
   ) => {
@@ -162,19 +162,19 @@ export function BrandForm({ data, id }: any) {
     switch (status) {
       case "draft":
         {
-          const res = BrandServices.createBrand({ ...updateData, status }, {});
+          const res = await BrandServices.createBrand({ ...updateData, status }, {});
         }
 
         break;
       case "update":
         {
-          const res = BrandServices.updateBrandPatch(id, updateData, {});
+          const res = await BrandServices.updateBrandPatch(id, updateData, {});
         }
         break;
 
       default:
         {
-          const res = BrandServices.createBrand(updateData, {});
+          const res = await BrandServices.createBrand(updateData, {});
         }
         break;
     }

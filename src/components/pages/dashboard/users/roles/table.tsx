@@ -18,6 +18,8 @@ import { TableState, ServerResponse } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
+import RoleForm from "./form";
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
 interface Roles {
   _id: string;
@@ -29,7 +31,7 @@ interface Roles {
   avatar?: string;
 }
 
-export default function Table({props}) {
+export default function Table({props}:any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const fetch =(state: TableState)=>{
     return {
@@ -39,39 +41,37 @@ export default function Table({props}) {
   };
   }
 
-  const handleFullScreenDialog = (role: any) => {
-    console.log(role);
-
-    openDialog(
-      <div>
-        {" "}
-        <CustomDialog
-          showHeader
-          title="Dashboard Analytics"
-          showFooter
-          footer={
-            <div className="flex justify-between w-full">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Export
-                </Button>
-                <Button variant="outline" size="sm">
-                  Share
-                </Button>
-              </div>
-              <Button onClick={closeDialog}>Close Dashboard</Button>
-            </div>
-          }
-        >
-          <div>{JSON.stringify(role)}</div>
-        </CustomDialog>{" "}
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-      }
-    );
-  };
+  const handleUpdate = (category: any) => {
+     openDialog(
+       <div>
+         <CustomDialog showHeader title="Update Role">
+           <RoleForm data={category} id={category._id} />
+         </CustomDialog>
+       </div>,
+       {
+         size: "lg",
+         showCloseButton: true,
+          closeOnOverlayClick: false,
+         closeOnEscape: true
+       }
+     );
+   };
+ 
+   const handleCreate = (category: any) => {
+     openDialog(
+       <div>
+         <CustomDialog showHeader title="Create Role">
+           <RoleForm data={category} id={undefined} />
+         </CustomDialog>
+       </div>,
+       {
+         size: "lg",
+         showCloseButton: true,
+           closeOnOverlayClick: false,
+         closeOnEscape: true
+       }
+     );
+   };
 
   const columns: ColumnDef<Roles>[] = [
     {
@@ -175,12 +175,10 @@ export default function Table({props}) {
               >
                 Copy  ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFullScreenDialog(role)}>
+              <DropdownMenuItem onClick={() => handleUpdate(role)}>
                 View
               </DropdownMenuItem>
-               <DropdownMenuItem>
-               <Link href={`/dashboard/roles/${role["_id"]}/update`}>Edit</Link>
-              </DropdownMenuItem>
+              
             
             </DropdownMenuContent>
           </DropdownMenu>
@@ -189,14 +187,20 @@ export default function Table({props}) {
     },
   ];
   return (
-    <DataTable
-      columns={columns}
-      fetchData={fetch}
-      searchPlaceholder="Search..."
-      limitOptions={[10, 20, 50, 100]}
-      defaultSorting={[{ id: "createdAt", desc: true }]}
-      exportFileName="roles-export"
-    />
+   <>
+         <Breadcrumbs heading={"All Roles"}  btn={{ event: handleCreate,show: true }}></Breadcrumbs>
+   
+         <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">
+           <DataTable
+             columns={columns}
+             fetchData={fetch}
+             searchPlaceholder="Search..."
+             limitOptions={[10, 20, 50, 100]}
+             defaultSorting={[{ id: "createdAt", desc: true }]}
+             exportFileName="roles-export"
+           />
+         </div>
+       </>
   );
 }
 

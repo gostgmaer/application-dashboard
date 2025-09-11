@@ -8,7 +8,7 @@ const Page = () => {
       <Suspense fallback={<div>Loading...</div>}>
         <Breadcrumbs btn={{ show: false }}></Breadcrumbs>
 
-        <div className="rounded-md  bg-gray-50  shadow-sm overflow-auto ">
+        <div className="rounded-md   shadow-sm overflow-auto ">
           <ProductCreate></ProductCreate>
         </div>
       </Suspense>

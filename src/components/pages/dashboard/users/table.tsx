@@ -18,6 +18,7 @@ import { TableState, ServerResponse } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
 interface User {
   _id: string;
@@ -29,17 +30,17 @@ interface User {
   avatar?: string;
 }
 
-export default function UsersTable({props}) {
+export default function UsersTable({ props }) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   console.log(props);
-  
-  const fetchUsers =(state: TableState)=>{
+
+  const fetch = (state: TableState) => {
     return {
-    data:props.results,
-    totalCount:props.total,
-    pageCount: Math.ceil(props.total / state.pagination["limit"])
+      data: props.results,
+      totalCount: props.total,
+      pageCount: Math.ceil(props.total / state.pagination["limit"]),
+    };
   };
-  }
 
   const handleFullScreenDialog = (user: any) => {
     console.log(user);
@@ -225,10 +226,11 @@ export default function UsersTable({props}) {
               <DropdownMenuItem onClick={() => handleFullScreenDialog(user)}>
                 View
               </DropdownMenuItem>
-               <DropdownMenuItem>
-               <Link href={`/dashboard/users/${user["_id"]}/update`}>Edit</Link>
+              <DropdownMenuItem>
+                <Link href={`/dashboard/users/${user["_id"]}/update`}>
+                  Edit
+                </Link>
               </DropdownMenuItem>
-            
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -236,14 +238,19 @@ export default function UsersTable({props}) {
     },
   ];
   return (
-    <DataTable
-      columns={columns}
-      fetchData={fetchUsers}
-      searchPlaceholder="Search users..."
-      limitOptions={[10, 20, 50, 100]}
-      defaultSorting={[{ id: "createdAt", desc: true }]}
-      exportFileName="users-export"
-    />
+    <>
+      <Breadcrumbs heading={"Create User"} btn={{ show: true }}></Breadcrumbs>
+
+      <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
+        <DataTable
+          columns={columns}
+          fetchData={fetch}
+          searchPlaceholder="Search..."
+          limitOptions={[10, 20, 50, 100]}
+          defaultSorting={[{ id: "createdAt", desc: true }]}
+          exportFileName="users-export"
+        />
+      </div>
+    </>
   );
 }
-

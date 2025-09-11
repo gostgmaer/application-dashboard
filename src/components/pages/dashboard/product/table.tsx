@@ -24,7 +24,7 @@ interface products {
   _id: string;
   title: string;
   sku: string;
-  category: string;
+  category: object;
   stock: string;
   price: string;
 
@@ -35,7 +35,7 @@ interface products {
   image?: string;
 }
 
-export default function Table({ props }) {
+export default function Table({ props }:any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   console.log(props);
 
@@ -278,7 +278,7 @@ export default function Table({ props }) {
   ];
   return (
     <>
-      <Breadcrumbs btn={{ show: true }}></Breadcrumbs>
+      <Breadcrumbs heading={"Create Product"} btn={{ show: true }}></Breadcrumbs>
 
       <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
         <DataTable
