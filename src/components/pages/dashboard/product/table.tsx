@@ -18,6 +18,7 @@ import { TableState, ServerResponse } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
 interface products {
   _id: string;
@@ -40,44 +41,10 @@ export default function Table({ props }) {
 
   const fetch = (state: TableState) => {
     return {
-      data: props.results||[],
-      totalCount: props.total||0,
-      pageCount: Math.ceil(props.total||0 / state.pagination["limit"]),
+      data: props.results || [],
+      totalCount: props.total || 0,
+      pageCount: Math.ceil(props.total || 0 / state.pagination["limit"]),
     };
-  };
-
-  const handleFullScreenDialog = (product: any) => {
-    console.log(product);
-
-    openDialog(
-      <div>
-        {" "}
-        <CustomDialog
-          showHeader
-          title="Dashboard Analytics"
-          showFooter
-          footer={
-            <div className="flex justify-between w-full">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Export
-                </Button>
-                <Button variant="outline" size="sm">
-                  Share
-                </Button>
-              </div>
-              <Button onClick={closeDialog}>Close Dashboard</Button>
-            </div>
-          }
-        >
-          <div>{JSON.stringify(product)}</div>
-        </CustomDialog>{" "}
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-      }
-    );
   };
 
   const columns: ColumnDef<products>[] = [
@@ -100,9 +67,12 @@ export default function Table({ props }) {
         const product = row.original;
         return (
           <div className="flex items-center space-x-3">
-            <div>
-              <div className="font-medium">{product.title}</div>
-            </div>
+            <Link
+              href={`/dashboard/ecommerce/products/${product["_id"]}/update`}
+              className=" font-medium text-blue-500"
+            >
+              {product.title}
+            </Link>
           </div>
         );
       },
@@ -134,7 +104,6 @@ export default function Table({ props }) {
         );
       },
     },
-   
 
     {
       accessorKey: "category",
@@ -295,11 +264,9 @@ export default function Table({ props }) {
               >
                 Copy ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFullScreenDialog(product)}>
-                View
-              </DropdownMenuItem>
+
               <DropdownMenuItem>
-                <Link href={`/dashboard/products/${product["_id"]}/update`}>
+                <Link href={`/dashboard/ecommerce/products/${product["_id"]}/update`}>
                   Edit
                 </Link>
               </DropdownMenuItem>
@@ -310,13 +277,19 @@ export default function Table({ props }) {
     },
   ];
   return (
-    <DataTable
-      columns={columns}
-      fetchData={fetch}
-      searchPlaceholder="Search..."
-      limitOptions={[10, 20, 50, 100]}
-      defaultSorting={[{ id: "createdAt", desc: true }]}
-      exportFileName="products-export"
-    />
+    <>
+      <Breadcrumbs btn={{ show: true }}></Breadcrumbs>
+
+      <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
+        <DataTable
+          columns={columns}
+          fetchData={fetch}
+          searchPlaceholder="Search..."
+          limitOptions={[10, 20, 50, 100]}
+          defaultSorting={[{ id: "createdAt", desc: true }]}
+          exportFileName="products-export"
+        />
+      </div>
+    </>
   );
 }

@@ -184,7 +184,9 @@ const taxClasses = ['Standard', 'Reduced', 'Zero Rate', 'Exempt'];
 const discountTypes = ['none', 'percentage', 'fixed'] as const;
 const robotsOptions = ['index,follow', 'noindex,nofollow', 'index,nofollow', 'noindex,follow'];
 
-export default function ProductCreate() {
+export default function ProductCreate({data}:any) {
+  console.log(data);
+  
   const [product, setProduct] = useState<ProductData>({
     name: '',
     description: '',
@@ -371,53 +373,7 @@ export default function ProductCreate() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create New Product</h1>
-          <p className="text-gray-600 mt-2">Add a new product to your catalog with variants and detailed information.</p>
-        </div>
-
-        {/* JSON Output Modal */}
-        {showJsonOutput && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Product JSON Output</h3>
-                  <Button
-                    onClick={() => setShowJsonOutput(false)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-              <div className="p-6 overflow-auto max-h-[60vh]">
-                <pre className="bg-gray-100 p-4 rounded-lg text-sm overflow-auto">
-                  <code>{jsonOutput}</code>
-                </pre>
-              </div>
-              <div className="p-6 border-t border-gray-200 flex gap-3">
-                <Button
-                  onClick={() => navigator.clipboard.writeText(jsonOutput)}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Copy to Clipboard
-                </Button>
-                <Button
-                  onClick={() => setShowJsonOutput(false)}
-                  className="flex-1"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
             {/* Basic Information */}
@@ -934,33 +890,7 @@ export default function ProductCreate() {
               </CardContent>
             </Card>
 
-            {/* Images */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-6 bg-green-500 rounded-full"></div>
-                  Product Images
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Upload product images</p>
-                      <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
-                    </div>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Upload className="w-4 h-4" />
-                      Choose Files
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
+         
             {/* Shipping Information */}
             <Card>
               <CardHeader>
@@ -1303,6 +1233,33 @@ export default function ProductCreate() {
           {/* Sidebar */}
           <div className="space-y-8">
             {/* Pricing */}
+               {/* Images */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-6 bg-green-500 rounded-full"></div>
+                  Product Images
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Upload product images</p>
+                      <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
+                    </div>
+                    <Button variant="outline" className="flex items-center gap-2">
+                      <Upload className="w-4 h-4" />
+                      Choose Files
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Pricing</CardTitle>
@@ -1632,7 +1589,6 @@ export default function ProductCreate() {
             </Card>
           </div>
         </div>
-      </div>
     </div>
   );
 }

@@ -1,16 +1,19 @@
-import Dashboard from '@/components/layout/dashboard'
-import ProductCreate from '@/components/pages/dashboard/product/form'
-import React from 'react'
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import ProductCreate from "@/components/pages/dashboard/product/form";
+import React, { Suspense } from "react";
 
 const Page = () => {
   return (
+    <div className="container mx-auto py-2">
+      <Suspense fallback={<div>Loading...</div>}>
+        <Breadcrumbs btn={{ show: false }}></Breadcrumbs>
 
-      <div className="flex-1 flex items-center justify-center">
-      <ProductCreate />
-      </div>
-     
-    
-  )
-}
+        <div className="rounded-md  bg-gray-50  shadow-sm overflow-auto ">
+          <ProductCreate></ProductCreate>
+        </div>
+      </Suspense>
+    </div>
+  );
+};
 
-export default Page
+export default Page;

@@ -68,7 +68,7 @@ export default function Table({ props }: any) {
 
         return (
           <div className="flex items-center space-x-3">
-             <Link href={`/dashboard/ecommerce/orders/${order._id}?order_id=${order.order_id}`}>
+             <Link href={`/dashboard/ecommerce/orders/${order._id}?order_id=${order.order_id}`} className=" text-blue-500">
                
                {order.order_id}
                 </Link>
