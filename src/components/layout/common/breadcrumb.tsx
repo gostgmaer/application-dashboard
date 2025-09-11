@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
 
-export default function Breadcrumbs({ btn }) {
+export default function Breadcrumbs({ btn }:any) {
   const pathname = usePathname();
 
   const segments = pathname
@@ -41,20 +41,24 @@ export default function Breadcrumbs({ btn }) {
         </nav>
       </div>
       <>
-        {btn ? (
-          <Button
-            onClick={btn.event}
-            className="px-4 py-2 rounded border border-white text-white bg-black hover:bg-white hover:text-black transition dark:border-black dark:text-black dark:bg-white dark:hover:bg-black dark:hover:text-white"
-          >
-            Add
-          </Button>
-        ) : (
-          <Link
-            href={`${pathname}/create`}
-            className="px-4 py-2 rounded border border-white text-white bg-black hover:bg-white hover:text-black transition dark:border-black dark:text-black dark:bg-white dark:hover:bg-black dark:hover:text-white"
-          >
-            Add
-          </Link>
+        {btn.show && (
+          <>
+            {btn.event ? (
+              <Button
+                onClick={btn.event}
+                className="px-4 py-2 rounded border border-white text-white bg-black hover:bg-white hover:text-black transition dark:border-black dark:text-black dark:bg-white dark:hover:bg-black dark:hover:text-white"
+              >
+                Add
+              </Button>
+            ) : (
+              <Link
+                href={`${pathname}/create`}
+                className="px-4 py-2 rounded border border-white text-white bg-black hover:bg-white hover:text-black transition dark:border-black dark:text-black dark:bg-white dark:hover:bg-black dark:hover:text-white"
+              >
+                Add
+              </Link>
+            )}
+          </>
         )}
       </>
     </div>

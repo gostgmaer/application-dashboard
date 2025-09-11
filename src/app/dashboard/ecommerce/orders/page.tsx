@@ -1,15 +1,18 @@
-import Dashboard from '@/components/layout/dashboard'
-import React from 'react'
+import { Suspense } from "react";
 
-const Page = () => {
+import OrderServices from "@/helper/services/OrderServices";
+import Table from "@/components/pages/dashboard/order/table";
+
+export default async function UsersPage(props: any) {
+
+   const query = await props.searchParams;
+  const data = await OrderServices.getOrders(query, {});
+
   return (
-
-      <div className="flex-1 flex items-center justify-center">
-        <h1 className="text-2xl font-bold">Welcome to the </h1>
-      </div>
-     
-    
-  )
+    <div className="container mx-auto py-2">
+      <Suspense fallback={<div>Loading...</div>}>
+        <Table props={{ ...data }} />
+      </Suspense>
+    </div>
+  );
 }
-
-export default Page

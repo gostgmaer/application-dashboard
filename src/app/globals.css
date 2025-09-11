@@ -80,3 +80,63 @@
     @apply bg-background text-foreground;
   }
 }
+
+.status-pending {
+    color: #f0ad4e
+}
+
+.status-shipped {
+    color: #5bc0de
+}
+
+.status-canceled {
+    color: #d9534f
+}
+
+.status-processing {
+    color: #5cb85c
+}
+
+.status-delivered {
+    color: #0275d8
+}
+
+.status-returned {
+    color: #f7a35c
+}
+
+.status-failed {
+    color: #d9534f
+}
+
+.status-refunded {
+    color: #6f42c1
+}
+
+.status-onHold {
+    color: #ffc107
+}
+
+.status-awaitingPayment {
+    color: #ff851b
+}
+
+.status-completed,.status-paymentReceived {
+    color: #28a745
+}
+
+.status-paymentFailed {
+    color: #dc3545
+}
+
+.status-outForDelivery {
+    color: #20c997
+}
+
+.status-orderAccepted {
+    color: #17a2b8
+}
+
+.status-orderDeclined {
+    color: #e83e8c
+}
