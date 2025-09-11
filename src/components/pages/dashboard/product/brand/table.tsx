@@ -21,7 +21,6 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { BrandForm } from "./form";
 
-
 interface brands {
   _id: string;
   name: string;
@@ -45,7 +44,7 @@ export default function Table({ props }: any) {
     };
   };
 
-const handleUpdate = (data: any) => {
+  const handleUpdate = (data: any) => {
     openDialog(
       <div>
         <CustomDialog showHeader title="Update Brand">
@@ -55,6 +54,8 @@ const handleUpdate = (data: any) => {
       {
         size: "lg",
         showCloseButton: true,
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
       }
     );
   };
@@ -69,6 +70,8 @@ const handleUpdate = (data: any) => {
       {
         size: "lg",
         showCloseButton: true,
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
       }
     );
   };
@@ -184,7 +187,6 @@ const handleUpdate = (data: any) => {
               <DropdownMenuItem onClick={() => handleUpdate(brand)}>
                 View
               </DropdownMenuItem>
-              
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -192,19 +194,19 @@ const handleUpdate = (data: any) => {
     },
   ];
   return (
-     <>
-         <Breadcrumbs btn={{ event: handleCreate }}></Breadcrumbs>
-   
-         <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
-           <DataTable
-             columns={columns}
-             fetchData={fetch}
-             searchPlaceholder="Search..."
-             limitOptions={[10, 20, 50, 100]}
-             defaultSorting={[{ id: "createdAt", desc: true }]}
-             exportFileName="brands-export"
-           />
-         </div>
-       </>
+    <>
+      <Breadcrumbs btn={{ event: handleCreate }}></Breadcrumbs>
+
+      <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
+        <DataTable
+          columns={columns}
+          fetchData={fetch}
+          searchPlaceholder="Search..."
+          limitOptions={[10, 20, 50, 100]}
+          defaultSorting={[{ id: "createdAt", desc: true }]}
+          exportFileName="brands-export"
+        />
+      </div>
+    </>
   );
 }

@@ -28,6 +28,8 @@ interface ConfirmOptions {
   cancelText?: string
   variant?: 'default' | 'destructive' | 'success' | 'warning'
   icon?: ReactNode
+  closeOnOverlayClick?: boolean
+  closeOnEscape?: boolean
 }
 
 interface AlertOptions {
@@ -36,6 +38,8 @@ interface AlertOptions {
   confirmText?: string
   variant?: 'default' | 'destructive' | 'success' | 'warning' | 'info'
   icon?: ReactNode
+  closeOnOverlayClick?: boolean
+  closeOnEscape?: boolean
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined)
@@ -93,8 +97,8 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       openDialog(confirmContent, {
         size: 'sm',
         variant: options.variant,
-        closeOnOverlayClick: false,
-        closeOnEscape: false,
+        closeOnOverlayClick: options.closeOnOverlayClick ?? false,
+        closeOnEscape: options.closeOnEscape ?? false,
         showCloseButton: false
       })
     })
@@ -115,8 +119,8 @@ export function DialogProvider({ children }: { children: ReactNode }) {
       openDialog(alertContent, {
         size: 'sm',
         variant: options.variant,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
+        closeOnOverlayClick: options.closeOnOverlayClick ?? false,
+        closeOnEscape: options.closeOnEscape ?? true,
         showCloseButton: false
       })
     })

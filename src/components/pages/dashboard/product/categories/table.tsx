@@ -53,6 +53,8 @@ export default function Table({ props }:any) {
       {
         size: "lg",
         showCloseButton: true,
+         closeOnOverlayClick: false,
+        closeOnEscape: true
       }
     );
   };
@@ -67,6 +69,8 @@ export default function Table({ props }:any) {
       {
         size: "lg",
         showCloseButton: true,
+          closeOnOverlayClick: false,
+        closeOnEscape: true
       }
     );
   };
