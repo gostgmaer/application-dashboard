@@ -24,14 +24,13 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 interface Roles {
   _id: string;
   name: string;
- 
   status: "active" | "inactive" | "pending";
-
   createdAt: string;
   avatar?: string;
 }
 
 export default function Table({props}:any) {
+
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const fetch =(state: TableState)=>{
     return {
@@ -41,11 +40,11 @@ export default function Table({props}:any) {
   };
   }
 
-  const handleUpdate = (category: any) => {
+  const handleUpdate = (data: any) => {
      openDialog(
        <div>
          <CustomDialog showHeader title="Update Role">
-           <RoleForm data={category} id={category._id} />
+           <RoleForm data={data} id={data._id} />
          </CustomDialog>
        </div>,
        {
@@ -57,11 +56,11 @@ export default function Table({props}:any) {
      );
    };
  
-   const handleCreate = (category: any) => {
+   const handleCreate = (data: any) => {
      openDialog(
        <div>
          <CustomDialog showHeader title="Create Role">
-           <RoleForm data={category} id={undefined} />
+           <RoleForm data={data} id={undefined} />
          </CustomDialog>
        </div>,
        {
@@ -103,7 +102,7 @@ export default function Table({props}:any) {
     },
     
     {
-      accessorKey: "status",
+      accessorKey: "description",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -111,45 +110,100 @@ export default function Table({props}:any) {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="-ml-3 h-8 data-[state=open]:bg-accent"
           >
-            Status
+            Description
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="Status" />
+          <ColumnFilter column={column} title="Description" />
         </div>
       ),
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        const variant =
-          status === "active"
-            ? "default"
-            : status === "inactive"
-            ? "destructive"
-            : "secondary";
+        const description = row.getValue("description") as string;
+       
         return (
-          <Badge variant={variant} className="capitalize">
-            {status}
-          </Badge>
+         <div className="flex items-center space-x-3">
+            
+            <div>
+              <div className="font-medium">{description}</div>
+            </div>
+          </div>
         );
       },
     },
    
     {
-      accessorKey: "createdAt",
+      accessorKey: "isActive",
       header: ({ column }) => (
-        <Button
+        <div className="flex items-center space-x-2">   <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="-ml-3 h-8 data-[state=open]:bg-accent"
         >
-          Created
+          Is Active?
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+         <ColumnFilter column={column} title="is Active" /></div>
+     
       ),
       cell: ({ row }) => {
-        const date = new Date(row.getValue("createdAt"));
+        
+        
+        const isActive = row.getValue("isActive") as boolean;
+   
         return (
           <div className="text-muted-foreground">
-            {date.toLocaleDateString()}
+            {isActive?"Yes":"No"}
+          </div>
+        );
+      },
+    },
+     {
+      accessorKey: "isDefault",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">   <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-3 h-8 data-[state=open]:bg-accent"
+        >
+          Is Default?
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+        </div>
+     
+      ),
+      cell: ({ row }) => {
+        
+        
+        const isDefault = row.getValue("isDefault") as boolean;
+       
+        return (
+          <div className="text-muted-foreground">
+            {isDefault?"Yes":"No"}
+          </div>
+        );
+      },
+    },
+      {
+      accessorKey: "userCount",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">   <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-3 h-8 data-[state=open]:bg-accent"
+        >
+          Total User?
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+        </div>
+     
+      ),
+      cell: ({ row }) => {
+        
+        
+        const userCount = row.getValue("userCount") as number;
+       
+        return (
+          <div className="text-muted-foreground">
+            {userCount}
           </div>
         );
       },

@@ -7,29 +7,26 @@ export async function fetchData(endpoint, options = {}) {
   try {
     const {
       method = "GET",
-      body, token,
+      body,
+      token,
       params = {},
-      query = {}, headers = {},
+      query = {},
+      headers = {},
       cacheTime = 60,
     } = options;
 
-    // const tokens = getCookiesData();
+    // Decode query if it's a string
+    const decoded = typeof query === "string" ? decodeURIComponent(query) : "";
 
-const decoded = decodeURIComponent(query);
-
-    // Validate token and endpoint
+    // Validate endpoint
     if (!endpoint || typeof endpoint !== "string" || endpoint.trim() === "") {
       throw new Error("Invalid or missing endpoint");
     }
 
-    // if (!token || typeof token !== 'string' || token.trim() === '') {
-    //   throw new Error('Invalid or missing authorization token');
-    // }
-
     // Build the URL
     let url = `${baseurl}${endpoint}`;
 
-    // Validate and replace URL params
+    // Replace URL params
     if (params && Object.keys(params).length > 0) {
       Object.keys(params).forEach((key) => {
         const value = params[key];
@@ -40,52 +37,61 @@ const decoded = decodeURIComponent(query);
       });
     }
 
-    // Validate and append query parameters
-    if (query && typeof query === "object") {
+    // Append query parameters
+    if (query && typeof query === "object" && !Array.isArray(query)) {
       const validQuery = Object.entries(query)
-        .filter(
-          ([_, value]) => value !== undefined && value !== null && value !== ""
-        ) // Filter out invalid values
+        .filter(([_, value]) => value !== undefined && value !== null && value !== "")
         .reduce((acc, [key, value]) => {
           acc[key] = value;
           return acc;
         }, {});
-
       const queryString = new URLSearchParams(validQuery).toString();
       if (queryString) {
         url += `?${queryString}`;
       }
-    }else{
+    } else if (decoded) {
       url += `?${decoded}`;
     }
-    const defaultHeaders = {
-      'Content-Type': 'application/json',
-      Authorization: "Bearer " + token,
 
+    // Merge headers
+    const defaultHeaders = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: "Bearer " + token } : {}),
     };
     const mergedHeaders = { ...defaultHeaders, ...headers };
 
-
-    // Make the fetch request
+    // Fetch request
     const res = await fetch(url, {
       method,
       headers: mergedHeaders,
-      body:
-        method === "GET"
-          ? undefined : JSON.stringify(body)
-      ,
+      body: method === "GET" ? undefined : JSON.stringify(body),
       next: { revalidate: cacheTime },
     });
 
-    // if (!res.ok) {
-    //   const errorData = await res.json();
-    //   throw new Error(JSON.stringify(errorData));
-    // }
+    // Handle non-OK responses
+    if (!res.ok) {
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await res.json();
+        throw new Error(JSON.stringify(errorData));
+      } else {
+        const text = await res.text();
+        throw new Error(text);
+      }
+    }
 
-    return await res.json();
+    // Handle JSON vs non-JSON responses
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await res.json();
+    } else {
+      const raw = await res.text();
+      console.warn("Non-JSON response received:", raw);
+      return { error: "Unexpected response format", raw };
+    }
   } catch (error) {
     console.error("Fetch error:", error);
-    return { error: "Data could not be fetched" };
+    return { error: error.message || "Data could not be fetched" };
   }
 }
 

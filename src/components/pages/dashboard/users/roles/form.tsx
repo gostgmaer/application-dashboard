@@ -1,238 +1,297 @@
-
 "use client";
 
-import { useState } from 'react';
-import { z } from 'zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Plus, X, Save, Eye, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import { z } from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Plus, X, Save, Eye, Trash2 } from "lucide-react";
+import roleServices from "@/helper/services/roleServices";
+import { useToast } from "@/hooks/useToast";
+import { useDialog } from "@/hooks/use-dialog";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Predefined roles
 const PREDEFINED_ROLES = [
-  "super_admin",   // Full system access
-  "admin",         // Manage platform settings, users, products
-  "manager",       // Oversee operations
-  "staff",         // Limited admin tasks
-  "vendor",        // Third-party seller
-  "customer",      // Regular buyer
-  "guest",         // Not logged in
+  "super_admin", // Full system access
+  "admin", // Manage platform settings, users, products
+  "manager", // Oversee operations
+  "staff", // Limited admin tasks
+  "vendor", // Third-party seller
+  "customer", // Regular buyer
+  "guest", // Not logged in
   "support_agent", // Customer service
-  "moderator",     // Content/review moderation
-  "user"           // Generic authenticated user
+  "moderator", // Content/review moderation
+  "user", // Generic authenticated user
+];
+
+const PREDEFINED_PERMISSIONS = [
+  "User Management: Read",
+  "User Management: Write",
+  "User Management: Create",
+  "User Management: Delete",
 ];
 
 // Zod schema based on the provided Mongoose schema
-const roleSchema = z.object({
-  name: z.enum([
-  "super_admin",   // Full system access
-  "admin",         // Manage platform settings, users, products
-  "manager",       // Oversee operations
-  "staff",         // Limited admin tasks
-  "vendor",        // Third-party seller
-  "customer",      // Regular buyer
-  "guest",         // Not logged in
-  "support_agent", // Customer service
-  "moderator",     // Content/review moderation
-  "user"           // Generic authenticated user
-], { message: "Invalid role name" }),
-  description: z.string().trim().optional(),
-  permissions: z.array(z.string()).optional(),
-  isDefault: z.boolean(),
-  isActive: z.boolean(),
-}).strict();
+const roleSchema = z
+  .object({
+    name: z.enum(
+      [
+        "super_admin", // Full system access
+        "admin", // Manage platform settings, users, products
+        "manager", // Oversee operations
+        "staff", // Limited admin tasks
+        "vendor", // Third-party seller
+        "customer", // Regular buyer
+        "guest", // Not logged in
+        "support_agent", // Customer service
+        "moderator", // Content/review moderation
+        "user", // Generic authenticated user
+      ],
+      { message: "Invalid role name" }
+    ),
+    description: z.string().trim().optional(),
+    permissions: z.array(z.string()).optional(),
+    isDefault: z.boolean(),
+    isActive: z.boolean(),
+  })
+  .strict();
 
 interface RoleData {
   name: string;
   description?: string;
-//   permissions: string[];
+  permissions: string[];
   isDefault: boolean;
   isActive: boolean;
 }
 
-export default function RoleForm({data,id}:any) {
-  const [role, setRole] = useState<RoleData>({
-    name: '',
-    description: '',
-    // permissions: [],
-    isDefault: false,
-    isActive: true,
+export default function RoleForm({ data, id }: any) {
+  const { toast } = useToast();
+  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+  } = useForm<RoleData>({
+    resolver: zodResolver(roleSchema),
+    defaultValues: {
+      name: data.name || "",
+      description: data.description || "",
+      permissions: data.permissions || [],
+      isDefault: data.isDefault || false,
+      isActive: data.isActive || true,
+    },
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [newPermission, setNewPermission] = useState('');
-  const [showJsonOutput, setShowJsonOutput] = useState(false);
-  const [jsonOutput, setJsonOutput] = useState('');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
-  const validateForm = () => {
-    try {
-      roleSchema.parse(role);
-      setErrors({});
-      return true;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const newErrors: Record<string, string> = {};
-        error.errors.forEach(err => {
-          const path = err.path.join('.');
-          newErrors[path] = err.message;
-        });
-        setErrors(newErrors);
-        return false;
-      }
-      return false;
-    }
-  };
-
-//   const addPermission = () => {
-//     if (newPermission.trim() && !role.permissions.includes(newPermission.trim())) {
-//       setRole(prev => ({ ...prev, permissions: [...prev.permissions, newPermission.trim()] }));
-//       setNewPermission('');
-//       setErrors(prev => ({ ...prev, permissions: '' }));
-//     }
-//   };
-
-//   const removePermission = (permission: string) => {
-//     setRole(prev => ({ ...prev, permissions: prev.permissions.filter(p => p !== permission) }));
-//   };
-
-  const handleSubmit = () => {
-    if (!validateForm()) {
-      return;
-    }
-    const updatedRole = {
-      ...role,
+  const onSubmit = async (
+    data: RoleData,
+    status: "draft" | "published" | "update"
+  ) => {
+    const updateData = {
+      ...data,
     };
+    let res: any = {};
+    switch (status) {
+      case "update":
+        {
+          res = await roleServices.updatePatch(id, updateData, {});
+        }
+        break;
 
-    const jsonString = JSON.stringify(updatedRole, null, 2);
-    setJsonOutput(jsonString);
-    setShowJsonOutput(true);
+      default:
+        {
+          res = await roleServices.create(updateData, {});
+        }
+        break;
+    }
+    console.log(res);
 
-    console.log('Role JSON:', jsonString);
+    toast({
+      title: res.message,
+      // description: "We'll get back to you within 24 hours.",
+      duration: 5000,
+    });
+    closeDialog();
   };
 
-  const handleChange = (field: keyof RoleData, value: any) => {
-    setRole(prev => ({ ...prev, [field]: value }));
-    setErrors(prev => ({ ...prev, [field]: '' }));
+  const handlePermissionChange = (permission: string, checked: boolean) => {
+    const currentPermissions = getValues("permissions") || [];
+    if (checked) {
+      setValue("permissions", [...currentPermissions, permission]);
+    } else {
+      setValue(
+        "permissions",
+        currentPermissions.filter((p) => p !== permission)
+      );
+    }
   };
 
   return (
-    <div className={` ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900'} py-8 transition-colors duration-300`}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-       
-        <Card className={`${theme === 'light' ? 'bg-white border-gray-200' : 'bg-gray-900 border-gray-700'} shadow-lg`}>
-          <CardHeader className={`${theme === 'light' ? 'bg-gray-50 border-b-gray-200' : 'bg-gray-800 border-b-gray-700'}`}>
-            <CardTitle className={`flex items-center gap-2 ${theme === 'light' ? 'text-gray-900' : 'text-white'}`}>
+    <div className=" bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+      <div className="max-w-4xl mx-auto ">
+        <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg ">
+          <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b-gray-200 dark:border-b-gray-700 pb-0">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white ">
               <div className="w-2 h-6 bg-blue-400 rounded-full"></div>
               Role Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
             <div>
-              <Label htmlFor="name" className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+              <Label
+                htmlFor="name"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Role Name *
               </Label>
-              <Select value={role.name} onValueChange={(value) => handleChange('name', value)}>
-                <SelectTrigger
-                  className={`mt-1 ${theme === 'light' ? 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500' : 'bg-gray-800 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500'} ${errors.name ? 'border-red-500' : ''}`}
-                >
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className={`${theme === 'light' ? 'bg-white border-gray-300 text-gray-900' : 'bg-gray-800 border-gray-600 text-white'}`}>
-                  {PREDEFINED_ROLES.map(roleName => (
-                    <SelectItem key={roleName} value={roleName} className={`${theme === 'light' ? 'hover:bg-gray-100' : 'hover:bg-gray-700'}`}>
-                      {roleName.replace(/_/g, ' ').charAt(0).toUpperCase() + roleName.replace(/_/g, ' ').slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    defaultValue={getValues("name")}
+                  >
+                    <SelectTrigger
+                      className={`mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${
+                        errors.name ? "border-red-500" : ""
+                      }`}
+                    >
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
+                      {PREDEFINED_ROLES.map((category) => (
+                        <SelectItem
+                          key={category}
+                          value={category}
+                          className="hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
-            <div>
-              <Label htmlFor="description" className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>
+            <div className="mt-6">
+              <Label
+                htmlFor="description"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Description
               </Label>
               <Input
                 id="description"
-                value={role.description || ''}
-                onChange={(e) => handleChange('description', e.target.value)}
-                className={`mt-1 ${theme === 'light' ? 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500' : 'bg-gray-800 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500'} ${errors.description ? 'border-red-500' : ''}`}
+                {...register("description")}
+                className={`mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${
+                  errors.description ? "border-red-500" : ""
+                }`}
                 placeholder="Enter role description"
               />
-              {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+              {errors.description && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.description.message}
+                </p>
+              )}
             </div>
-            {/* <div>
-              <Label className={`text-sm font-medium ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Permissions</Label>
-              <div className="flex flex-wrap gap-2 mb-3 mt-2">
-                {role.permissions.length === 0 ? (
-                  <p className={`text-sm ${theme === 'light' ? 'text-gray-500' : 'text-gray-400'}`}>No permissions added</p>
-                ) : (
-                  role.permissions.map(permission => (
-                    <Badge
-                      key={permission}
-                      variant="secondary"
-                      className={`${theme === 'light' ? 'bg-gray-200 text-gray-800 border-gray-300' : 'bg-gray-700 text-gray-300 border-gray-600'} flex items-center gap-1`}
+            <div className="mt-6">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Permissions
+              </Label>
+              <div className="mt-2 flex flex-wrap gap-4">
+                {PREDEFINED_PERMISSIONS.map((permission) => (
+                  <div key={permission} className="flex items-center gap-2">
+                    <Checkbox
+                      id={permission}
+                      checked={getValues("permissions")?.includes(permission)}
+                      onCheckedChange={(checked) =>
+                        handlePermissionChange(permission, checked as boolean)
+                      }
+                    />
+                    <Label
+                      htmlFor={permission}
+                      className="text-sm text-gray-700 dark:text-gray-300"
                     >
-                      {permission}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removePermission(permission)}
-                        className="h-4 w-4 p-0"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  ))
-                )}
+                      {permission.charAt(0).toUpperCase() + permission.slice(1)}
+                    </Label>
+                  </div>
+                ))}
               </div>
-              <div className="flex gap-2">
-                <Input
-                  value={newPermission}
-                  onChange={(e) => setNewPermission(e.target.value)}
-                  placeholder="Enter permission ID"
-                  onKeyPress={(e) => e.key === 'Enter' && addPermission()}
-                  className={`flex-1 ${theme === 'light' ? 'bg-white border-gray-300 text-gray-900 focus:border-blue-500 focus:ring-blue-500' : 'bg-gray-800 border-gray-600 text-white focus:border-blue-500 focus:ring-blue-500'} ${errors.permissions ? 'border-red-500' : ''}`}
-                />
-                <Button
-                  type="button"
-                  onClick={addPermission}
-                  variant="outline"
-                  size="sm"
-                  className={`${theme === 'light' ? 'border-gray-300 text-gray-700 hover:bg-gray-100' : 'border-gray-600 text-gray-300 hover:bg-gray-700'}`}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
-              {errors.permissions && <p className="text-red-500 text-xs mt-1">{errors.permissions}</p>}
-            </div> */}
-            <div className="space-y-3">
+              {errors.permissions && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.permissions.message}
+                </p>
+              )}
+            </div>
+            <div className="mt-6 space-y-3">
               <div className="flex items-center justify-between">
-                <Label className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Default Role</Label>
-                <Switch
-                  checked={role.isDefault}
-                  onCheckedChange={(checked) => handleChange('isDefault', checked)}
+                <Label className="text-sm text-gray-700 dark:text-gray-300">
+                  Default Role
+                </Label>
+                <Controller
+                  control={control}
+                  name="isDefault"
+                  render={({ field }) => (
+                    <Switch
+                      id="isDefault"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label className={`text-sm ${theme === 'light' ? 'text-gray-700' : 'text-gray-300'}`}>Active Role</Label>
-                <Switch
-                  checked={role.isActive}
-                  onCheckedChange={(checked) => handleChange('isActive', checked)}
+                <Label className="text-sm text-gray-700 dark:text-gray-300">
+                  Active Role
+                </Label>
+                <Controller
+                  control={control}
+                  name="isActive"
+                  render={({ field }) => (
+                    <Switch
+                      id="isActive"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
             </div>
-            <Separator className={`${theme === 'light' ? 'bg-gray-200' : 'bg-gray-700'}`} />
-         
+
+            <Separator className="bg-gray-200 dark:bg-gray-700 my-6" />
             <div className="flex gap-3">
               <Button
-                onClick={handleSubmit}
-                className={`flex-1 ${theme === 'light' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
-                // disabled={Object.keys(errors).length > 0 || !role.name}
+                type="button"
+                onClick={handleSubmit((data) =>
+                  onSubmit(data, id ? "update" : "published")
+                )}
+                className="flex-1 bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white"
+                disabled={Object.keys(errors).length > 0}
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save Role

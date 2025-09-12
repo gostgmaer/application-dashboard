@@ -9,8 +9,8 @@ export default async function UsersPage(props: any) {
 
    const query = await props.searchParams;
   // const {sortBy,sortDesc} = query
-  const product = await ProductServices.getAllProducts(query, {},{});
-console.log(product);
+  const product = await ProductServices.getProducts(query, {});
+
 
   return (
     <div className="container mx-auto py-2">

@@ -5,9 +5,9 @@ import React, { Suspense } from "react";
 
 const Page =async (url:any) => {
 
+const p = await url.params
+    const data = await UserServices.getSingleUser( p.id,{})
 
-    const data = await UserServices.getUserById(url.params.id,{})
-console.log(data);
 
   
   return (

@@ -7,7 +7,7 @@ export default async function UsersPage(props: any) {
   console.log(await props.searchParams);
   const query = await props.searchParams;
 
-  const user = await UserServices.getUsers(query, {});
+  const user = await UserServices.getAllUsers(query, {});
 
   return (
     <div className="container mx-auto py-2">

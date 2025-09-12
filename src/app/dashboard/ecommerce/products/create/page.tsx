@@ -1,5 +1,5 @@
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
-import ProductCreate from "@/components/pages/dashboard/product/form";
+import ProductCreate from "@/components/pages/dashboard/product/nf";
 import React, { Suspense } from "react";
 
 const Page = () => {

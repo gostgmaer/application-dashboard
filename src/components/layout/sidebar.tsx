@@ -252,7 +252,7 @@ export function Sidebar({
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed left-0 top-0 h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-50 transition-all duration-300",
+          "fixed left-0 top-0 min-h-screen max-h-screen  bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-50 transition-all duration-300",
           "md:relative md:translate-x-0",
           collapsed && !mobileOpen ? "w-14" : "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"

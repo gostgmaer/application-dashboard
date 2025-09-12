@@ -11,32 +11,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import { ColumnFilter } from "@/components/elements/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
-import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import PermissionForm from "./form";
 
-interface User {
+interface permission {
   _id: string;
-  firstName: string;
-  email: string;
-  status: "active" | "inactive" | "pending";
-  role: object;
-  lastLogin: string;
-  avatar?: string;
+  name: string;
+  category: string;
+  isDefault: string;
+  isActive: string;
+  description: string;
 }
 
-export default function UsersTable({ props }:any) {
-
-  console.log(props);
-  
+export default function Table({ props }: any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
-  console.log(props);
-
   const fetch = (state: TableState) => {
     return {
       data: props.results,
@@ -45,43 +38,41 @@ export default function UsersTable({ props }:any) {
     };
   };
 
-  const handleFullScreenDialog = (user: any) => {
-    console.log(user);
-
+  const handleUpdate = (data: any) => {
     openDialog(
       <div>
-        {" "}
-        <CustomDialog
-          showHeader
-          title="Dashboard Analytics"
-          showFooter
-          footer={
-            <div className="flex justify-between w-full">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Export
-                </Button>
-                <Button variant="outline" size="sm">
-                  Share
-                </Button>
-              </div>
-              <Button onClick={closeDialog}>Close Dashboard</Button>
-            </div>
-          }
-        >
-          <div>{JSON.stringify(user)}</div>
-        </CustomDialog>{" "}
+        <CustomDialog showHeader title="Update Permission">
+          <PermissionForm data={data} id={data._id} />
+        </CustomDialog>
       </div>,
       {
         size: "lg",
         showCloseButton: true,
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
       }
     );
   };
 
-  const columns: ColumnDef<User>[] = [
+  const handleCreate = (data: any) => {
+    openDialog(
+      <div>
+        <CustomDialog showHeader title="Create Permission">
+          <PermissionForm data={data} id={undefined} />
+        </CustomDialog>
+      </div>,
+      {
+        size: "lg",
+        showCloseButton: true,
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
+      }
+    );
+  };
+
+  const columns: ColumnDef<permission>[] = [
     {
-      accessorKey: "firstName",
+      accessorKey: "name",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -92,32 +83,22 @@ export default function UsersTable({ props }:any) {
             Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="firstName" />
+          <ColumnFilter column={column} title="Name" />
         </div>
       ),
       cell: ({ row }) => {
-        const user = row.original;
+        const role = row.original;
         return (
           <div className="flex items-center space-x-3">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.firstName} />
-              <AvatarFallback>
-                {user?.firstName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
             <div>
-              <div className="font-medium">{user.firstName}</div>
+              <div className="font-medium">{role.name}</div>
             </div>
           </div>
         );
       },
     },
     {
-      accessorKey: "email",
+      accessorKey: "description",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -125,87 +106,98 @@ export default function UsersTable({ props }:any) {
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="-ml-3 h-8 data-[state=open]:bg-accent"
           >
-            Email
+            Description
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="Email" />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="text-muted-foreground">{row.getValue("email")}</div>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Status" />
+          <ColumnFilter column={column} title="Description" />
         </div>
       ),
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        const variant =
-          status === "active"
-            ? "default"
-            : status === "inactive"
-            ? "destructive"
-            : "secondary";
+        const p = row.original;
         return (
-          <Badge variant={variant} className="capitalize">
-            {status}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "role",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Role
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Role" />
-        </div>
-      ),
-       cell: ({ row }) => {
-        const role = row.getValue("role") as object;
-        return (
-          <div className="text-muted-foreground">
-            {role?.name}
+          <div className="flex items-center space-x-3">
+            <div>
+              <div className="font-medium">{p.description}</div>
+            </div>
           </div>
         );
       },
     },
     {
-      accessorKey: "lastLogin",
+      accessorKey: "category",
       header: ({ column }) => (
-        <Button
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            Category
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          <ColumnFilter column={column} title="category" />
+        </div>
+      ),
+      cell: ({ row }) => {
+        const p = row.original;
+        return (
+          <div className="flex items-center space-x-3">
+            <div>
+              <div className="font-medium">{p.category}</div>
+            </div>
+          </div>
+        );
+      },
+    },
+
+     {
+      accessorKey: "isActive",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">   <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="-ml-3 h-8 data-[state=open]:bg-accent"
         >
-          Last login
+          Is Active?
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+         </div>
+     
       ),
       cell: ({ row }) => {
-        const lastLogin = row.getValue("lastLogin") as string;
+        
+        
+        const isActive = row.getValue("isActive") as boolean;
+   
         return (
           <div className="text-muted-foreground">
-            {lastLogin}
+            {isActive?"Yes":"No"}
+          </div>
+        );
+      },
+    },
+     {
+      accessorKey: "isDefault",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">   <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-3 h-8 data-[state=open]:bg-accent"
+        >
+          Is Default?
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+        </div>
+     
+      ),
+      cell: ({ row }) => {
+        
+        
+        const isDefault = row.getValue("isDefault") as boolean;
+       
+        return (
+          <div className="text-muted-foreground">
+            {isDefault?"Yes":"No"}
           </div>
         );
       },
@@ -214,7 +206,7 @@ export default function UsersTable({ props }:any) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const user = row.original;
+        const role = row.original;
 
         return (
           <DropdownMenu>
@@ -227,18 +219,14 @@ export default function UsersTable({ props }:any) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(user._id)}
+                onClick={() => navigator.clipboard.writeText(role._id)}
               >
                 Copy ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFullScreenDialog(user)}>
+              <DropdownMenuItem onClick={() => handleUpdate(role)}>
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Link href={`/dashboard/users/${user["_id"]}/update`}>
-                  Edit
-                </Link>
-              </DropdownMenuItem>
+
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -247,16 +235,19 @@ export default function UsersTable({ props }:any) {
   ];
   return (
     <>
-      <Breadcrumbs heading={"Create User"} btn={{ show: true }}></Breadcrumbs>
+      <Breadcrumbs
+        heading={"All Permissions"}
+        btn={{ event: handleCreate, show: true }}
+      ></Breadcrumbs>
 
-      <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
+      <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">
         <DataTable
           columns={columns}
           fetchData={fetch}
           searchPlaceholder="Search..."
           limitOptions={[10, 20, 50, 100]}
           defaultSorting={[{ id: "createdAt", desc: true }]}
-          exportFileName="users-export"
+          exportFileName="permissions-export"
         />
       </div>
     </>
