@@ -34,7 +34,7 @@ export default function Dashboard({ children }: DashboardProps) {
   };
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50 ">
+    <div className="h-screen flex overflow-hidden bg-white dark:bg-gray-900 ">
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={toggleSidebar}
@@ -42,7 +42,7 @@ export default function Dashboard({ children }: DashboardProps) {
         onMobileClose={closeMobile}
       />
 
-      <div className="flex-1 flex flex-col ">
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
         <header className=" px-6">
           <div className=" py-3 ">
             <div className="flex items-center justify-between gap-4">

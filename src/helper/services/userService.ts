@@ -7,7 +7,8 @@ const userServices = {
 
   getAllUsers: (query: any, headers: any) =>
     requests.get("/user", query, null, headers, 1),
-
+  getProfile: ( token: any) =>
+    requests.get("/user/profile", {}, null, {}, 1,token),
   getActiveUsers: (headers: any) =>
     requests.get("/user/active", null, null, headers, 1),
 

@@ -34,7 +34,7 @@ const ProductVariantSchema = z.object({
 
 // Zod schema for ProductData - Updated for mainImage and videoUrls validation
 const ProductDataSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
+  title: z.string().min(1, "Product name is required"),
   description: z.string().optional(),
   shortDescription: z.string().optional(),
   category: z.string().min(1, "Category is required"),
@@ -168,7 +168,7 @@ const ProductDataSchema = z.object({
 
 interface ProductVariant {
   id: string;
-  name: string;
+  title: string;
   sku: string;
   price: number;
   comparePrice: number;
@@ -184,7 +184,7 @@ interface ProductVariant {
 }
 
 interface ProductData {
-  name: string;
+  title: string;
   description: string;
   shortDescription: string;
   category: string;
@@ -228,7 +228,7 @@ interface ProductData {
   basePrice: number;
   comparePrice: number;
   costPrice: number;
-  profitMargin: number;
+  // profitMargin: number;
   wholesalePrice: number;
   msrp: number;
   taxClass: string;
@@ -356,7 +356,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   } = useForm<ProductData>({
     resolver: zodResolver(ProductDataSchema),
     defaultValues: data || {
-      name: '',
+      title: '',
       description: '',
       shortDescription: '',
       category: '',
@@ -389,7 +389,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       basePrice: 0,
       comparePrice: 0,
       costPrice: 0,
-      profitMargin: 0,
+      // profitMargin: 0,
       wholesalePrice: 0,
       msrp: 0,
       taxClass: 'Standard',
@@ -486,7 +486,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   const [additionalImagesFiles, setAdditionalImagesFiles] = useState<File[]>([]);
   const [showJsonOutput, setShowJsonOutput] = useState(false);
   const [jsonOutput, setJsonOutput] = useState('');
-
+    const [profitMargin, setprofitMargin] = useState(0);
   // Initialize form with existing data for update mode
   useEffect(() => {
     if (isUpdateMode && data) {
@@ -501,7 +501,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   useEffect(() => {
     if (costPrice > 0 && basePrice > 0) {
       const margin = ((basePrice - costPrice) / basePrice) * 100;
-      setValue('profitMargin', Math.round(margin * 100) / 100);
+      setprofitMargin(Math.round(margin * 100) / 100);
     }
   }, [basePrice, costPrice, setValue]);
 
@@ -528,7 +528,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     const productSku = getValues('sku');
     appendVariant({
       id: Date.now().toString(),
-      name: `${productName || 'Product'} - Variant ${variants.length + 1}`,
+      title: `${productName || 'Product'} - Variant ${variants.length + 1}`,
       sku: `${productSku || 'SKU'}-${variants.length + 1}`,
       price: getValues('basePrice') || 0,
       comparePrice: getValues('comparePrice') || 0,
@@ -564,12 +564,11 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       status,
       seo: {
         ...formData.seo,
-        slug: formData.seo.slug || generateSlug(formData.name),
+        slug: formData.seo.slug || generateSlug(formData.title),
       },
       mainImage: mainImageFile ? URL.createObjectURL(mainImageFile) : formData.mainImage,
       images: [...(formData.images || []), ...additionalImagesFiles.map(file => URL.createObjectURL(file))],
-      createdAt: isUpdateMode ? data?.createdAt || new Date().toISOString() : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      
     };
 
     const jsonString = JSON.stringify(updatedProduct, null, 2);
@@ -622,16 +621,16 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="title" className="text-sm font-medium text-gray-700">
                   Product Name *
                 </Label>
                 <Input
-                  id="name"
-                  {...register('name')}
+                  id="title"
+                  {...register('title')}
                   className="mt-1"
                   placeholder="Enter product name"
                 />
-                {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
+                {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title.message}</p>}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1669,7 +1668,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                    {watch('profitMargin').toFixed(2)}%
+                    {profitMargin?.toFixed(2)}%
                   </span>
                 </div>
               </div>
