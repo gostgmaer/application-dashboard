@@ -10,7 +10,7 @@ export default async function UsersPage(props: any) {
   const user = await UserServices.getAllUsers(query, {});
 
   return (
-    <div className="container mx-auto py-2">
+    <div className=" mx-auto py-2">
       <Suspense fallback={<div>Loading...</div>}>
         <UsersTable props={{ ...user }} />
       </Suspense>

@@ -4,7 +4,7 @@ import React, { Suspense } from "react";
 
 const Page = () => {
   return (
-    <div className="container mx-auto py-2">
+    <div className=" mx-auto py-2">
       <Suspense fallback={<div>Loading...</div>}>
         <Breadcrumbs heading={"Create New User"} btn={{ show: false }}></Breadcrumbs>
 

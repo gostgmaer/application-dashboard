@@ -30,7 +30,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={roboto.className}>
+      <body className={`${roboto.className} overflow-hidden`}>
         <SessionProviderWrapper>
           <Providers>
             <DialogProvider>

@@ -1,6 +1,10 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { z } from 'zod';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +14,159 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus, X, Upload, Image as ImageIcon, Save, Eye } from 'lucide-react';
+
+// Zod schema for ProductVariant
+const ProductVariantSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Variant name is required"),
+  sku: z.string().min(1, "Variant SKU is required"),
+  price: z.number().min(0, "Price must be non-negative"),
+  comparePrice: z.number().min(0, "Compare price must be non-negative"),
+  inventory: z.number().int().min(0, "Inventory must be a non-negative integer"),
+  barcode: z.string().optional(),
+  trackQuantity: z.boolean(),
+  allowBackorder: z.boolean(),
+  attributes: z.object({
+    size: z.string().optional(),
+    color: z.string().optional(),
+    material: z.string().optional(),
+  }),
+});
+
+// Zod schema for ProductData
+const ProductDataSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  description: z.string().optional(),
+  shortDescription: z.string().optional(),
+  category: z.string().min(1, "Category is required"),
+  subcategory: z.string().optional(),
+  brand: z.string().optional(),
+  vendor: z.string().optional(),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
+  warranty: z.string().optional(),
+  origin: z.string().optional(),
+  material: z.string().optional(),
+  color: z.string().optional(),
+  size: z.string().optional(),
+  ageGroup: z.string().optional(),
+  gender: z.string().optional(),
+  season: z.string().optional(),
+  occasion: z.string().optional(),
+  style: z.string().optional(),
+  pattern: z.string().optional(),
+  careInstructions: z.string().optional(),
+  ingredients: z.string().optional(),
+  nutritionalInfo: z.string().optional(),
+  allergens: z.string().optional(),
+  certifications: z.array(z.string()).optional(),
+  awards: z.array(z.string()).optional(),
+  reviews: z.object({
+    averageRating: z.number().min(0).max(5).optional(),
+    totalReviews: z.number().int().min(0).optional(),
+  }),
+  socialMedia: z.object({
+    hashtags: z.array(z.string()).optional(),
+    instagramHandle: z.string().optional(),
+    twitterHandle: z.string().optional(),
+  }),
+  analytics: z.object({
+    views: z.number().int().min(0).optional(),
+    clicks: z.number().int().min(0).optional(),
+    conversions: z.number().int().min(0).optional(),
+  }),
+  tags: z.array(z.string()).optional(),
+  basePrice: z.number().min(0, "Base price must be non-negative"),
+  comparePrice: z.number().min(0, "Compare price must be non-negative"),
+  costPrice: z.number().min(0, "Cost price must be non-negative"),
+  // profitMargin: z.number().min(0).optional(),
+  wholesalePrice: z.number().min(0).optional(),
+  msrp: z.number().min(0).optional(),
+  taxClass: z.string().optional(),
+  taxRate: z.number().min(0).optional(),
+  discountType: z.enum(['none', 'percentage', 'fixed']),
+  discountValue: z.number().min(0).optional(),
+  discountStartDate: z.string().optional(),
+  discountEndDate: z.string().optional(),
+  loyaltyPoints: z.number().int().min(0).optional(),
+  sku: z.string().min(1, "SKU is required"),
+  barcode: z.string().optional(),
+  inventory: z.number().int().min(0).optional(),
+  trackQuantity: z.boolean(),
+  allowBackorder: z.boolean(),
+  lowStockThreshold: z.number().int().min(0).optional(),
+  maxOrderQuantity: z.number().int().min(1).optional(),
+  minOrderQuantity: z.number().int().min(1).optional(),
+  stockLocation: z.string().optional(),
+  supplier: z.string().optional(),
+  supplierSku: z.string().optional(),
+  leadTime: z.number().int().min(0).optional(),
+  restockDate: z.string().optional(),
+  weight: z.number().min(0).optional(),
+  dimensions: z.object({
+    length: z.number().min(0).optional(),
+    width: z.number().min(0).optional(),
+    height: z.number().min(0).optional(),
+  }),
+  packageDimensions: z.object({
+    length: z.number().min(0).optional(),
+    width: z.number().min(0).optional(),
+    height: z.number().min(0).optional(),
+    weight: z.number().min(0).optional(),
+  }),
+  shipping: z.object({
+    requiresShipping: z.boolean(),
+    shippingClass: z.string().optional(),
+    handlingTime: z.number().int().min(0).optional(),
+    freeShippingThreshold: z.number().min(0).optional(),
+    shippingRestrictions: z.array(z.string()).optional(),
+    hazardousMaterial: z.boolean(),
+    fragile: z.boolean(),
+  }),
+  seo: z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    keywords: z.string().optional(),
+    slug: z.string().optional(),
+    canonicalUrl: z.string().optional(),
+    robotsMeta: z.string().optional(),
+    structuredData: z.string().optional(),
+  }),
+  visibility: z.enum(['public', 'private', 'password']),
+  password: z.string().optional(),
+  publishDate: z.string().optional(),
+  expiryDate: z.string().optional(),
+  status: z.enum(['draft', 'published']),
+  featured: z.boolean(),
+  trending: z.boolean(),
+  newArrival: z.boolean(),
+  bestseller: z.boolean(),
+  onSale: z.boolean(),
+  limitedEdition: z.boolean(),
+  preOrder: z.boolean(),
+  backorder: z.boolean(),
+  discontinued: z.boolean(),
+  crossSells: z.array(z.string()).optional(),
+  upSells: z.array(z.string()).optional(),
+  relatedProducts: z.array(z.string()).optional(),
+  bundles: z.array(z.string()).optional(),
+  accessories: z.array(z.string()).optional(),
+  replacementParts: z.array(z.string()).optional(),
+  customFields: z.record(z.string()).optional(),
+  variants: z.array(ProductVariantSchema).optional(),
+  mainImage: z.string().url("Main image must be a valid URL").optional(),
+  images: z.array(z.string().url("Image URL must be valid")).optional(),
+  downloadableFiles: z.array(z.object({
+    name: z.string().optional(),
+    url: z.string().optional(),
+    fileSize: z.string().optional(),
+  })).optional(),
+  videoUrls: z.array(z.string().url("Video URL must be valid")).optional(),
+  threeDModelUrl: z.string().url("3D model URL must be valid").optional(),
+  virtualTryOnEnabled: z.boolean(),
+  augmentedRealityEnabled: z.boolean(),
+});
 
 interface ProductVariant {
   id: string;
@@ -35,6 +190,7 @@ interface ProductData {
   description: string;
   shortDescription: string;
   category: string;
+   images: string;
   subcategory: string;
   brand: string;
   vendor: string;
@@ -75,7 +231,7 @@ interface ProductData {
   basePrice: number;
   comparePrice: number;
   costPrice: number;
-  profitMargin: number;
+  // profitMargin: number;
   wholesalePrice: number;
   msrp: number;
   taxClass: string;
@@ -184,1411 +340,1523 @@ const taxClasses = ['Standard', 'Reduced', 'Zero Rate', 'Exempt'];
 const discountTypes = ['none', 'percentage', 'fixed'] as const;
 const robotsOptions = ['index,follow', 'noindex,nofollow', 'index,nofollow', 'noindex,follow'];
 
-export default function ProductCreate({data}:any) {
-  console.log(data);
-  
-  const [product, setProduct] = useState<ProductData>({
-    name: '',
-    description: '',
-    shortDescription: '',
-    category: '',
-    subcategory: '',
-    brand: '',
-    vendor: '',
-    manufacturer: '',
-    model: '',
-    warranty: '',
-    origin: '',
-    material: '',
-    color: '',
-    size: '',
-    ageGroup: '',
-    gender: '',
-    season: '',
-    occasion: '',
-    style: '',
-    pattern: '',
-    careInstructions: '',
-    ingredients: '',
-    nutritionalInfo: '',
-    allergens: '',
-    certifications: [],
-    awards: [],
-    reviews: { averageRating: 0, totalReviews: 0 },
-    socialMedia: { hashtags: [], instagramHandle: '', twitterHandle: '' },
-    analytics: { views: 0, clicks: 0, conversions: 0 },
-    tags: [],
-    basePrice: 0,
-    comparePrice: 0,
-    costPrice: 0,
-    profitMargin: 0,
-    wholesalePrice: 0,
-    msrp: 0,
-    taxClass: 'Standard',
-    taxRate: 0,
-    discountType: 'none',
-    discountValue: 0,
-    discountStartDate: '',
-    discountEndDate: '',
-    loyaltyPoints: 0,
-    sku: '',
-    barcode: '',
-    inventory: 0,
-    trackQuantity: true,
-    allowBackorder: false,
-    lowStockThreshold: 5,
-    maxOrderQuantity: 999,
-    minOrderQuantity: 1,
-    stockLocation: '',
-    supplier: '',
-    supplierSku: '',
-    leadTime: 0,
-    restockDate: '',
-    weight: 0,
-    dimensions: { length: 0, width: 0, height: 0 },
-    packageDimensions: { length: 0, width: 0, height: 0, weight: 0 },
-    shipping: { 
-      requiresShipping: true, 
-      shippingClass: 'Standard', 
-      handlingTime: 1,
-      freeShippingThreshold: 0,
-      shippingRestrictions: [],
-      hazardousMaterial: false,
-      fragile: false
+export default function ProductCreate({ data }: { data?: ProductData }) {
+  console.log('Received data:', data);
+
+  const isUpdateMode = !!data;
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    getValues,
+    watch,
+    reset,
+  } = useForm<ProductData>({
+    resolver: zodResolver(ProductDataSchema),
+    defaultValues: data || {
+      name: '',
+      description: '',
+      shortDescription: '',
+      category: '',
+      subcategory: '',
+      brand: '',
+      vendor: '',
+      manufacturer: '',
+      model: '',
+      warranty: '',
+      origin: '',
+      material: '',
+      color: '',
+      size: '',
+      ageGroup: '',
+      gender: '',
+      season: '',
+      occasion: '',
+      style: '',
+      pattern: '',
+      careInstructions: '',
+      ingredients: '',
+      nutritionalInfo: '',
+      allergens: '',
+      certifications: [],
+      awards: [],
+      reviews: { averageRating: 0, totalReviews: 0 },
+      socialMedia: { hashtags: [], instagramHandle: '', twitterHandle: '' },
+      analytics: { views: 0, clicks: 0, conversions: 0 },
+      tags: [],
+      basePrice: 0,
+      comparePrice: 0,
+      costPrice: 0,
+      // profitMargin: 0,
+      wholesalePrice: 0,
+      msrp: 0,
+      taxClass: 'Standard',
+      taxRate: 0,
+      discountType: 'none',
+      discountValue: 0,
+      discountStartDate: '',
+      discountEndDate: '',
+      loyaltyPoints: 0,
+      sku: '',
+      barcode: '',
+      inventory: 0,
+      trackQuantity: true,
+      allowBackorder: false,
+      lowStockThreshold: 5,
+      maxOrderQuantity: 999,
+      minOrderQuantity: 1,
+      stockLocation: '',
+      supplier: '',
+      supplierSku: '',
+      leadTime: 0,
+      restockDate: '',
+      weight: 0,
+      dimensions: { length: 0, width: 0, height: 0 },
+      packageDimensions: { length: 0, width: 0, height: 0, weight: 0 },
+      shipping: {
+        requiresShipping: true,
+        shippingClass: 'Standard',
+        handlingTime: 1,
+        freeShippingThreshold: 0,
+        shippingRestrictions: [],
+        hazardousMaterial: false,
+        fragile: false,
+      },
+      seo: {
+        title: '',
+        description: '',
+        keywords: '',
+        slug: '',
+        canonicalUrl: '',
+        robotsMeta: 'index,follow',
+        structuredData: '',
+      },
+      visibility: 'public',
+      password: '',
+      publishDate: new Date().toISOString().split('T')[0],
+      expiryDate: '',
+      status: 'draft',
+      featured: false,
+      trending: false,
+      newArrival: false,
+      bestseller: false,
+      onSale: false,
+      limitedEdition: false,
+      preOrder: false,
+      backorder: false,
+      discontinued: false,
+      crossSells: [],
+      upSells: [],
+      relatedProducts: [],
+      bundles: [],
+      accessories: [],
+      replacementParts: [],
+      customFields: {},
+      variants: [],
+      downloadableFiles: [],
+      videoUrls: [],
+      threeDModelUrl: '',
+      virtualTryOnEnabled: false,
+      augmentedRealityEnabled: false,
     },
-    seo: { 
-      title: '', 
-      description: '', 
-      keywords: '', 
-      slug: '',
-      canonicalUrl: '',
-      robotsMeta: 'index,follow',
-      structuredData: ''
-    },
-    visibility: 'public',
-    password: '',
-    publishDate: new Date().toISOString().split('T')[0],
-    expiryDate: '',
-    status: 'draft',
-    featured: false,
-    trending: false,
-    newArrival: false,
-    bestseller: false,
-    onSale: false,
-    limitedEdition: false,
-    preOrder: false,
-    backorder: false,
-    discontinued: false,
-    crossSells: [],
-    upSells: [],
-    relatedProducts: [],
-    bundles: [],
-    accessories: [],
-    replacementParts: [],
-    customFields: {},
-    variants: [],
-    downloadableFiles: [],
-    videoUrls: [],
-    threeDModelUrl: '',
-    virtualTryOnEnabled: false,
-    augmentedRealityEnabled: false
   });
 
+  const { fields: variants, append: appendVariant, remove: removeVariant } = useFieldArray({
+    control,
+    name: 'variants',
+  });
+
+  // const { fields: tags, append: appendTag, remove: removeTag } = useFieldArray({
+  //   control,
+  //   name: 'tags',
+  // });
+
   const [newTag, setNewTag] = useState('');
-  const [images, setImages] = useState<string[]>([]);
-  const [showJsonOutput, setShowJsonOutput] = useState(false);
-  const [jsonOutput, setJsonOutput] = useState('');
+    const [profitMargin, setprofitMargin] = useState(0);
+  // const [images, setImages] = useState<string[]>(data?.images || []);
+
+  // // Initialize form with existing data for update mode
+  // useEffect(() => {
+  //   if (isUpdateMode && data) {
+  //     reset(data); // Populate form with existing data
+  //     setImages(data.images || []);
+  //   }
+  // }, [data, reset, isUpdateMode]);
+
+  // Watch basePrice and costPrice for profit margin calculation
+  const basePrice = watch('basePrice');
+  const costPrice = watch('costPrice');
+
+  useEffect(() => {
+    if (costPrice > 0 && basePrice > 0) {
+      const margin = ((basePrice - costPrice) / basePrice) * 100;
+      setprofitMargin(Math.round(margin * 100) / 100);
+    }
+  }, [basePrice, costPrice, setValue]);
 
   const addVariant = () => {
-    const newVariant: ProductVariant = {
+    const productName = getValues('name');
+    const productSku = getValues('sku');
+    appendVariant({
       id: Date.now().toString(),
-      name: `${product.name} - Variant ${product.variants.length + 1}`,
-      sku: `${product.sku}-${product.variants.length + 1}`,
-      price: product.basePrice,
-      comparePrice: product.comparePrice,
+      name: `${productName || 'Product'} - Variant ${variants.length + 1}`,
+      sku: `${productSku || 'SKU'}-${variants.length + 1}`,
+      price: getValues('basePrice') || 0,
+      comparePrice: getValues('comparePrice') || 0,
       inventory: 0,
       barcode: '',
       trackQuantity: true,
       allowBackorder: false,
-      attributes: {}
-    };
-    setProduct(prev => ({ ...prev, variants: [...prev.variants, newVariant] }));
+      attributes: {},
+    });
   };
 
-  const removeVariant = (id: string) => {
-    setProduct(prev => ({
-      ...prev,
-      variants: prev.variants.filter(v => v.id !== id)
-    }));
-  };
-
-  const updateVariant = (id: string, updates: Partial<ProductVariant>) => {
-    setProduct(prev => ({
-      ...prev,
-      variants: prev.variants.map(v => v.id === id ? { ...v, ...updates } : v)
-    }));
-  };
-
-  const addTag = () => {
-    if (newTag.trim() && !product.tags.includes(newTag.trim())) {
-      setProduct(prev => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
-      setNewTag('');
-    }
-  };
-
-  const removeTag = (tag: string) => {
-    setProduct(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }));
-  };
-
-  const calculateProfitMargin = () => {
-    if (product.costPrice > 0 && product.basePrice > 0) {
-      const margin = ((product.basePrice - product.costPrice) / product.basePrice) * 100;
-      setProduct(prev => ({ ...prev, profitMargin: Math.round(margin * 100) / 100 }));
-    }
-  };
+  // const addTag = () => {
+  //   if (newTag.trim() && !tags.some(tag => tag === newTag.trim())) {
+  //     appendTag(newTag.trim());
+  //     setNewTag('');
+  //   }
+  // };
 
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
-  const handleSubmit = (status: 'draft' | 'published') => {
-    const updatedProduct = { 
-      ...product, 
+
+  const onSubmit = (status: 'draft' | 'published') => (formData: ProductData) => {
+    const updatedProduct = {
+      ...formData,
       status,
       seo: {
-        ...product.seo,
-        slug: product.seo.slug || generateSlug(product.name)
+        ...formData.seo,
+        slug: formData.seo.slug || generateSlug(formData.name),
       },
-      images,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      // images,
+      // createdAt: isUpdateMode ? data?.createdAt || new Date().toISOString() : new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
-    
+
     const jsonString = JSON.stringify(updatedProduct, null, 2);
+
+    if (isUpdateMode) {
+      // console.log(`Updating product with ID: ${data?._id || 'unknown'}`, jsonString);
+      console.log(jsonString);
+      
+      // Example: Send to API for update
+      // fetch(`/api/products/${data.id}`, {
+      //   method: 'PUT',
+      //   body: jsonString,
+      //   headers: { 'Content-Type': 'application/json' },
+      // });
+    } else {
+      console.log('Creating new product:', jsonString);
+      // Example: Send to API for create
+      // fetch('/api/products', {
+      //   method: 'POST',
+      //   body: jsonString,
+      //   headers: { 'Content-Type': 'application/json' },
+      // });
+    }
+
+    // For demonstration, show JSON output
     setJsonOutput(jsonString);
     setShowJsonOutput(true);
-    
-    console.log('Product JSON:', jsonString);
-    // Here you would typically send the data to your API
   };
+
+  const [showJsonOutput, setShowJsonOutput] = useState(false);
+  const [jsonOutput, setJsonOutput] = useState('');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-6 bg-blue-500 rounded-full"></div>
-                  Basic Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                    Product Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    value={product.name}
-                    onChange={(e) => setProduct(prev => ({ ...prev, name: e.target.value }))}
-                    className="mt-1"
-                    placeholder="Enter product name"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="brand" className="text-sm font-medium text-gray-700">
-                      Brand
-                    </Label>
-                    <Input
-                      id="brand"
-                      value={product.brand}
-                      onChange={(e) => setProduct(prev => ({ ...prev, brand: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Product brand"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="vendor" className="text-sm font-medium text-gray-700">
-                      Vendor/Supplier
-                    </Label>
-                    <Input
-                      id="vendor"
-                      value={product.vendor}
-                      onChange={(e) => setProduct(prev => ({ ...prev, vendor: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Vendor name"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="manufacturer" className="text-sm font-medium text-gray-700">
-                      Manufacturer
-                    </Label>
-                    <Input
-                      id="manufacturer"
-                      value={product.manufacturer}
-                      onChange={(e) => setProduct(prev => ({ ...prev, manufacturer: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Manufacturer name"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="model" className="text-sm font-medium text-gray-700">
-                      Model Number
-                    </Label>
-                    <Input
-                      id="model"
-                      value={product.model}
-                      onChange={(e) => setProduct(prev => ({ ...prev, model: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Model number"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="warranty" className="text-sm font-medium text-gray-700">
-                      Warranty Period
-                    </Label>
-                    <Input
-                      id="warranty"
-                      value={product.warranty}
-                      onChange={(e) => setProduct(prev => ({ ...prev, warranty: e.target.value }))}
-                      className="mt-1"
-                      placeholder="e.g., 1 year, 6 months"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="origin" className="text-sm font-medium text-gray-700">
-                      Country of Origin
-                    </Label>
-                    <Input
-                      id="origin"
-                      value={product.origin}
-                      onChange={(e) => setProduct(prev => ({ ...prev, origin: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Made in..."
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="shortDesc" className="text-sm font-medium text-gray-700">
-                    Short Description
-                  </Label>
-                  <Input
-                    id="shortDesc"
-                    value={product.shortDescription}
-                    onChange={(e) => setProduct(prev => ({ ...prev, shortDescription: e.target.value }))}
-                    className="mt-1"
-                    placeholder="Brief product description"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                    Detailed Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    value={product.description}
-                    onChange={(e) => setProduct(prev => ({ ...prev, description: e.target.value }))}
-                    className="mt-1 min-h-[120px]"
-                    placeholder="Detailed product description..."
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Category *</Label>
-                    <Select value={product.category} onValueChange={(value) => setProduct(prev => ({ ...prev, category: value, subcategory: '' }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(categories).map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Subcategory</Label>
-                    <Select 
-                      value={product.subcategory} 
-                      onValueChange={(value) => setProduct(prev => ({ ...prev, subcategory: value }))}
-                      disabled={!product.category}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select subcategory" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {product.category && categories[product.category as keyof typeof categories]?.map(subcat => (
-                          <SelectItem key={subcat} value={subcat}>{subcat}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="sku" className="text-sm font-medium text-gray-700">
-                      SKU *
-                    </Label>
-                    <Input
-                      id="sku"
-                      value={product.sku}
-                      onChange={(e) => setProduct(prev => ({ ...prev, sku: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Product SKU"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="barcode" className="text-sm font-medium text-gray-700">
-                      Barcode/UPC
-                    </Label>
-                    <Input
-                      id="barcode"
-                      value={product.barcode}
-                      onChange={(e) => setProduct(prev => ({ ...prev, barcode: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Product barcode"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2 block">Tags</Label>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {product.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <Input
-                      value={newTag}
-                      onChange={(e) => setNewTag(e.target.value)}
-                      placeholder="Add a tag"
-                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    />
-                    <Button type="button" onClick={addTag} variant="outline">
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Product Attributes */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-6 bg-indigo-500 rounded-full"></div>
-                  Product Attributes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Age Group</Label>
-                    <Select value={product.ageGroup} onValueChange={(value) => setProduct(prev => ({ ...prev, ageGroup: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select age group" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ageGroups.map(age => (
-                          <SelectItem key={age} value={age}>{age}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Gender</Label>
-                    <Select value={product.gender} onValueChange={(value) => setProduct(prev => ({ ...prev, gender: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {genders.map(gender => (
-                          <SelectItem key={gender} value={gender}>{gender}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Season</Label>
-                    <Select value={product.season} onValueChange={(value) => setProduct(prev => ({ ...prev, season: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select season" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {seasons.map(season => (
-                          <SelectItem key={season} value={season}>{season}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Occasion</Label>
-                    <Select value={product.occasion} onValueChange={(value) => setProduct(prev => ({ ...prev, occasion: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select occasion" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {occasions.map(occasion => (
-                          <SelectItem key={occasion} value={occasion}>{occasion}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Style</Label>
-                    <Select value={product.style} onValueChange={(value) => setProduct(prev => ({ ...prev, style: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select style" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {styles.map(style => (
-                          <SelectItem key={style} value={style}>{style}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Pattern</Label>
-                    <Select value={product.pattern} onValueChange={(value) => setProduct(prev => ({ ...prev, pattern: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select pattern" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {patterns.map(pattern => (
-                          <SelectItem key={pattern} value={pattern}>{pattern}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="careInstructions" className="text-sm font-medium text-gray-700">
-                      Care Instructions
-                    </Label>
-                    <Textarea
-                      id="careInstructions"
-                      value={product.careInstructions}
-                      onChange={(e) => setProduct(prev => ({ ...prev, careInstructions: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Washing, drying, storage instructions..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="ingredients" className="text-sm font-medium text-gray-700">
-                      Ingredients/Materials
-                    </Label>
-                    <Textarea
-                      id="ingredients"
-                      value={product.ingredients}
-                      onChange={(e) => setProduct(prev => ({ ...prev, ingredients: e.target.value }))}
-                      className="mt-1"
-                      placeholder="List of ingredients or materials..."
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="nutritionalInfo" className="text-sm font-medium text-gray-700">
-                      Nutritional Information
-                    </Label>
-                    <Textarea
-                      id="nutritionalInfo"
-                      value={product.nutritionalInfo}
-                      onChange={(e) => setProduct(prev => ({ ...prev, nutritionalInfo: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Calories, nutrients, serving size..."
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="allergens" className="text-sm font-medium text-gray-700">
-                      Allergen Information
-                    </Label>
-                    <Textarea
-                      id="allergens"
-                      value={product.allergens}
-                      onChange={(e) => setProduct(prev => ({ ...prev, allergens: e.target.value }))}
-                      className="mt-1"
-                      placeholder="Contains nuts, dairy, gluten..."
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Advanced Pricing */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-6 bg-yellow-500 rounded-full"></div>
-                  Advanced Pricing & Discounts
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="wholesalePrice" className="text-sm font-medium text-gray-700">
-                      Wholesale Price
-                    </Label>
-                    <Input
-                      id="wholesalePrice"
-                      type="number"
-                      value={product.wholesalePrice}
-                      onChange={(e) => setProduct(prev => ({ ...prev, wholesalePrice: parseFloat(e.target.value) }))}
-                      className="mt-1"
-                      step="0.01"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="msrp" className="text-sm font-medium text-gray-700">
-                      MSRP
-                    </Label>
-                    <Input
-                      id="msrp"
-                      type="number"
-                      value={product.msrp}
-                      onChange={(e) => setProduct(prev => ({ ...prev, msrp: parseFloat(e.target.value) }))}
-                      className="mt-1"
-                      step="0.01"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="loyaltyPoints" className="text-sm font-medium text-gray-700">
-                      Loyalty Points
-                    </Label>
-                    <Input
-                      id="loyaltyPoints"
-                      type="number"
-                      value={product.loyaltyPoints}
-                      onChange={(e) => setProduct(prev => ({ ...prev, loyaltyPoints: parseInt(e.target.value) }))}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Tax Class</Label>
-                    <Select value={product.taxClass} onValueChange={(value) => setProduct(prev => ({ ...prev, taxClass: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select tax class" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {taxClasses.map(taxClass => (
-                          <SelectItem key={taxClass} value={taxClass}>{taxClass}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="taxRate" className="text-sm font-medium text-gray-700">
-                      Tax Rate (%)
-                    </Label>
-                    <Input
-                      id="taxRate"
-                      type="number"
-                      value={product.taxRate}
-                      onChange={(e) => setProduct(prev => ({ ...prev, taxRate: parseFloat(e.target.value) }))}
-                      className="mt-1"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Discount Type</Label>
-                    <Select value={product.discountType} onValueChange={(value: typeof product.discountType) => setProduct(prev => ({ ...prev, discountType: value }))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Select discount type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No Discount</SelectItem>
-                        <SelectItem value="percentage">Percentage</SelectItem>
-                        <SelectItem value="fixed">Fixed Amount</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="discountValue" className="text-sm font-medium text-gray-700">
-                      Discount Value
-                    </Label>
-                    <Input
-                      id="discountValue"
-                      type="number"
-                      value={product.discountValue}
-                      onChange={(e) => setProduct(prev => ({ ...prev, discountValue: parseFloat(e.target.value) }))}
-                      className="mt-1"
-                      step="0.01"
-                      disabled={product.discountType === 'none'}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs font-medium text-gray-700">Start Date</Label>
-                      <Input
-                        type="date"
-                        value={product.discountStartDate}
-                        onChange={(e) => setProduct(prev => ({ ...prev, discountStartDate: e.target.value }))}
-                        className="mt-1"
-                        disabled={product.discountType === 'none'}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-medium text-gray-700">End Date</Label>
-                      <Input
-                        type="date"
-                        value={product.discountEndDate}
-                        onChange={(e) => setProduct(prev => ({ ...prev, discountEndDate: e.target.value }))}
-                        className="mt-1"
-                        disabled={product.discountType === 'none'}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-         
-            {/* Shipping Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
-                  Shipping Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">Requires Shipping</Label>
-                  <Switch
-                    checked={product.shipping.requiresShipping}
-                    onCheckedChange={(checked) => setProduct(prev => ({ 
-                      ...prev, 
-                      shipping: { ...prev.shipping, requiresShipping: checked }
-                    }))}
-                  />
-                </div>
-
-                {product.shipping.requiresShipping && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Shipping Class</Label>
-                        <Select 
-                          value={product.shipping.shippingClass} 
-                          onValueChange={(value) => setProduct(prev => ({ 
-                            ...prev, 
-                            shipping: { ...prev.shipping, shippingClass: value }
-                          }))}
-                        >
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select shipping class" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {shippingClasses.map(cls => (
-                              <SelectItem key={cls} value={cls}>{cls}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="handlingTime" className="text-sm font-medium text-gray-700">
-                          Handling Time (days)
-                        </Label>
-                        <Input
-                          id="handlingTime"
-                          type="number"
-                          value={product.shipping.handlingTime}
-                          onChange={(e) => setProduct(prev => ({ 
-                            ...prev, 
-                            shipping: { ...prev.shipping, handlingTime: parseInt(e.target.value) }
-                          }))}
-                          className="mt-1"
-                          min="0"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="freeShippingThreshold" className="text-sm font-medium text-gray-700">
-                          Free Shipping Threshold
-                        </Label>
-                        <Input
-                          id="freeShippingThreshold"
-                          type="number"
-                          value={product.shipping.freeShippingThreshold}
-                          onChange={(e) => setProduct(prev => ({ 
-                            ...prev, 
-                            shipping: { ...prev.shipping, freeShippingThreshold: parseFloat(e.target.value) }
-                          }))}
-                          className="mt-1"
-                          step="0.01"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Package Length (cm)</Label>
-                        <Input
-                          type="number"
-                          value={product.packageDimensions.length}
-                          onChange={(e) => setProduct(prev => ({ 
-                            ...prev, 
-                            packageDimensions: { ...prev.packageDimensions, length: parseFloat(e.target.value) }
-                          }))}
-                          className="mt-1"
-                          step="0.01"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Package Width (cm)</Label>
-                        <Input
-                          type="number"
-                          value={product.packageDimensions.width}
-                          onChange={(e) => setProduct(prev => ({ 
-                            ...prev, 
-                            packageDimensions: { ...prev.packageDimensions, width: parseFloat(e.target.value) }
-                          }))}
-                          className="mt-1"
-                          step="0.01"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Package Height (cm)</Label>
-                        <Input
-                          type="number"
-                          value={product.packageDimensions.height}
-                          onChange={(e) => setProduct(prev => ({ 
-                            ...prev, 
-                            packageDimensions: { ...prev.packageDimensions, height: parseFloat(e.target.value) }
-                          }))}
-                          className="mt-1"
-                          step="0.01"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700">Package Weight (kg)</Label>
-                        <Input
-                          type="number"
-                          value={product.packageDimensions.weight}
-                          onChange={(e) => setProduct(prev => ({ 
-                            ...prev, 
-                            packageDimensions: { ...prev.packageDimensions, weight: parseFloat(e.target.value) }
-                          }))}
-                          className="mt-1"
-                          step="0.01"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={product.shipping.hazardousMaterial}
-                          onCheckedChange={(checked) => setProduct(prev => ({ 
-                            ...prev, 
-                            shipping: { ...prev.shipping, hazardousMaterial: checked }
-                          }))}
-                        />
-                        <Label className="text-sm text-gray-700">Hazardous Material</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={product.shipping.fragile}
-                          onCheckedChange={(checked) => setProduct(prev => ({ 
-                            ...prev, 
-                            shipping: { ...prev.shipping, fragile: checked }
-                          }))}
-                        />
-                        <Label className="text-sm text-gray-700">Fragile Item</Label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Product Variants */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <div className="w-2 h-6 bg-purple-500 rounded-full"></div>
-                    Product Variants
-                  </CardTitle>
-                  <Button onClick={addVariant} variant="outline" size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Variant
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {product.variants.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No variants added yet. Click "Add Variant" to create product variations.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {product.variants.map((variant, index) => (
-                      <div key={variant.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-medium text-gray-900">Variant {index + 1}</h4>
-                          <Button
-                            onClick={() => removeVariant(variant.id)}
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Variant Name</Label>
-                            <Input
-                              value={variant.name}
-                              onChange={(e) => updateVariant(variant.id, { name: e.target.value })}
-                              className="mt-1"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">SKU</Label>
-                            <Input
-                              value={variant.sku}
-                              onChange={(e) => updateVariant(variant.id, { sku: e.target.value })}
-                              className="mt-1"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Barcode</Label>
-                            <Input
-                              value={variant.barcode}
-                              onChange={(e) => updateVariant(variant.id, { barcode: e.target.value })}
-                              className="mt-1"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Price</Label>
-                            <Input
-                              type="number"
-                              value={variant.price}
-                              onChange={(e) => updateVariant(variant.id, { price: parseFloat(e.target.value) })}
-                              className="mt-1"
-                              step="0.01"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Compare Price</Label>
-                            <Input
-                              type="number"
-                              value={variant.comparePrice}
-                              onChange={(e) => updateVariant(variant.id, { comparePrice: parseFloat(e.target.value) })}
-                              className="mt-1"
-                              step="0.01"
-                            />
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Inventory</Label>
-                            <Input
-                              type="number"
-                              value={variant.inventory}
-                              onChange={(e) => updateVariant(variant.id, { inventory: parseInt(e.target.value) })}
-                              className="mt-1"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Size</Label>
-                            <Select
-                              value={variant.attributes.size || ''}
-                              onValueChange={(value) => updateVariant(variant.id, { 
-                                attributes: { ...variant.attributes, size: value } 
-                              })}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder="Select size" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {sizes.map(size => (
-                                  <SelectItem key={size} value={size}>{size}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Color</Label>
-                            <Select
-                              value={variant.attributes.color || ''}
-                              onValueChange={(value) => updateVariant(variant.id, { 
-                                attributes: { ...variant.attributes, color: value } 
-                              })}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder="Select color" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {colors.map(color => (
-                                  <SelectItem key={color} value={color}>{color}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium text-gray-700">Material</Label>
-                            <Select
-                              value={variant.attributes.material || ''}
-                              onValueChange={(value) => updateVariant(variant.id, { 
-                                attributes: { ...variant.attributes, material: value } 
-                              })}
-                            >
-                              <SelectTrigger className="mt-1">
-                                <SelectValue placeholder="Select material" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {materials.map(material => (
-                                  <SelectItem key={material} value={material}>{material}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={variant.trackQuantity}
-                              onCheckedChange={(checked) => updateVariant(variant.id, { trackQuantity: checked })}
-                            />
-                            <Label className="text-sm text-gray-700">Track Quantity</Label>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              checked={variant.allowBackorder}
-                              onCheckedChange={(checked) => updateVariant(variant.id, { allowBackorder: checked })}
-                            />
-                            <Label className="text-sm text-gray-700">Allow Backorder</Label>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-8">
-            {/* Pricing */}
-               {/* Images */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <div className="w-2 h-6 bg-green-500 rounded-full"></div>
-                  Product Images
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Upload product images</p>
-                      <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
-                    </div>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Upload className="w-4 h-4" />
-                      Choose Files
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Pricing</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="basePrice" className="text-sm font-medium text-gray-700">
-                    Base Price *
-                  </Label>
-                  <Input
-                    id="basePrice"
-                    type="number"
-                    value={product.basePrice}
-                    onChange={(e) => {
-                      setProduct(prev => ({ ...prev, basePrice: parseFloat(e.target.value) }));
-                      setTimeout(calculateProfitMargin, 100);
-                    }}
-                    className="mt-1"
-                    step="0.01"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="comparePrice" className="text-sm font-medium text-gray-700">
-                    Compare Price
-                  </Label>
-                  <Input
-                    id="comparePrice"
-                    type="number"
-                    value={product.comparePrice}
-                    onChange={(e) => setProduct(prev => ({ ...prev, comparePrice: parseFloat(e.target.value) }))}
-                    className="mt-1"
-                    step="0.01"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="costPrice" className="text-sm font-medium text-gray-700">
-                    Cost Price
-                  </Label>
-                  <Input
-                    id="costPrice"
-                    type="number"
-                    value={product.costPrice}
-                    onChange={(e) => {
-                      setProduct(prev => ({ ...prev, costPrice: parseFloat(e.target.value) }));
-                      setTimeout(calculateProfitMargin, 100);
-                    }}
-                    className="mt-1"
-                    step="0.01"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Profit Margin
-                  </Label>
-                  <div className="mt-1 p-3 bg-gray-50 rounded-md">
-                    <span className="text-lg font-semibold text-green-600">
-                      {product.profitMargin.toFixed(2)}%
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Inventory */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Inventory</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="inventory" className="text-sm font-medium text-gray-700">
-                    Stock Quantity
-                  </Label>
-                  <Input
-                    id="inventory"
-                    type="number"
-                    value={product.inventory}
-                    onChange={(e) => setProduct(prev => ({ ...prev, inventory: parseInt(e.target.value) }))}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="lowStockThreshold" className="text-sm font-medium text-gray-700">
-                    Low Stock Threshold
-                  </Label>
-                  <Input
-                    id="lowStockThreshold"
-                    type="number"
-                    value={product.lowStockThreshold}
-                    onChange={(e) => setProduct(prev => ({ ...prev, lowStockThreshold: parseInt(e.target.value) }))}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">Track Quantity</Label>
-                  <Switch
-                    checked={product.trackQuantity}
-                    onCheckedChange={(checked) => setProduct(prev => ({ ...prev, trackQuantity: checked }))}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">Allow Backorder</Label>
-                  <Switch
-                    checked={product.allowBackorder}
-                    onCheckedChange={(checked) => setProduct(prev => ({ ...prev, allowBackorder: checked }))}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="weight" className="text-sm font-medium text-gray-700">
-                    Weight (kg)
-                  </Label>
-                  <Input
-                    id="weight"
-                    type="number"
-                    value={product.weight}
-                    onChange={(e) => setProduct(prev => ({ ...prev, weight: parseFloat(e.target.value) }))}
-                    className="mt-1"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <Label className="text-xs font-medium text-gray-700">Length</Label>
-                    <Input
-                      type="number"
-                      value={product.dimensions.length}
-                      onChange={(e) => setProduct(prev => ({ 
-                        ...prev, 
-                        dimensions: { ...prev.dimensions, length: parseFloat(e.target.value) }
-                      }))}
-                      className="mt-1"
-                      step="0.01"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-medium text-gray-700">Width</Label>
-                    <Input
-                      type="number"
-                      value={product.dimensions.width}
-                      onChange={(e) => setProduct(prev => ({ 
-                        ...prev, 
-                        dimensions: { ...prev.dimensions, width: parseFloat(e.target.value) }
-                      }))}
-                      className="mt-1"
-                      step="0.01"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-medium text-gray-700">Height</Label>
-                    <Input
-                      type="number"
-                      value={product.dimensions.height}
-                      onChange={(e) => setProduct(prev => ({ 
-                        ...prev, 
-                        dimensions: { ...prev.dimensions, height: parseFloat(e.target.value) }
-                      }))}
-                      className="mt-1"
-                      step="0.01"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* SEO */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">SEO Settings</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Meta Title
-                  </Label>
-                  <Input
-                    value={product.seo.title}
-                    onChange={(e) => setProduct(prev => ({ 
-                      ...prev, 
-                      seo: { ...prev.seo, title: e.target.value }
-                    }))}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Meta Description
-                  </Label>
-                  <Textarea
-                    value={product.seo.description}
-                    onChange={(e) => setProduct(prev => ({ 
-                      ...prev, 
-                      seo: { ...prev.seo, description: e.target.value }
-                    }))}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    URL Slug
-                  </Label>
-                  <Input
-                    value={product.seo.slug}
-                    onChange={(e) => setProduct(prev => ({ 
-                      ...prev, 
-                      seo: { ...prev.seo, slug: e.target.value }
-                    }))}
-                    className="mt-1"
-                    placeholder="auto-generated-from-name"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Keywords
-                  </Label>
-                  <Input
-                    value={product.seo.keywords}
-                    onChange={(e) => setProduct(prev => ({ 
-                      ...prev, 
-                      seo: { ...prev.seo, keywords: e.target.value }
-                    }))}
-                    className="mt-1"
-                    placeholder="keyword1, keyword2, keyword3"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Visibility & Publishing */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Visibility & Publishing</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Visibility</Label>
-                  <Select value={product.visibility} onValueChange={(value: 'public' | 'private' | 'password') => setProduct(prev => ({ ...prev, visibility: value }))}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">Public</SelectItem>
-                      <SelectItem value="private">Private</SelectItem>
-                      <SelectItem value="password">Password Protected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {product.visibility === 'password' && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700">Password</Label>
-                    <Input
-                      type="password"
-                      value={product.password}
-                      onChange={(e) => setProduct(prev => ({ ...prev, password: e.target.value }))}
-                      className="mt-1"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Publish Date</Label>
-                  <Input
-                    type="date"
-                    value={product.publishDate}
-                    onChange={(e) => setProduct(prev => ({ ...prev, publishDate: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Expiry Date (Optional)</Label>
-                  <Input
-                    type="date"
-                    value={product.expiryDate}
-                    onChange={(e) => setProduct(prev => ({ ...prev, expiryDate: e.target.value }))}
-                    className="mt-1"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Product Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">Featured Product</Label>
-                  <Switch
-                    checked={product.featured}
-                    onCheckedChange={(checked) => setProduct(prev => ({ ...prev, featured: checked }))}
-                  />
-                </div>
-
-                <Separator />
-
-                <div className="flex gap-3">
-                  <Button 
-                    onClick={() => handleSubmit('draft')}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Draft
-                  </Button>
-                  <Button 
-                    onClick={() => handleSubmit('published')}
-                    className="flex-1"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Publish
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+      {Object.keys(errors).length > 0 && (
+        <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          <h3 className="font-semibold">Validation Errors:</h3>
+          <ul className="list-disc pl-5">
+            {Object.entries(errors).map(([key, error], index) => (
+              <li key={index}>{`${key}: ${error?.message || JSON.stringify(error)}`}</li>
+            ))}
+          </ul>
         </div>
+      )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-blue-500 rounded-full"></div>
+                Basic Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                  Product Name *
+                </Label>
+                <Input
+                  id="name"
+                  {...register('name')}
+                  className="mt-1"
+                  placeholder="Enter product name"
+                />
+                {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="brand" className="text-sm font-medium text-gray-700">
+                    Brand
+                  </Label>
+                  <Input
+                    id="brand"
+                    {...register('brand')}
+                    className="mt-1"
+                    placeholder="Product brand"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="vendor" className="text-sm font-medium text-gray-700">
+                    Vendor/Supplier
+                  </Label>
+                  <Input
+                    id="vendor"
+                    {...register('vendor')}
+                    className="mt-1"
+                    placeholder="Vendor name"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="manufacturer" className="text-sm font-medium text-gray-700">
+                    Manufacturer
+                  </Label>
+                  <Input
+                    id="manufacturer"
+                    {...register('manufacturer')}
+                    className="mt-1"
+                    placeholder="Manufacturer name"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="model" className="text-sm font-medium text-gray-700">
+                    Model Number
+                  </Label>
+                  <Input
+                    id="model"
+                    {...register('model')}
+                    className="mt-1"
+                    placeholder="Model number"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="warranty" className="text-sm font-medium text-gray-700">
+                    Warranty Period
+                  </Label>
+                  <Input
+                    id="warranty"
+                    {...register('warranty')}
+                    className="mt-1"
+                    placeholder="e.g., 1 year, 6 months"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="origin" className="text-sm font-medium text-gray-700">
+                    Country of Origin
+                  </Label>
+                  <Input
+                    id="origin"
+                    {...register('origin')}
+                    className="mt-1"
+                    placeholder="Made in..."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="shortDesc" className="text-sm font-medium text-gray-700">
+                  Short Description
+                </Label>
+                <Input
+                  id="shortDesc"
+                  {...register('shortDescription')}
+                  className="mt-1"
+                  placeholder="Brief product description"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                  Detailed Description
+                </Label>
+                <Textarea
+                  id="description"
+                  {...register('description')}
+                  className="mt-1 min-h-[120px]"
+                  placeholder="Detailed product description..."
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Category *</Label>
+                  <Controller
+                    name="category"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          setValue('subcategory', '');
+                        }}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Object.keys(categories).map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category.message}</p>}
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Subcategory</Label>
+                  <Controller
+                    name="subcategory"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={!getValues('category')}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select subcategory" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getValues('category') && categories[getValues('category') as keyof typeof categories]?.map(subcat => (
+                            <SelectItem key={subcat} value={subcat}>{subcat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="sku" className="text-sm font-medium text-gray-700">
+                    SKU *
+                  </Label>
+                  <Input
+                    id="sku"
+                    {...register('sku')}
+                    className="mt-1"
+                    placeholder="Product SKU"
+                  />
+                  {errors.sku && <p className="text-red-600 text-sm mt-1">{errors.sku.message}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="barcode" className="text-sm font-medium text-gray-700">
+                    Barcode/UPC
+                  </Label>
+                  <Input
+                    id="barcode"
+                    {...register('barcode')}
+                    className="mt-1"
+                    placeholder="Product barcode"
+                  />
+                </div>
+              </div>
+
+              {/* <div>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Tags</Label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {tags.map((tag, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(index)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    placeholder="Add a tag"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                  />
+                  <Button type="button" onClick={addTag} variant="outline">
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div> */}
+            </CardContent>
+          </Card>
+
+          {/* Product Attributes */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-indigo-500 rounded-full"></div>
+                Product Attributes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Age Group</Label>
+                  <Controller
+                    name="ageGroup"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select age group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ageGroups.map(age => (
+                            <SelectItem key={age} value={age}>{age}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Gender</Label>
+                  <Controller
+                    name="gender"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {genders.map(gender => (
+                            <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Season</Label>
+                  <Controller
+                    name="season"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select season" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {seasons.map(season => (
+                            <SelectItem key={season} value={season}>{season}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Occasion</Label>
+                  <Controller
+                    name="occasion"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select occasion" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {occasions.map(occasion => (
+                            <SelectItem key={occasion} value={occasion}>{occasion}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Style</Label>
+                  <Controller
+                    name="style"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {styles.map(style => (
+                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Pattern</Label>
+                  <Controller
+                    name="pattern"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select pattern" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {patterns.map(pattern => (
+                            <SelectItem key={pattern} value={pattern}>{pattern}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="careInstructions" className="text-sm font-medium text-gray-700">
+                    Care Instructions
+                  </Label>
+                  <Textarea
+                    id="careInstructions"
+                    {...register('careInstructions')}
+                    className="mt-1"
+                    placeholder="Washing, drying, storage instructions..."
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="ingredients" className="text-sm font-medium text-gray-700">
+                    Ingredients/Materials
+                  </Label>
+                  <Textarea
+                    id="ingredients"
+                    {...register('ingredients')}
+                    className="mt-1"
+                    placeholder="List of ingredients or materials..."
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="nutritionalInfo" className="text-sm font-medium text-gray-700">
+                    Nutritional Information
+                  </Label>
+                  <Textarea
+                    id="nutritionalInfo"
+                    {...register('nutritionalInfo')}
+                    className="mt-1"
+                    placeholder="Calories, nutrients, serving size..."
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="allergens" className="text-sm font-medium text-gray-700">
+                    Allergen Information
+                  </Label>
+                  <Textarea
+                    id="allergens"
+                    {...register('allergens')}
+                    className="mt-1"
+                    placeholder="Contains nuts, dairy, gluten..."
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Advanced Pricing */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-yellow-500 rounded-full"></div>
+                Advanced Pricing & Discounts
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="wholesalePrice" className="text-sm font-medium text-gray-700">
+                    Wholesale Price
+                  </Label>
+                  <Input
+                    id="wholesalePrice"
+                    type="number"
+                    {...register('wholesalePrice', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="msrp" className="text-sm font-medium text-gray-700">
+                    MSRP
+                  </Label>
+                  <Input
+                    id="msrp"
+                    type="number"
+                    {...register('msrp', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="loyaltyPoints" className="text-sm font-medium text-gray-700">
+                    Loyalty Points
+                  </Label>
+                  <Input
+                    id="loyaltyPoints"
+                    type="number"
+                    {...register('loyaltyPoints', { valueAsNumber: true })}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Tax Class</Label>
+                  <Controller
+                    name="taxClass"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select tax class" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {taxClasses.map(taxClass => (
+                            <SelectItem key={taxClass} value={taxClass}>{taxClass}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="taxRate" className="text-sm font-medium text-gray-700">
+                    Tax Rate (%)
+                  </Label>
+                  <Input
+                    id="taxRate"
+                    type="number"
+                    {...register('taxRate', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Discount Type</Label>
+                  <Controller
+                    name="discountType"
+                    control={control}
+                    render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select discount type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No Discount</SelectItem>
+                          <SelectItem value="percentage">Percentage</SelectItem>
+                          <SelectItem value="fixed">Fixed Amount</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="discountValue" className="text-sm font-medium text-gray-700">
+                    Discount Value
+                  </Label>
+                  <Input
+                    id="discountValue"
+                    type="number"
+                    {...register('discountValue', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                    disabled={watch('discountType') === 'none'}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs font-medium text-gray-700">Start Date</Label>
+                    <Input
+                      type="date"
+                      {...register('discountStartDate')}
+                      className="mt-1"
+                      disabled={watch('discountType') === 'none'}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium text-gray-700">End Date</Label>
+                    <Input
+                      type="date"
+                      {...register('discountEndDate')}
+                      className="mt-1"
+                      disabled={watch('discountType') === 'none'}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Shipping Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-orange-500 rounded-full"></div>
+                Shipping Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Requires Shipping</Label>
+                <Controller
+                  name="shipping.requiresShipping"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              {watch('shipping.requiresShipping') && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Shipping Class</Label>
+                      <Controller
+                        name="shipping.shippingClass"
+                        control={control}
+                        render={({ field }) => (
+                          <Select value={field.value} onValueChange={field.onChange}>
+                            <SelectTrigger className="mt-1">
+                              <SelectValue placeholder="Select shipping class" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {shippingClasses.map(cls => (
+                                <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="shipping.handlingTime" className="text-sm font-medium text-gray-700">
+                        Handling Time (days)
+                      </Label>
+                      <Input
+                        id="shipping.handlingTime"
+                        type="number"
+                        {...register('shipping.handlingTime', { valueAsNumber: true })}
+                        className="mt-1"
+                        min="0"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="shipping.freeShippingThreshold" className="text-sm font-medium text-gray-700">
+                        Free Shipping Threshold
+                      </Label>
+                      <Input
+                        id="shipping.freeShippingThreshold"
+                        type="number"
+                        {...register('shipping.freeShippingThreshold', { valueAsNumber: true })}
+                        className="mt-1"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Package Length (cm)</Label>
+                      <Input
+                        type="number"
+                        {...register('packageDimensions.length', { valueAsNumber: true })}
+                        className="mt-1"
+                        step="0.01"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Package Width (cm)</Label>
+                      <Input
+                        type="number"
+                        {...register('packageDimensions.width', { valueAsNumber: true })}
+                        className="mt-1"
+                        step="0.01"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Package Height (cm)</Label>
+                      <Input
+                        type="number"
+                        {...register('packageDimensions.height', { valueAsNumber: true })}
+                        className="mt-1"
+                        step="0.01"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Package Weight (kg)</Label>
+                      <Input
+                        type="number"
+                        {...register('packageDimensions.weight', { valueAsNumber: true })}
+                        className="mt-1"
+                        step="0.01"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    <div className="flex items-center space-x-2">
+                      <Controller
+                        name="shipping.hazardousMaterial"
+                        control={control}
+                        render={({ field }) => (
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                      <Label className="text-sm text-gray-700">Hazardous Material</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Controller
+                        name="shipping.fragile"
+                        control={control}
+                        render={({ field }) => (
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                      <Label className="text-sm text-gray-700">Fragile Item</Label>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Product Variants */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <div className="w-2 h-6 bg-purple-500 rounded-full"></div>
+                  Product Variants
+                </CardTitle>
+                <Button onClick={addVariant} variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Variant
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {variants.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <p>No variants added yet. Click &quot;Add Variant&quot; to create product variations.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {variants.map((variant, index) => (
+                    <div key={variant.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-gray-900">Variant {index + 1}</h4>
+                        <Button
+                          onClick={() => removeVariant(index)}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Variant Name</Label>
+                          <Input
+                            {...register(`variants.${index}.name`)}
+                            className="mt-1"
+                          />
+                          {errors.variants?.[index]?.name && (
+                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].name.message}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">SKU</Label>
+                          <Input
+                            {...register(`variants.${index}.sku`)}
+                            className="mt-1"
+                          />
+                          {errors.variants?.[index]?.sku && (
+                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].sku.message}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Barcode</Label>
+                          <Input
+                            {...register(`variants.${index}.barcode`)}
+                            className="mt-1"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Price</Label>
+                          <Input
+                            type="number"
+                            {...register(`variants.${index}.price`, { valueAsNumber: true })}
+                            className="mt-1"
+                            step="0.01"
+                          />
+                          {errors.variants?.[index]?.price && (
+                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].price.message}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Compare Price</Label>
+                          <Input
+                            type="number"
+                            {...register(`variants.${index}.comparePrice`, { valueAsNumber: true })}
+                            className="mt-1"
+                            step="0.01"
+                          />
+                          {errors.variants?.[index]?.comparePrice && (
+                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].comparePrice.message}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Inventory</Label>
+                          <Input
+                            type="number"
+                            {...register(`variants.${index}.inventory`, { valueAsNumber: true })}
+                            className="mt-1"
+                          />
+                          {errors.variants?.[index]?.inventory && (
+                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].inventory.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Size</Label>
+                          <Controller
+                            name={`variants.${index}.attributes.size`}
+                            control={control}
+                            render={({ field }) => (
+                              <Select value={field.value || ''} onValueChange={field.onChange}>
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue placeholder="Select size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {sizes.map(size => (
+                                    <SelectItem key={size} value={size}>{size}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Color</Label>
+                          <Controller
+                            name={`variants.${index}.attributes.color`}
+                            control={control}
+                            render={({ field }) => (
+                              <Select value={field.value || ''} onValueChange={field.onChange}>
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue placeholder="Select color" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {colors.map(color => (
+                                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">Material</Label>
+                          <Controller
+                            name={`variants.${index}.attributes.material`}
+                            control={control}
+                            render={({ field }) => (
+                              <Select value={field.value || ''} onValueChange={field.onChange}>
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue placeholder="Select material" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {materials.map(material => (
+                                    <SelectItem key={material} value={material}>{material}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6">
+                        <div className="flex items-center space-x-2">
+                          <Controller
+                            name={`variants.${index}.trackQuantity`}
+                            control={control}
+                            render={({ field }) => (
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            )}
+                          />
+                          <Label className="text-sm text-gray-700">Track Quantity</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Controller
+                            name={`variants.${index}.allowBackorder`}
+                            control={control}
+                            render={({ field }) => (
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            )}
+                          />
+                          <Label className="text-sm text-gray-700">Allow Backorder</Label>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-8">
+          {/* Product Images */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-green-500 rounded-full"></div>
+                Product Images
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
+                <div className="flex flex-col items-center gap-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                    <ImageIcon className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Upload product images</p>
+                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
+                  </div>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    Choose Files
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pricing */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Pricing</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="basePrice" className="text-sm font-medium text-gray-700">
+                  Base Price *
+                </Label>
+                <Input
+                  id="basePrice"
+                  type="number"
+                  {...register('basePrice', { valueAsNumber: true })}
+                  className="mt-1"
+                  step="0.01"
+                />
+                {errors.basePrice && <p className="text-red-600 text-sm mt-1">{errors.basePrice.message}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="comparePrice" className="text-sm font-medium text-gray-700">
+                  Compare Price
+                </Label>
+                <Input
+                  id="comparePrice"
+                  type="number"
+                  {...register('comparePrice', { valueAsNumber: true })}
+                  className="mt-1"
+                  step="0.01"
+                />
+                {errors.comparePrice && <p className="text-red-600 text-sm mt-1">{errors.comparePrice.message}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="costPrice" className="text-sm font-medium text-gray-700">
+                  Cost Price
+                </Label>
+                <Input
+                  id="costPrice"
+                  type="number"
+                  {...register('costPrice', { valueAsNumber: true })}
+                  className="mt-1"
+                  step="0.01"
+                />
+                {errors.costPrice && <p className="text-red-600 text-sm mt-1">{errors.costPrice.message}</p>}
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Profit Margin
+                </Label>
+                <div className="mt-1 p-3 bg-gray-50 rounded-md">
+                  <span className="text-lg font-semibold text-green-600">
+                  {profitMargin?.toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Inventory */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Inventory</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="inventory" className="text-sm font-medium text-gray-700">
+                  Stock Quantity
+                </Label>
+                <Input
+                  id="inventory"
+                  type="number"
+                  {...register('inventory', { valueAsNumber: true })}
+                  className="mt-1"
+                />
+                {errors.inventory && <p className="text-red-600 text-sm mt-1">{errors.inventory.message}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="lowStockThreshold" className="text-sm font-medium text-gray-700">
+                  Low Stock Threshold
+                </Label>
+                <Input
+                  id="lowStockThreshold"
+                  type="number"
+                  {...register('lowStockThreshold', { valueAsNumber: true })}
+                  className="mt-1"
+                />
+                {errors.lowStockThreshold && <p className="text-red-600 text-sm mt-1">{errors.lowStockThreshold.message}</p>}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Track Quantity</Label>
+                <Controller
+                  name="trackQuantity"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Allow Backorder</Label>
+                <Controller
+                  name="allowBackorder"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="weight" className="text-sm font-medium text-gray-700">
+                  Weight (kg)
+                </Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  {...register('weight', { valueAsNumber: true })}
+                  className="mt-1"
+                  step="0.01"
+                />
+                {errors.weight && <p className="text-red-600 text-sm mt-1">{errors.weight.message}</p>}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <Label className="text-xs font-medium text-gray-700">Length</Label>
+                  <Input
+                    type="number"
+                    {...register('dimensions.length', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                  />
+                  {errors.dimensions?.length && <p className="text-red-600 text-sm mt-1">{errors.dimensions.length.message}</p>}
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-700">Width</Label>
+                  <Input
+                    type="number"
+                    {...register('dimensions.width', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                  />
+                  {errors.dimensions?.width && <p className="text-red-600 text-sm mt-1">{errors.dimensions.width.message}</p>}
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-700">Height</Label>
+                  <Input
+                    type="number"
+                    {...register('dimensions.height', { valueAsNumber: true })}
+                    className="mt-1"
+                    step="0.01"
+                  />
+                  {errors.dimensions?.height && <p className="text-red-600 text-sm mt-1">{errors.dimensions.height.message}</p>}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SEO */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">SEO Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Meta Title
+                </Label>
+                <Input
+                  {...register('seo.title')}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Meta Description
+                </Label>
+                <Textarea
+                  {...register('seo.description')}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  URL Slug
+                </Label>
+                <Input
+                  {...register('seo.slug')}
+                  className="mt-1"
+                  placeholder="auto-generated-from-name"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">
+                  Keywords
+                </Label>
+                <Input
+                  {...register('seo.keywords')}
+                  className="mt-1"
+                  placeholder="keyword1, keyword2, keyword3"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Visibility & Publishing */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Visibility & Publishing</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Visibility</Label>
+                <Controller
+                  name="visibility"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="public">Public</SelectItem>
+                        <SelectItem value="private">Private</SelectItem>
+                        <SelectItem value="password">Password Protected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              {watch('visibility') === 'password' && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Password</Label>
+                  <Input
+                    type="password"
+                    {...register('password')}
+                    className="mt-1"
+                  />
+                </div>
+              )}
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Publish Date</Label>
+                <Input
+                  type="date"
+                  {...register('publishDate')}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Expiry Date (Optional)</Label>
+                <Input
+                  type="date"
+                  {...register('expiryDate')}
+                  className="mt-1"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Product Status</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium text-gray-700">Featured Product</Label>
+                <Controller
+                  name="featured"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+
+              <Separator />
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleSubmit(onSubmit('draft'))}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save {isUpdateMode ? 'Changes' : 'Draft'}
+                </Button>
+                <Button
+                  onClick={handleSubmit(onSubmit('published'))}
+                  className="flex-1"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  {isUpdateMode ? 'Update & Publish' : 'Publish'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* JSON Output for Debugging */}
+      {showJsonOutput && (
+        <div className="mt-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>JSON Output</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
+                {jsonOutput}
+              </pre>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

@@ -79,7 +79,7 @@ const personalNavigationItems: NavItem[] = [
     ],
   },
   {
-    title: "Analytics & Reports",
+    title: "Analytics",
     icon: BarChart3,
     children: [
     
@@ -280,10 +280,10 @@ export function Sidebar({
 
           {/* Navigation */}
          <div className="flex flex-col h-full">
-           <nav className="flex-1 overflow-y-auto h-[50%] p-3 space-y-1">
+           <nav className="flex-1  h-[50%] p-3 space-y-1">
             {navigationItems.map((item) => renderNavItem(item))}
           </nav>
-          <nav className="flex-0 overflow-y-auto max-h-[50%] p-3 space-y-1">
+          <nav className="flex-0  max-h-[50%] p-3 space-y-1">
             <hr></hr>
             {personalNavigationItems.map((item) => renderNavItem(item))}
           </nav>

@@ -34,7 +34,7 @@ export default function Dashboard({ children }: DashboardProps) {
   };
 
   return (
-    <div className="flex bg-background ">
+    <div className="h-screen flex overflow-hidden bg-gray-50 ">
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={toggleSidebar}
@@ -42,7 +42,7 @@ export default function Dashboard({ children }: DashboardProps) {
         onMobileClose={closeMobile}
       />
 
-      <div className="flex-1 flex flex-col max-h-screen ">
+      <div className="flex-1 flex flex-col ">
         <header className=" px-6">
           <div className=" py-3 ">
             <div className="flex items-center justify-between gap-4">
@@ -105,10 +105,10 @@ export default function Dashboard({ children }: DashboardProps) {
                 <UserStatus />
               </div>
             </div>
-          </div>
+          </div>  
         </header>
 
-        <main className="flex-grow  h-[calc(100vh-64px)] px-6 py-2 space-y-6  text-black  dark:text-white">
+        <main className="flex-grow px-6 py-2 overflow-y-auto space-y-6  text-black  dark:text-white">
           {children}
         </main>
       </div>

@@ -9,7 +9,7 @@ export default async function UsersPage(props: any) {
   const data = await OrderServices.getOrders(query, {});
 
   return (
-    <div className="container mx-auto py-2">
+    <div className=" mx-auto py-2">
       <Suspense fallback={<div>Loading...</div>}>
         <Table props={{ ...data }} />
       </Suspense>

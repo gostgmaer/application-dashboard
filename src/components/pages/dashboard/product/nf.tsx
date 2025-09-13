@@ -80,7 +80,7 @@ const ProductDataSchema = z.object({
   basePrice: z.number().min(0, "Base price must be non-negative"),
   comparePrice: z.number().min(0, "Compare price must be non-negative"),
   costPrice: z.number().min(0, "Cost price must be non-negative"),
-  profitMargin: z.number().min(0).optional(),
+  // profitMargin: z.number().min(0).optional(),
   wholesalePrice: z.number().min(0).optional(),
   msrp: z.number().min(0).optional(),
   taxClass: z.string().optional(),
@@ -229,7 +229,7 @@ interface ProductData {
   basePrice: number;
   comparePrice: number;
   costPrice: number;
-  profitMargin: number;
+  // profitMargin: number;
   wholesalePrice: number;
   msrp: number;
   taxClass: string;
@@ -388,7 +388,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       basePrice: 0,
       comparePrice: 0,
       costPrice: 0,
-      profitMargin: 0,
+      // profitMargin: 0,
       wholesalePrice: 0,
       msrp: 0,
       taxClass: 'Standard',
@@ -472,7 +472,8 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     name: 'tags',
   });
 
-  const [newTag, setNewTag] = useState('');
+  const [profitMargin, setprofitMargin] = useState(0);
+   const [newTag, setNewTag] = useState('');
   const [images, setImages] = useState<string[]>(data?.images || []);
 
   // Initialize form with existing data for update mode
@@ -490,7 +491,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   useEffect(() => {
     if (costPrice > 0 && basePrice > 0) {
       const margin = ((basePrice - costPrice) / basePrice) * 100;
-      setValue('profitMargin', Math.round(margin * 100) / 100);
+      setprofitMargin(Math.round(margin * 100) / 100);
     }
   }, [basePrice, costPrice, setValue]);
 
@@ -1570,7 +1571,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                    {watch('profitMargin').toFixed(2)}%
+                    {profitMargin?.toFixed(2)}%
                   </span>
                 </div>
               </div>
