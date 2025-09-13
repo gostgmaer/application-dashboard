@@ -1,6 +1,4 @@
-
 "use client";
-
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -14,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Plus, X, Upload, Image as ImageIcon, Save, Eye } from 'lucide-react';
+import { Plus, X, Upload, Image as ImageIcon, Save, Eye, Video } from 'lucide-react';
 
 // Zod schema for ProductVariant
 const ProductVariantSchema = z.object({
@@ -34,19 +32,16 @@ const ProductVariantSchema = z.object({
   }),
 });
 
-// Zod schema for ProductData
+// Zod schema for ProductData - Updated for mainImage and videoUrls validation
 const ProductDataSchema = z.object({
   name: z.string().min(1, "Product name is required"),
-  description: z.string().optional(),
-  shortDescription: z.string().optional(),
+  productType: z.enum(['physical', 'digital', 'service']).optional(),
+  categories: z.array(z.string()).min(1, "At least one category is required"),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().optional(),
-  brand: z.string().optional(),
-  vendor: z.string().optional(),
-  manufacturer: z.string().optional(),
-  model: z.string().optional(),
-  warranty: z.string().optional(),
-  origin: z.string().optional(),
+  descriptions: z.string().min(1, "Descriptions are required"),
+  shortDescription: z.string().optional(),
+  overview: z.string().optional(),
   material: z.string().optional(),
   color: z.string().optional(),
   size: z.string().optional(),
@@ -59,42 +54,47 @@ const ProductDataSchema = z.object({
   careInstructions: z.string().optional(),
   ingredients: z.string().optional(),
   nutritionalInfo: z.string().optional(),
-  allergens: z.string().optional(),
+  allergens: z.array(z.string()).optional(),
   certifications: z.array(z.string()).optional(),
   awards: z.array(z.string()).optional(),
   reviews: z.object({
     averageRating: z.number().min(0).max(5).optional(),
     totalReviews: z.number().int().min(0).optional(),
-  }),
+  }).optional(),
   socialMedia: z.object({
     hashtags: z.array(z.string()).optional(),
     instagramHandle: z.string().optional(),
     twitterHandle: z.string().optional(),
-  }),
+  }).optional(),
   analytics: z.object({
     views: z.number().int().min(0).optional(),
     clicks: z.number().int().min(0).optional(),
     conversions: z.number().int().min(0).optional(),
-  }),
-  tags: z.array(z.string()).optional(),
+  }).optional(),
+  tags: z.array(z.string().min(1, "Tag cannot be empty")).optional(),
+  features: z.array(z.string()).optional(),
+  specifications: z.record(z.string()).optional(),
   basePrice: z.number().min(0, "Base price must be non-negative"),
   comparePrice: z.number().min(0, "Compare price must be non-negative"),
   costPrice: z.number().min(0, "Cost price must be non-negative"),
-  // profitMargin: z.number().min(0).optional(),
+  retailPrice: z.number().min(0).optional(),
+  salePrice: z.number().min(0).optional(),
   wholesalePrice: z.number().min(0).optional(),
   msrp: z.number().min(0).optional(),
   taxClass: z.string().optional(),
   taxRate: z.number().min(0).optional(),
-  discountType: z.enum(['none', 'percentage', 'fixed']),
+  discountType: z.enum(['none', 'percentage', 'fixed']).optional(),
   discountValue: z.number().min(0).optional(),
+  discount: z.number().min(0).optional(),
   discountStartDate: z.string().optional(),
   discountEndDate: z.string().optional(),
   loyaltyPoints: z.number().int().min(0).optional(),
   sku: z.string().min(1, "SKU is required"),
   barcode: z.string().optional(),
+  productUPCEAN: z.string().optional(),
   inventory: z.number().int().min(0).optional(),
-  trackQuantity: z.boolean(),
-  allowBackorder: z.boolean(),
+  trackQuantity: z.boolean().optional(),
+  allowBackorder: z.boolean().optional(),
   lowStockThreshold: z.number().int().min(0).optional(),
   maxOrderQuantity: z.number().int().min(1).optional(),
   minOrderQuantity: z.number().int().min(1).optional(),
@@ -104,26 +104,29 @@ const ProductDataSchema = z.object({
   leadTime: z.number().int().min(0).optional(),
   restockDate: z.string().optional(),
   weight: z.number().min(0).optional(),
+  shippingWeight: z.number().min(0).optional(),
   dimensions: z.object({
     length: z.number().min(0).optional(),
     width: z.number().min(0).optional(),
     height: z.number().min(0).optional(),
-  }),
+  }).optional(),
   packageDimensions: z.object({
     length: z.number().min(0).optional(),
     width: z.number().min(0).optional(),
     height: z.number().min(0).optional(),
     weight: z.number().min(0).optional(),
-  }),
+  }).optional(),
   shipping: z.object({
-    requiresShipping: z.boolean(),
+    requiresShipping: z.boolean().optional(),
     shippingClass: z.string().optional(),
     handlingTime: z.number().int().min(0).optional(),
     freeShippingThreshold: z.number().min(0).optional(),
     shippingRestrictions: z.array(z.string()).optional(),
-    hazardousMaterial: z.boolean(),
-    fragile: z.boolean(),
-  }),
+    hazardousMaterial: z.boolean().optional(),
+    fragile: z.boolean().optional(),
+  }).optional(),
+  shippingDetails: z.string().optional(),
+  customShippingOptions: z.record(z.string()).optional(),
   seo: z.object({
     title: z.string().optional(),
     description: z.string().optional(),
@@ -132,40 +135,74 @@ const ProductDataSchema = z.object({
     canonicalUrl: z.string().optional(),
     robotsMeta: z.string().optional(),
     structuredData: z.string().optional(),
-  }),
-  visibility: z.enum(['public', 'private', 'password']),
+  }).optional(),
+  visibility: z.enum(['public', 'private', 'password']).optional(),
   password: z.string().optional(),
   publishDate: z.string().optional(),
   expiryDate: z.string().optional(),
-  status: z.enum(['draft', 'published']),
-  featured: z.boolean(),
-  trending: z.boolean(),
-  newArrival: z.boolean(),
-  bestseller: z.boolean(),
-  onSale: z.boolean(),
-  limitedEdition: z.boolean(),
-  preOrder: z.boolean(),
-  backorder: z.boolean(),
-  discontinued: z.boolean(),
+  status: z.enum(['active', 'inactive', 'draft', 'pending', 'archived', 'published']).optional(),
+  featured: z.boolean().optional(),
+  trending: z.boolean().optional(),
+  newArrival: z.boolean().optional(),
+  bestseller: z.boolean().optional(),
+  onSale: z.boolean().optional(),
+  limitedEdition: z.boolean().optional(),
+  preOrder: z.boolean().optional(),
+  preOrderDate: z.string().optional(),
+  backorder: z.boolean().optional(),
+  discontinued: z.boolean().optional(),
+  isAvailable: z.boolean().optional(),
+  availability: z.string().optional(),
+  ecoFriendly: z.boolean().optional(),
+  ageRestriction: z.string().optional(),
+  returnPolicy: z.string().optional(),
+  returnPeriod: z.number().int().min(0).optional(),
   crossSells: z.array(z.string()).optional(),
   upSells: z.array(z.string()).optional(),
   relatedProducts: z.array(z.string()).optional(),
   bundles: z.array(z.string()).optional(),
+  productBundle: z.boolean().optional(),
+  bundleContents: z.array(z.object({
+    product: z.string(),
+    quantity: z.number().int().min(1).optional(),
+  })).optional(),
   accessories: z.array(z.string()).optional(),
   replacementParts: z.array(z.string()).optional(),
   customFields: z.record(z.string()).optional(),
   variants: z.array(ProductVariantSchema).optional(),
   mainImage: z.string().url("Main image must be a valid URL").optional(),
   images: z.array(z.string().url("Image URL must be valid")).optional(),
+  additionalImages: z.array(z.string()).optional(),
   downloadableFiles: z.array(z.object({
     name: z.string().optional(),
     url: z.string().optional(),
     fileSize: z.string().optional(),
   })).optional(),
+  digitalDownloadLink: z.string().optional(),
   videoUrls: z.array(z.string().url("Video URL must be valid")).optional(),
   threeDModelUrl: z.string().url("3D model URL must be valid").optional(),
-  virtualTryOnEnabled: z.boolean(),
-  augmentedRealityEnabled: z.boolean(),
+  virtualTryOnEnabled: z.boolean().optional(),
+  augmentedRealityEnabled: z.boolean().optional(),
+  isGiftCard: z.boolean().optional(),
+  giftCardValue: z.number().min(0).optional(),
+  purchaseLimit: z.number().int().min(0).optional(),
+  bulkDiscounts: z.array(z.object({
+    quantity: z.number().int().min(0),
+    discountAmount: z.number().min(0),
+  })).optional(),
+  giftWrappingAvailable: z.boolean().optional(),
+  isSubscription: z.boolean().optional(),
+  subscriptionDetails: z.string().optional(),
+  virtualProduct: z.boolean().optional(),
+  soldCount: z.number().int().min(0).optional(),
+  lastRestocked: z.string().optional(),
+  vendor: z.string().optional(),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
+  warranty: z.string().optional(),
+  origin: z.string().optional(),
+  manufacturerPartNumber: z.string().optional(),
+  brand: z.string().optional(),
 });
 
 interface ProductVariant {
@@ -190,7 +227,6 @@ interface ProductData {
   description: string;
   shortDescription: string;
   category: string;
-   images: string;
   subcategory: string;
   brand: string;
   vendor: string;
@@ -306,6 +342,8 @@ interface ProductData {
   replacementParts: string[];
   customFields: { [key: string]: string };
   variants: ProductVariant[];
+  mainImage: string;
+  images: string[];
   downloadableFiles: {
     name: string;
     url: string;
@@ -456,6 +494,8 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       replacementParts: [],
       customFields: {},
       variants: [],
+      mainImage: '',
+      images: [],
       downloadableFiles: [],
       videoUrls: [],
       threeDModelUrl: '',
@@ -469,22 +509,29 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     name: 'variants',
   });
 
-  // const { fields: tags, append: appendTag, remove: removeTag } = useFieldArray({
-  //   control,
-  //   name: 'tags',
-  // });
+  const { fields: tags, append: appendTag, remove: removeTag } = useFieldArray({
+    control,
+    name: 'tags',
+  });
+
+  const { fields: videoUrls, append: appendVideoUrl, remove: removeVideoUrl } = useFieldArray({
+    control,
+    name: 'videoUrls',
+  });
 
   const [newTag, setNewTag] = useState('');
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+  const [additionalImagesFiles, setAdditionalImagesFiles] = useState<File[]>([]);
+  const [showJsonOutput, setShowJsonOutput] = useState(false);
+  const [jsonOutput, setJsonOutput] = useState('');
     const [profitMargin, setprofitMargin] = useState(0);
-  // const [images, setImages] = useState<string[]>(data?.images || []);
-
-  // // Initialize form with existing data for update mode
-  // useEffect(() => {
-  //   if (isUpdateMode && data) {
-  //     reset(data); // Populate form with existing data
-  //     setImages(data.images || []);
-  //   }
-  // }, [data, reset, isUpdateMode]);
+  // Initialize form with existing data for update mode
+  useEffect(() => {
+    if (isUpdateMode && data) {
+      reset(data); // Populate form with existing data
+    }
+  }, [data, reset, isUpdateMode]);
 
   // Watch basePrice and costPrice for profit margin calculation
   const basePrice = watch('basePrice');
@@ -496,6 +543,24 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       setprofitMargin(Math.round(margin * 100) / 100);
     }
   }, [basePrice, costPrice, setValue]);
+
+  // Handle main image upload
+  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMainImageFile(file);
+      const url = URL.createObjectURL(file);
+      setValue('mainImage', url);
+    }
+  };
+
+  // Handle additional images upload
+  const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setAdditionalImagesFiles(prev => [...prev, ...files]);
+    const urls = files.map(file => URL.createObjectURL(file));
+    setValue('images', [...getValues('images'), ...urls]);
+  };
 
   const addVariant = () => {
     const productName = getValues('name');
@@ -514,12 +579,19 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     });
   };
 
-  // const addTag = () => {
-  //   if (newTag.trim() && !tags.some(tag => tag === newTag.trim())) {
-  //     appendTag(newTag.trim());
-  //     setNewTag('');
-  //   }
-  // };
+  const addTag = () => {
+    if (newTag.trim() && !tags.some(tag => tag === newTag.trim())) {
+      appendTag(newTag.trim());
+      setNewTag('');
+    }
+  };
+
+  const addVideoUrl = () => {
+    if (newVideoUrl.trim() && !videoUrls.some(url => url === newVideoUrl.trim())) {
+      appendVideoUrl(newVideoUrl.trim());
+      setNewVideoUrl('');
+    }
+  };
 
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -533,17 +605,16 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
         ...formData.seo,
         slug: formData.seo.slug || generateSlug(formData.name),
       },
-      // images,
-      // createdAt: isUpdateMode ? data?.createdAt || new Date().toISOString() : new Date().toISOString(),
+      mainImage: mainImageFile ? URL.createObjectURL(mainImageFile) : formData.mainImage,
+      images: [...(formData.images || []), ...additionalImagesFiles.map(file => URL.createObjectURL(file))],
+      createdAt: isUpdateMode ? data?.createdAt || new Date().toISOString() : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     const jsonString = JSON.stringify(updatedProduct, null, 2);
 
     if (isUpdateMode) {
-      // console.log(`Updating product with ID: ${data?._id || 'unknown'}`, jsonString);
-      console.log(jsonString);
-      
+      console.log(`Updating product with ID: ${data?.id || 'unknown'}`, jsonString);
       // Example: Send to API for update
       // fetch(`/api/products/${data.id}`, {
       //   method: 'PUT',
@@ -564,9 +635,6 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     setJsonOutput(jsonString);
     setShowJsonOutput(true);
   };
-
-  const [showJsonOutput, setShowJsonOutput] = useState(false);
-  const [jsonOutput, setJsonOutput] = useState('');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -783,7 +851,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
               </div>
 
-              {/* <div>
+              <div>
                 <Label className="text-sm font-medium text-gray-700 mb-2 block">Tags</Label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tags.map((tag, index) => (
@@ -810,7 +878,8 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-              </div> */}
+                {errors.tags && <p className="text-red-600 text-sm mt-1">{errors.tags.message}</p>}
+              </div>
             </CardContent>
           </Card>
 
@@ -1306,7 +1375,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             <CardContent>
               {variants.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p>No variants added yet. Click &quot;Add Variant&quot; to create product variations.</p>
+                  <p>No variants added yet. Click "Add Variant" to create product variations.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -1494,7 +1563,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
         {/* Sidebar */}
         <div className="space-y-8">
-          {/* Product Images */}
+          {/* Product Images - Updated with main and additional */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1502,22 +1571,86 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 Product Images
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Upload product images</p>
-                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
-                  </div>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    Choose Files
+            <CardContent className="space-y-4">
+              {/* Main Image Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <Label htmlFor="mainImageUpload" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    Upload Main Product Image
+                  </Label>
+                  <p className="text-xs text-gray-500">Recommended: 800x800px, JPG/PNG up to 5MB</p>
+                  <Input
+                    id="mainImageUpload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleMainImageUpload}
+                  />
+                </div>
+              </div>
+              {errors.mainImage && <p className="text-red-600 text-sm">{errors.mainImage.message}</p>}
+
+              {/* Additional Images Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <Label htmlFor="additionalImagesUpload" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    Upload Additional Images (Multiple)
+                  </Label>
+                  <p className="text-xs text-gray-500">Up to 10 images, JPG/PNG up to 5MB each</p>
+                  <Input
+                    id="additionalImagesUpload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleAdditionalImagesUpload}
+                  />
+                </div>
+              </div>
+              {errors.images && <p className="text-red-600 text-sm">{errors.images.message}</p>}
+            </CardContent>
+          </Card>
+
+          {/* Video URLs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-red-500 rounded-full"></div>
+                Video URLs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Current Video URLs</Label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {videoUrls.map((url, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {url}
+                      <button
+                        type="button"
+                        onClick={() => removeVideoUrl(index)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={newVideoUrl}
+                    onChange={(e) => setNewVideoUrl(e.target.value)}
+                    placeholder="Add a video URL (e.g., YouTube, Vimeo)"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVideoUrl())}
+                  />
+                  <Button type="button" onClick={addVideoUrl} variant="outline">
+                    <Video className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
+              {errors.videoUrls && <p className="text-red-600 text-sm mt-1">{errors.videoUrls.message}</p>}
             </CardContent>
           </Card>
 
@@ -1575,7 +1708,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                  {profitMargin?.toFixed(2)}%
+                    {profitMargin?.toFixed(2)}%
                   </span>
                 </div>
               </div>

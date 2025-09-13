@@ -1,6 +1,4 @@
-
 "use client";
-
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
@@ -14,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Plus, X, Upload, Image as ImageIcon, Save, Eye } from 'lucide-react';
+import { Plus, X, Upload, Image as ImageIcon, Save, Eye, Video } from 'lucide-react';
 
 // Zod schema for ProductVariant
 const ProductVariantSchema = z.object({
@@ -34,7 +32,7 @@ const ProductVariantSchema = z.object({
   }),
 });
 
-// Zod schema for ProductData
+// Zod schema for ProductData - Updated for mainImage and videoUrls validation
 const ProductDataSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().optional(),
@@ -76,11 +74,11 @@ const ProductDataSchema = z.object({
     clicks: z.number().int().min(0).optional(),
     conversions: z.number().int().min(0).optional(),
   }),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string().min(1, "Tag cannot be empty")).optional(),
   basePrice: z.number().min(0, "Base price must be non-negative"),
   comparePrice: z.number().min(0, "Compare price must be non-negative"),
   costPrice: z.number().min(0, "Cost price must be non-negative"),
-  // profitMargin: z.number().min(0).optional(),
+  profitMargin: z.number().min(0).optional(),
   wholesalePrice: z.number().min(0).optional(),
   msrp: z.number().min(0).optional(),
   taxClass: z.string().optional(),
@@ -155,13 +153,15 @@ const ProductDataSchema = z.object({
   replacementParts: z.array(z.string()).optional(),
   customFields: z.record(z.string()).optional(),
   variants: z.array(ProductVariantSchema).optional(),
+  mainImage: z.string().url("Main image must be a valid URL").optional(),
+  images: z.array(z.string().url("Image URL must be valid")).optional(),
   downloadableFiles: z.array(z.object({
     name: z.string().optional(),
     url: z.string().optional(),
     fileSize: z.string().optional(),
   })).optional(),
-  videoUrls: z.array(z.string()).optional(),
-  threeDModelUrl: z.string().optional(),
+  videoUrls: z.array(z.string().url("Video URL must be valid")).optional(),
+  threeDModelUrl: z.string().url("3D model URL must be valid").optional(),
   virtualTryOnEnabled: z.boolean(),
   augmentedRealityEnabled: z.boolean(),
 });
@@ -188,7 +188,6 @@ interface ProductData {
   description: string;
   shortDescription: string;
   category: string;
-   images: string;
   subcategory: string;
   brand: string;
   vendor: string;
@@ -229,7 +228,7 @@ interface ProductData {
   basePrice: number;
   comparePrice: number;
   costPrice: number;
-  // profitMargin: number;
+  profitMargin: number;
   wholesalePrice: number;
   msrp: number;
   taxClass: string;
@@ -304,6 +303,8 @@ interface ProductData {
   replacementParts: string[];
   customFields: { [key: string]: string };
   variants: ProductVariant[];
+  mainImage: string;
+  images: string[];
   downloadableFiles: {
     name: string;
     url: string;
@@ -388,7 +389,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       basePrice: 0,
       comparePrice: 0,
       costPrice: 0,
-      // profitMargin: 0,
+      profitMargin: 0,
       wholesalePrice: 0,
       msrp: 0,
       taxClass: 'Standard',
@@ -454,6 +455,8 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       replacementParts: [],
       customFields: {},
       variants: [],
+      mainImage: '',
+      images: [],
       downloadableFiles: [],
       videoUrls: [],
       threeDModelUrl: '',
@@ -472,15 +475,22 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     name: 'tags',
   });
 
-  const [profitMargin, setprofitMargin] = useState(0);
-   const [newTag, setNewTag] = useState('');
-  const [images, setImages] = useState<string[]>(data?.images || []);
+  const { fields: videoUrls, append: appendVideoUrl, remove: removeVideoUrl } = useFieldArray({
+    control,
+    name: 'videoUrls',
+  });
+
+  const [newTag, setNewTag] = useState('');
+  const [newVideoUrl, setNewVideoUrl] = useState('');
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+  const [additionalImagesFiles, setAdditionalImagesFiles] = useState<File[]>([]);
+  const [showJsonOutput, setShowJsonOutput] = useState(false);
+  const [jsonOutput, setJsonOutput] = useState('');
 
   // Initialize form with existing data for update mode
   useEffect(() => {
     if (isUpdateMode && data) {
       reset(data); // Populate form with existing data
-      setImages(data.images || []);
     }
   }, [data, reset, isUpdateMode]);
 
@@ -491,9 +501,27 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   useEffect(() => {
     if (costPrice > 0 && basePrice > 0) {
       const margin = ((basePrice - costPrice) / basePrice) * 100;
-      setprofitMargin(Math.round(margin * 100) / 100);
+      setValue('profitMargin', Math.round(margin * 100) / 100);
     }
   }, [basePrice, costPrice, setValue]);
+
+  // Handle main image upload
+  const handleMainImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMainImageFile(file);
+      const url = URL.createObjectURL(file);
+      setValue('mainImage', url);
+    }
+  };
+
+  // Handle additional images upload
+  const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setAdditionalImagesFiles(prev => [...prev, ...files]);
+    const urls = files.map(file => URL.createObjectURL(file));
+    setValue('images', [...getValues('images'), ...urls]);
+  };
 
   const addVariant = () => {
     const productName = getValues('name');
@@ -519,6 +547,13 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     }
   };
 
+  const addVideoUrl = () => {
+    if (newVideoUrl.trim() && !videoUrls.some(url => url === newVideoUrl.trim())) {
+      appendVideoUrl(newVideoUrl.trim());
+      setNewVideoUrl('');
+    }
+  };
+
   const generateSlug = (name: string) => {
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
@@ -531,7 +566,8 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
         ...formData.seo,
         slug: formData.seo.slug || generateSlug(formData.name),
       },
-      images,
+      mainImage: mainImageFile ? URL.createObjectURL(mainImageFile) : formData.mainImage,
+      images: [...(formData.images || []), ...additionalImagesFiles.map(file => URL.createObjectURL(file))],
       createdAt: isUpdateMode ? data?.createdAt || new Date().toISOString() : new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -560,9 +596,6 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     setJsonOutput(jsonString);
     setShowJsonOutput(true);
   };
-
-  const [showJsonOutput, setShowJsonOutput] = useState(false);
-  const [jsonOutput, setJsonOutput] = useState('');
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -806,6 +839,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
+                {errors.tags && <p className="text-red-600 text-sm mt-1">{errors.tags.message}</p>}
               </div>
             </CardContent>
           </Card>
@@ -1490,7 +1524,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
         {/* Sidebar */}
         <div className="space-y-8">
-          {/* Product Images */}
+          {/* Product Images - Updated with main and additional */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1498,22 +1532,86 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 Product Images
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">Upload product images</p>
-                    <p className="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
-                  </div>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    Choose Files
+            <CardContent className="space-y-4">
+              {/* Main Image Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <Label htmlFor="mainImageUpload" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    Upload Main Product Image
+                  </Label>
+                  <p className="text-xs text-gray-500">Recommended: 800x800px, JPG/PNG up to 5MB</p>
+                  <Input
+                    id="mainImageUpload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleMainImageUpload}
+                  />
+                </div>
+              </div>
+              {errors.mainImage && <p className="text-red-600 text-sm">{errors.mainImage.message}</p>}
+
+              {/* Additional Images Upload */}
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="flex flex-col items-center gap-2">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <Label htmlFor="additionalImagesUpload" className="text-sm font-medium text-gray-900 cursor-pointer">
+                    Upload Additional Images (Multiple)
+                  </Label>
+                  <p className="text-xs text-gray-500">Up to 10 images, JPG/PNG up to 5MB each</p>
+                  <Input
+                    id="additionalImagesUpload"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleAdditionalImagesUpload}
+                  />
+                </div>
+              </div>
+              {errors.images && <p className="text-red-600 text-sm">{errors.images.message}</p>}
+            </CardContent>
+          </Card>
+
+          {/* Video URLs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-red-500 rounded-full"></div>
+                Video URLs
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">Current Video URLs</Label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {videoUrls.map((url, index) => (
+                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                      {url}
+                      <button
+                        type="button"
+                        onClick={() => removeVideoUrl(index)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={newVideoUrl}
+                    onChange={(e) => setNewVideoUrl(e.target.value)}
+                    placeholder="Add a video URL (e.g., YouTube, Vimeo)"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addVideoUrl())}
+                  />
+                  <Button type="button" onClick={addVideoUrl} variant="outline">
+                    <Video className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
+              {errors.videoUrls && <p className="text-red-600 text-sm mt-1">{errors.videoUrls.message}</p>}
             </CardContent>
           </Card>
 
@@ -1571,7 +1669,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                    {profitMargin?.toFixed(2)}%
+                    {watch('profitMargin').toFixed(2)}%
                   </span>
                 </div>
               </div>
