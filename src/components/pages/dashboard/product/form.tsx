@@ -35,13 +35,16 @@ const ProductVariantSchema = z.object({
 // Zod schema for ProductData - Updated for mainImage and videoUrls validation
 const ProductDataSchema = z.object({
   name: z.string().min(1, "Product name is required"),
-  productType: z.enum(['physical', 'digital', 'service']).optional(),
-  categories: z.array(z.string()).min(1, "At least one category is required"),
+  description: z.string().optional(),
+  shortDescription: z.string().optional(),
   category: z.string().min(1, "Category is required"),
   subcategory: z.string().optional(),
-  descriptions: z.string().min(1, "Descriptions are required"),
-  shortDescription: z.string().optional(),
-  overview: z.string().optional(),
+  brand: z.string().optional(),
+  vendor: z.string().optional(),
+  manufacturer: z.string().optional(),
+  model: z.string().optional(),
+  warranty: z.string().optional(),
+  origin: z.string().optional(),
   material: z.string().optional(),
   color: z.string().optional(),
   size: z.string().optional(),
@@ -54,47 +57,42 @@ const ProductDataSchema = z.object({
   careInstructions: z.string().optional(),
   ingredients: z.string().optional(),
   nutritionalInfo: z.string().optional(),
-  allergens: z.array(z.string()).optional(),
+  allergens: z.string().optional(),
   certifications: z.array(z.string()).optional(),
   awards: z.array(z.string()).optional(),
   reviews: z.object({
     averageRating: z.number().min(0).max(5).optional(),
     totalReviews: z.number().int().min(0).optional(),
-  }).optional(),
+  }),
   socialMedia: z.object({
     hashtags: z.array(z.string()).optional(),
     instagramHandle: z.string().optional(),
     twitterHandle: z.string().optional(),
-  }).optional(),
+  }),
   analytics: z.object({
     views: z.number().int().min(0).optional(),
     clicks: z.number().int().min(0).optional(),
     conversions: z.number().int().min(0).optional(),
-  }).optional(),
+  }),
   tags: z.array(z.string().min(1, "Tag cannot be empty")).optional(),
-  features: z.array(z.string()).optional(),
-  specifications: z.record(z.string()).optional(),
   basePrice: z.number().min(0, "Base price must be non-negative"),
   comparePrice: z.number().min(0, "Compare price must be non-negative"),
   costPrice: z.number().min(0, "Cost price must be non-negative"),
-  retailPrice: z.number().min(0).optional(),
-  salePrice: z.number().min(0).optional(),
+  profitMargin: z.number().min(0).optional(),
   wholesalePrice: z.number().min(0).optional(),
   msrp: z.number().min(0).optional(),
   taxClass: z.string().optional(),
   taxRate: z.number().min(0).optional(),
-  discountType: z.enum(['none', 'percentage', 'fixed']).optional(),
+  discountType: z.enum(['none', 'percentage', 'fixed']),
   discountValue: z.number().min(0).optional(),
-  discount: z.number().min(0).optional(),
   discountStartDate: z.string().optional(),
   discountEndDate: z.string().optional(),
   loyaltyPoints: z.number().int().min(0).optional(),
   sku: z.string().min(1, "SKU is required"),
   barcode: z.string().optional(),
-  productUPCEAN: z.string().optional(),
   inventory: z.number().int().min(0).optional(),
-  trackQuantity: z.boolean().optional(),
-  allowBackorder: z.boolean().optional(),
+  trackQuantity: z.boolean(),
+  allowBackorder: z.boolean(),
   lowStockThreshold: z.number().int().min(0).optional(),
   maxOrderQuantity: z.number().int().min(1).optional(),
   minOrderQuantity: z.number().int().min(1).optional(),
@@ -104,29 +102,26 @@ const ProductDataSchema = z.object({
   leadTime: z.number().int().min(0).optional(),
   restockDate: z.string().optional(),
   weight: z.number().min(0).optional(),
-  shippingWeight: z.number().min(0).optional(),
   dimensions: z.object({
     length: z.number().min(0).optional(),
     width: z.number().min(0).optional(),
     height: z.number().min(0).optional(),
-  }).optional(),
+  }),
   packageDimensions: z.object({
     length: z.number().min(0).optional(),
     width: z.number().min(0).optional(),
     height: z.number().min(0).optional(),
     weight: z.number().min(0).optional(),
-  }).optional(),
+  }),
   shipping: z.object({
-    requiresShipping: z.boolean().optional(),
+    requiresShipping: z.boolean(),
     shippingClass: z.string().optional(),
     handlingTime: z.number().int().min(0).optional(),
     freeShippingThreshold: z.number().min(0).optional(),
     shippingRestrictions: z.array(z.string()).optional(),
-    hazardousMaterial: z.boolean().optional(),
-    fragile: z.boolean().optional(),
-  }).optional(),
-  shippingDetails: z.string().optional(),
-  customShippingOptions: z.record(z.string()).optional(),
+    hazardousMaterial: z.boolean(),
+    fragile: z.boolean(),
+  }),
   seo: z.object({
     title: z.string().optional(),
     description: z.string().optional(),
@@ -135,74 +130,40 @@ const ProductDataSchema = z.object({
     canonicalUrl: z.string().optional(),
     robotsMeta: z.string().optional(),
     structuredData: z.string().optional(),
-  }).optional(),
-  visibility: z.enum(['public', 'private', 'password']).optional(),
+  }),
+  visibility: z.enum(['public', 'private', 'password']),
   password: z.string().optional(),
   publishDate: z.string().optional(),
   expiryDate: z.string().optional(),
-  status: z.enum(['active', 'inactive', 'draft', 'pending', 'archived', 'published']).optional(),
-  featured: z.boolean().optional(),
-  trending: z.boolean().optional(),
-  newArrival: z.boolean().optional(),
-  bestseller: z.boolean().optional(),
-  onSale: z.boolean().optional(),
-  limitedEdition: z.boolean().optional(),
-  preOrder: z.boolean().optional(),
-  preOrderDate: z.string().optional(),
-  backorder: z.boolean().optional(),
-  discontinued: z.boolean().optional(),
-  isAvailable: z.boolean().optional(),
-  availability: z.string().optional(),
-  ecoFriendly: z.boolean().optional(),
-  ageRestriction: z.string().optional(),
-  returnPolicy: z.string().optional(),
-  returnPeriod: z.number().int().min(0).optional(),
+  status: z.enum(['draft', 'published']),
+  featured: z.boolean(),
+  trending: z.boolean(),
+  newArrival: z.boolean(),
+  bestseller: z.boolean(),
+  onSale: z.boolean(),
+  limitedEdition: z.boolean(),
+  preOrder: z.boolean(),
+  backorder: z.boolean(),
+  discontinued: z.boolean(),
   crossSells: z.array(z.string()).optional(),
   upSells: z.array(z.string()).optional(),
   relatedProducts: z.array(z.string()).optional(),
   bundles: z.array(z.string()).optional(),
-  productBundle: z.boolean().optional(),
-  bundleContents: z.array(z.object({
-    product: z.string(),
-    quantity: z.number().int().min(1).optional(),
-  })).optional(),
   accessories: z.array(z.string()).optional(),
   replacementParts: z.array(z.string()).optional(),
   customFields: z.record(z.string()).optional(),
   variants: z.array(ProductVariantSchema).optional(),
   mainImage: z.string().url("Main image must be a valid URL").optional(),
   images: z.array(z.string().url("Image URL must be valid")).optional(),
-  additionalImages: z.array(z.string()).optional(),
   downloadableFiles: z.array(z.object({
     name: z.string().optional(),
     url: z.string().optional(),
     fileSize: z.string().optional(),
   })).optional(),
-  digitalDownloadLink: z.string().optional(),
   videoUrls: z.array(z.string().url("Video URL must be valid")).optional(),
   threeDModelUrl: z.string().url("3D model URL must be valid").optional(),
-  virtualTryOnEnabled: z.boolean().optional(),
-  augmentedRealityEnabled: z.boolean().optional(),
-  isGiftCard: z.boolean().optional(),
-  giftCardValue: z.number().min(0).optional(),
-  purchaseLimit: z.number().int().min(0).optional(),
-  bulkDiscounts: z.array(z.object({
-    quantity: z.number().int().min(0),
-    discountAmount: z.number().min(0),
-  })).optional(),
-  giftWrappingAvailable: z.boolean().optional(),
-  isSubscription: z.boolean().optional(),
-  subscriptionDetails: z.string().optional(),
-  virtualProduct: z.boolean().optional(),
-  soldCount: z.number().int().min(0).optional(),
-  lastRestocked: z.string().optional(),
-  vendor: z.string().optional(),
-  manufacturer: z.string().optional(),
-  model: z.string().optional(),
-  warranty: z.string().optional(),
-  origin: z.string().optional(),
-  manufacturerPartNumber: z.string().optional(),
-  brand: z.string().optional(),
+  virtualTryOnEnabled: z.boolean(),
+  augmentedRealityEnabled: z.boolean(),
 });
 
 interface ProductVariant {
@@ -267,7 +228,7 @@ interface ProductData {
   basePrice: number;
   comparePrice: number;
   costPrice: number;
-  // profitMargin: number;
+  profitMargin: number;
   wholesalePrice: number;
   msrp: number;
   taxClass: string;
@@ -428,7 +389,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       basePrice: 0,
       comparePrice: 0,
       costPrice: 0,
-      // profitMargin: 0,
+      profitMargin: 0,
       wholesalePrice: 0,
       msrp: 0,
       taxClass: 'Standard',
@@ -525,7 +486,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   const [additionalImagesFiles, setAdditionalImagesFiles] = useState<File[]>([]);
   const [showJsonOutput, setShowJsonOutput] = useState(false);
   const [jsonOutput, setJsonOutput] = useState('');
-    const [profitMargin, setprofitMargin] = useState(0);
+
   // Initialize form with existing data for update mode
   useEffect(() => {
     if (isUpdateMode && data) {
@@ -540,7 +501,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   useEffect(() => {
     if (costPrice > 0 && basePrice > 0) {
       const margin = ((basePrice - costPrice) / basePrice) * 100;
-      setprofitMargin(Math.round(margin * 100) / 100);
+      setValue('profitMargin', Math.round(margin * 100) / 100);
     }
   }, [basePrice, costPrice, setValue]);
 
@@ -1708,7 +1669,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                    {profitMargin?.toFixed(2)}%
+                    {watch('profitMargin').toFixed(2)}%
                   </span>
                 </div>
               </div>
