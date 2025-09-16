@@ -1,7 +1,7 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import  { AuthOptions, Session, User } from "next-auth";
+import { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import { Account, Profile } from "next-auth";
 
@@ -81,18 +81,24 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+
+      // console.log(credentials);
+
+
       async authorize(credentials) {
         const payload = {
           email: credentials?.email,
           password: credentials?.password,
         };
+        console.log(payload);
+
 
         const res = await authService.userLogin(payload);
         console.log(res);
-        
+
         // console.log("Response from authService:", res);
 
-        if (res && res.status=="OK" && res.accessToken) return res;
+        if (res && res.status == "OK" && res.accessToken) return res;
         return null;
       },
     }),

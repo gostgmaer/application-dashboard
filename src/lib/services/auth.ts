@@ -5,7 +5,7 @@ const authService = {
         return await requests.post("/user/auth/register", body, {});
     },
     userLogin: async (body: any) => {
-        return await requests.post("/user/auth/login", body, {});
+        return await requests.post("/auth/login", body, {});
     },
     userLogout: async (headers: any) => {
         return await requests.post("/user/auth/logout", {}, headers);
