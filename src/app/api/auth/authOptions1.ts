@@ -1,8 +1,6 @@
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-import LinkedInProvider from "next-auth/providers/linkedin";
-import TwitterProvider from "next-auth/providers/twitter";
 import { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import { Account, Profile } from "next-auth";
@@ -14,28 +12,18 @@ declare module "next-auth" {
     refreshToken?: string;
     id_token?: string;
     token_type?: string;
-    user: {
-      role?: string;
-      permissions?: Record<string, string[]>; // page -> actions[]
-      [key: string]: any;
-    };
   }
 }
-
 import {
   baseurl,
   githubClient,
   githubSecret,
   googleClient,
   googleSecret,
-  linkedinClient,
-  linkedinSecret,
-  twitterClient,
-  twitterSecret,
   secret,
 } from "@/config/setting";
-
 import authService from "@/lib/services/auth";
+import { log } from "console";
 
 interface CustomToken extends JWT {
   accessToken?: string;
@@ -45,8 +33,6 @@ interface CustomToken extends JWT {
   token_type?: string;
   exp?: number;
   error?: string;
-  role?: string;
-  permissions?: Record<string, string[]>; // page -> [actions]
 }
 
 interface CustomUser extends User {
@@ -54,11 +40,8 @@ interface CustomUser extends User {
   refreshToken?: string;
   id_token?: string;
   token_type?: string;
-  expiresIn?: number;
-  role?: string;
 }
 
-// Helper to refresh access token
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
   try {
     const response = await fetch(`${baseurl}/user/auth/session/refresh/token`, {
@@ -70,6 +53,7 @@ async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
         refreshToken: token.refreshToken,
       }),
     });
+
     const refreshedTokens = await response.json();
 
     if (!response.ok) throw new Error("Failed to refresh token");
@@ -97,22 +81,24 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+
+      // console.log(credentials);
+
       async authorize(credentials) {
         const payload = {
           identifier: credentials?.email,
           password: credentials?.password,
         };
+        console.log(payload);
+
+
         const res = await authService.userLogin(payload);
         console.log(res);
 
+        // console.log("Response from authService:", res);
 
-        if (!res || !res.success) {
-          // Throw an error with message from your backend
-          throw new Error(res?.message || "Invalid credentials");
-        }
+        // if (res && res.status == "OK" && res.accessToken) return res;
         return res;
-
-       
       },
     }),
     GitHubProvider({
@@ -130,34 +116,28 @@ export const authOptions: AuthOptions = {
         },
       },
     }),
-    LinkedInProvider({
-      clientId: linkedinClient || "",
-      clientSecret: linkedinSecret || "",
-      authorization: {
-        params: {
-          scope: "r_liteprofile r_emailaddress",
-        },
-      },
-    }),
-    TwitterProvider({
-      clientId: twitterClient || "",
-      clientSecret: twitterSecret || "",
-      version: "2.0", // use OAuth 2.0 if supported
-    }),
   ],
+
   secret,
   pages: {
     signIn: "/auth/login",
     signOut: "/",
-    error: "/auth/error",
   },
+
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60,
   },
+
   callbacks: {
-    async signIn({ user, account, profile }: { user: CustomUser; account: Account | null; profile?: Profile }) {
-      if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter") && profile?.email) {
+    async signIn({ user, account, profile }: {
+      user: CustomUser;
+      account: Account | null;
+      profile?: Profile;
+    }) {
+
+      // log("SignIn Callback:", { user, account, profile });
+      if (account?.provider === "github" && profile?.email) {
         try {
           const response = await fetch(`${baseurl}/user/auth/checkUser`, {
             method: "POST",
@@ -167,19 +147,27 @@ export const authOptions: AuthOptions = {
               email: profile.email,
             }),
           });
+
           let userData = await response.json();
 
           if (userData["statusCode"] === "404") {
-            const createUserResponse = await fetch(`${baseurl}/user/auth/social-register`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                socialID: user.id,
-                email: profile.email,
-                profilePicture: user.image,
-                username: profile.email,
-              }),
-            });
+            const createUserResponse = await fetch(
+              `${baseurl}/user/auth/social-register`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  socialID: user.id,
+                  email: profile.email,
+                  profilePicture: user.image,
+                  username: profile.email,
+                  // firstName: profile["login"] || profile.name,
+                }),
+              }
+            );
+
             userData = await createUserResponse.json();
           }
 
@@ -187,11 +175,10 @@ export const authOptions: AuthOptions = {
           user.refreshToken = userData.refreshToken;
           user.id_token = userData.id_token;
           user.token_type = userData.token_type;
-          user.role = userData.role || "";
 
           return true;
         } catch (error) {
-          console.error(`Error during ${account.provider} sign-in:`, error);
+          console.error("Error during GitHub sign-in:", error);
           return false;
         }
       }
@@ -199,72 +186,56 @@ export const authOptions: AuthOptions = {
       return !!user?.accessToken;
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile, trigger, isNewUser, session }: {
+      token: JWT;
+      user?: User | null;
+      account?: Account | null;
+      profile?: Profile;
+      trigger?: "signIn" | "signUp" | "update";
+      isNewUser?: boolean;
+      session?: any;
+    }) {
+      // Cast token to CustomToken for type safety
       const customToken = token as CustomToken;
 
       if (user) {
         const customUser = user as CustomUser;
-        customToken.accessToken = customUser.accessToken;
-        customToken.refreshToken = customUser.refreshToken;
-        customToken.id_token = customUser.id_token;
-        customToken.token_type = customUser.token_type;
-        customToken.accessTokenExpires = Date.now() + ((customUser.expiresIn ?? 0) * 1000);
-        customToken.role = customUser.role;
-
-        if (customToken.role !== "super_admin") {
-          try {
-            const response = await fetch(`${baseurl}/user/auth/permissions`, {
-              headers: {
-                Authorization: `Bearer ${customToken.accessToken}`,
-              },
-            });
-            if (response.ok) {
-              customToken.permissions = await response.json();
-            } else {
-              customToken.permissions = {};
-            }
-          } catch {
-            customToken.permissions = {};
-          }
-        } else {
-          customToken.permissions = { "*": ["read", "write", "view", "delete"] };
-        }
-
-        return customToken;
+        return {
+          ...customToken,
+          accessToken: customUser.accessToken,
+          refreshToken: customUser.refreshToken,
+          id_token: customUser.id_token,
+          token_type: customUser.token_type,
+        };
       }
 
-      if (Date.now() < (customToken.accessTokenExpires ?? 0)) {
-        return customToken;
-      }
-
-      return refreshAccessToken(customToken);
+      return customToken;
     },
 
-    async session({ session, token }) {
-      session.accessToken = (token as CustomToken).accessToken;
-      session.refreshToken = (token as CustomToken).refreshToken;
-      session.id_token = (token as CustomToken).id_token;
-      session.token_type = (token as CustomToken).token_type;
-      session.user.role = (token as any).role;
-      session.user.permissions = (token as any).permissions;
+    async session({ session, token }: {
+      session: Session;
+      token: CustomToken;
+    }) {
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.id_token = token.id_token;
+      session.token_type = token.token_type;
       return session;
     },
 
-    async redirect({ url, baseUrl }) {
-      // If url is relative, safe to redirect to it
-      if (url.startsWith("/")) return new URL(url, baseUrl).toString();
-
-      // If url is absolute and safe (same origin), allow
-      if (new URL(url).origin === baseUrl) return url;
-
-      // Otherwise fallback to baseUrl
-      return baseUrl;
-    }
+    async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
+      return url.startsWith("/") || new URL(url).origin === baseUrl
+        ? baseUrl
+        : baseUrl;
+    },
   },
+
   theme: {
     colorScheme: "auto",
     brandColor: "",
     logo: "/vercel.svg",
   },
+
   debug: process.env.NODE_ENV === "development",
 };
+

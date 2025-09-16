@@ -31,6 +31,9 @@ const authService = {
     verifyToken: async (body: any) => {
         return requests.post("/user/auth/session/refresh/token", body, {});
     },
+    refreshToken: async (body: any) => {
+        return requests.post("/auth/session/refresh-token", body, {});
+    },
 };
 
 export default authService;
