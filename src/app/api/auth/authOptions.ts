@@ -58,7 +58,7 @@ interface CustomUser extends User {
   refreshToken?: string;
   id_token?: string;
   token_type?: string;
-  expiresIn?: number;
+  accessTokenExpires?: number;
   role?: string;
 }
 
@@ -72,7 +72,7 @@ async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
     return {
       ...token,
       accessToken: response.data.accessToken,
-      accessTokenExpires:  Date.parse(response.data.expiresAt) ,
+      accessTokenExpires: Date.parse(response.data.expiresAt),
       refreshToken: response.data.refreshToken ?? token.refreshToken,
     };
   } catch (error) {
@@ -104,6 +104,7 @@ export const authOptions: AuthOptions = {
         }
 
         const { user, tokens } = res.data;
+        const exp = Date.parse(tokens.accessTokenExpiresAt)
 
         return {
           id: user.id,
@@ -114,7 +115,7 @@ export const authOptions: AuthOptions = {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
           id_token: tokens.idToken,
-          accessTokenExpires:  Date.parse(tokens.accessTokenExpiresAt)
+          accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt)
         };
 
       },
@@ -222,8 +223,9 @@ export const authOptions: AuthOptions = {
         customToken.refreshToken = customUser.refreshToken;
         customToken.id_token = customUser.id_token;
         customToken.token_type = customUser.token_type;
-        customToken.accessTokenExpires = Date.now() + ((customUser.expiresIn ?? 0) * 1000);
+        customToken.accessTokenExpires = customUser.accessTokenExpires;
         customToken.role = customUser.role;
+        customToken.sub = customUser.id;
 
         if (customToken.role !== "super_admin") {
           try {
@@ -241,7 +243,7 @@ export const authOptions: AuthOptions = {
             customToken.permissions = {};
           }
         } else {
-          customToken.permissions = { "*": ["read", "write", "view", "delete"] };
+          customToken.permissions = { "*": ["read", "write", "modify", "delete", "manage"] };
         }
 
         return customToken;
@@ -250,7 +252,7 @@ export const authOptions: AuthOptions = {
 
       console.log(Date.now() < (customToken.accessTokenExpires ?? 0));
       console.log(customToken.accessTokenExpires);
-      
+
 
       if (Date.now() < (customToken.accessTokenExpires ?? 0)) {
         return customToken;

@@ -239,7 +239,7 @@ export const authOptions: AuthOptions = {
             customToken.permissions = {};
           }
         } else {
-          customToken.permissions = { "*": ["read", "write", "view", "delete"] };
+          customToken.permissions = { "*": ["read", "write", "modify", "delete","manage"] };
         }
 
         return customToken;
