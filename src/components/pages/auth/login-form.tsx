@@ -70,7 +70,7 @@ export default function LoginForm() {
         // const errorData = await res
         console.log(res);
         dispatch(loginFailure("An error occurred during sign in."));
-        throw new Error(res.message || "Login failed")
+        throw new Error(res.error || "Login failed")
       }
 
       if (res.url) {
