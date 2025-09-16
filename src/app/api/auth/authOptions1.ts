@@ -107,10 +107,9 @@ export const authOptions: AuthOptions = {
           // Throw an error with message from your backend
           throw new Error(res?.message || "Invalid credentials");
         }
-
         const { user, tokens } = res.data;
         return {
-          id: user.id,
+          sub: user.id,
           name: user.fullName ?? user.username,
           email: user.email,
           image:user.image,
@@ -165,9 +164,12 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async signIn({ user, account, profile }: { user: CustomUser; account: Account | null; profile?: Profile }) {
-      console.log(user, account, profile);
+   
 
       if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter") && profile?.email) {
+
+       console.log(user, account, profile);
+        
         try {
           const response = await fetch(`${baseurl}/user/auth/checkUser`, {
             method: "POST",

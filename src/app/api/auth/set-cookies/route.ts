@@ -11,21 +11,17 @@ import authService from "@/lib/services/auth";
 
 export async function GET() {
     const session = await getServerSession(authOptions);
-
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const cookieStore = await cookies();
 
-    var id = jwtDecode(session.id_token || "") as any;
+    // var id = jwtDecode(session.id_token || "") as any;
 
     const headers = { "Authorization": `Bearer ${session.accessToken}` }
-
-
     const currentUser = await authService.getUserProfile(headers);
 
-    const { _id, ...cleanUser } = currentUser.result;
+    const { id, ...cleanUser } = currentUser;
     const idkeys = Object.keys(cleanUser);
     idkeys.forEach(key => {
         (cookieStore).set(`${key}`, cleanUser[key] || "", {
@@ -37,41 +33,17 @@ export async function GET() {
         });
     });
 
-
-    // Store all session tokens in cookies
-    (await
-        // Store all session tokens in cookies
-        cookieStore).set("accessToken", session.accessToken || "", {
+const sdata:any=session;
+     const keys = Object.keys(sdata);
+    idkeys.forEach(key => {
+        (cookieStore).set(`${key}`, sdata[key] || "", {
             httpOnly: true,
             secure: true,
             sameSite: "lax",
             path: "/",
-            maxAge: 60 * 60 * 24 * 7, // 1 week
+            maxAge: 60 * 60 * 24 * 30,
         });
-
-    (await cookieStore).set("refreshToken", session.refreshToken || "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
     });
-
-    (await cookieStore).set("id_token", session.id_token || "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-    });
-    //   storeCookiesOfObject(id,id.exp);
-    (await cookieStore).set("token_type", session.token_type || "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 7,
-    });
-
+    // console.log(session);
     return NextResponse.json({ message: "Session cookies set successfully" });
 }

@@ -11,7 +11,7 @@ const authService = {
         return await requests.post("/user/auth/logout", {}, headers);
     },
     getUserProfile: async (headers: any) => {
-        return await requests.get("/user/auth/profile",{}, {}, headers, 3600); // Cache for 1 hour
+        return await requests.get("/auth/profile",{}, {}, headers, 3600); // Cache for 1 hour
     },
     updateUserProfile: async (body: any, params: any, headers: any) => {
         return await requests.patch("/user/auth/profile/update", body, params, headers);
@@ -32,7 +32,7 @@ const authService = {
         return requests.post("/user/auth/session/refresh/token", body, {});
     },
     refreshToken: async (body: any) => {
-        return requests.post("/auth/session/refresh-token", body, {});
+        return requests.post("/auth/refresh-token", body, {});
     },
 };
 
