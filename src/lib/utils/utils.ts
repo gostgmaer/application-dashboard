@@ -180,3 +180,10 @@ export const referralSources = [
 ];
 
 export const userRoles = ['User', 'Admin', 'Moderator', 'Editor', 'Analyst', 'Guest'];
+
+
+
+export const headersToken = (session:any)=>{
+
+  return { "Authorization": `Bearer ${session}` }
+}

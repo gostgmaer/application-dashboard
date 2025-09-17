@@ -30,6 +30,7 @@ import {
   IdCard,
   MailPlus,
   MailOpen,
+  ShieldCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -50,22 +51,38 @@ const navigationItems: NavItem[] = [
     icon: Users,
     children: [
       { title: "All Users", href: "/dashboard/users", icon: Users },
-      { title: "User Roles", href: "/dashboard/users/roles", icon: Shield }
+      { title: "User Roles", href: "/dashboard/users/roles", icon: Shield },
+      {
+        title: "Permissions",
+        href: "/dashboard/users/permissions",
+        icon: ShieldCheck,
+      },
     ],
   },
   {
     title: "E-commerce",
     icon: ShoppingCart,
     children: [
-      { title: "Products", href: "/dashboard/ecommerce/products", icon: ShoppingCart },
+      {
+        title: "Products",
+        href: "/dashboard/ecommerce/products",
+        icon: ShoppingCart,
+      },
       { title: "Orders", href: "/dashboard/ecommerce/orders", icon: Calendar },
       // { title: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Database },
       // { title: "Analytics", href: "/dashboard/ecommerce/analytics", icon: BarChart3 },
-      { title: "Shipping", href: "/dashboard/ecommerce/shipping", icon: ShipIcon },
-      { title: "Customers", href: "/dashboard/ecommerce/customers", icon: User2 },
+      {
+        title: "Shipping",
+        href: "/dashboard/ecommerce/shipping",
+        icon: ShipIcon,
+      },
+      {
+        title: "Customers",
+        href: "/dashboard/ecommerce/customers",
+        icon: User2,
+      },
     ],
-  }
-  
+  },
 ];
 
 const personalNavigationItems: NavItem[] = [
@@ -75,15 +92,22 @@ const personalNavigationItems: NavItem[] = [
     children: [
       { title: "View Profile", href: "/dashboard/profile", icon: User },
       { title: "Edit Profile", href: "/dashboard/profile/edit", icon: User },
-      { title: "Account Settings", href: "/dashboard/profile/settings", icon: Settings },
+      {
+        title: "Account Settings",
+        href: "/dashboard/profile/settings",
+        icon: Settings,
+      },
     ],
   },
   {
     title: "Analytics",
     icon: BarChart3,
     children: [
-    
-      { title: "Activity", href: "/dashboard/analytics/activity", icon: BarChart3 },
+      {
+        title: "Activity",
+        href: "/dashboard/analytics/activity",
+        icon: BarChart3,
+      },
       {
         title: "Reports",
         href: "/dashboard/analytics/reports",
@@ -98,15 +122,27 @@ const personalNavigationItems: NavItem[] = [
       { title: "General", href: "/dashboard/settings", icon: Settings },
       { title: "Billing", href: "/dashboard/settings/billing", icon: IdCard },
       { title: "Security", href: "/dashboard/settings/security", icon: Shield },
-      { title: "API Configuration", href: "/dashboard/settings/integration", icon: Database },
+      {
+        title: "API Configuration",
+        href: "/dashboard/settings/integration",
+        icon: Database,
+      },
     ],
   },
-{
+  {
     title: "Communication",
     icon: MailOpen,
     children: [
-      { title: "Messages", href: "/dashboard/communication/messages", icon: Mail },
-       { title: "Email", href: "/dashboard/communication/email", icon: MailPlus },
+      {
+        title: "Messages",
+        href: "/dashboard/communication/messages",
+        icon: Mail,
+      },
+      {
+        title: "Email",
+        href: "/dashboard/communication/email",
+        icon: MailPlus,
+      },
       {
         title: "Notifications",
         href: "/dashboard/communication/notifications",
@@ -133,12 +169,7 @@ export function Sidebar({
   mobileOpen,
   onMobileClose,
 }: SidebarProps) {
-  console.log(
-    "Sidebar rendered. Collapsed:",
-    collapsed,
-    "Mobile Open:",
-    mobileOpen
-  );
+
 
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<string[]>([
@@ -185,7 +216,8 @@ export function Sidebar({
                 "ml-4 pl-4 border-l border-gray-200 dark:border-gray-700",
               active &&
                 "bg-gray-900 text-white dark:bg-white dark:text-gray-900",
-              !active && "text-gray-700 dark:text-gray-300", collapsed && "px-2"
+              !active && "text-gray-700 dark:text-gray-300",
+              collapsed && "px-2"
             )}
           >
             <Icon size={16} />
@@ -207,7 +239,8 @@ export function Sidebar({
               "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 w-full",
               "hover:bg-gray-100 dark:hover:bg-gray-800",
               active && "bg-gray-50 dark:bg-gray-800",
-              "text-gray-700 dark:text-gray-300", collapsed && "px-2"
+              "text-gray-700 dark:text-gray-300",
+              collapsed && "px-2"
             )}
           >
             <Icon size={16} />
@@ -279,15 +312,15 @@ export function Sidebar({
           </div>
 
           {/* Navigation */}
-         <div className="flex flex-col h-full">
-           <nav className="flex-1  h-[50%] p-3 space-y-1">
-            {navigationItems.map((item) => renderNavItem(item))}
-          </nav>
-          <nav className="flex-0  max-h-[50%] p-3 space-y-1">
-            <hr></hr>
-            {personalNavigationItems.map((item) => renderNavItem(item))}
-          </nav>
-         </div>
+          <div className="flex flex-col h-full">
+            <nav className="flex-1  h-[50%] p-3 space-y-1">
+              {navigationItems.map((item) => renderNavItem(item))}
+            </nav>
+            <nav className="flex-0  max-h-[50%] p-3 space-y-1">
+              <hr></hr>
+              {personalNavigationItems.map((item) => renderNavItem(item))}
+            </nav>
+          </div>
         </div>
       </aside>
     </>

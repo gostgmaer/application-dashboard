@@ -2,20 +2,20 @@ import requests from "./httpServices";
 
 const permissionServices = {
   // 🔍 Basic CRUD
-  getPermissions: (query: any, headers: any) =>
-    requests.get("/permission", query, null, headers, 1),
+  getPermissions: (query: any,token:any, headers: any) =>
+    requests.get("/permission", query, null, headers, 1,token),
 
   getById: (id: any, headers: any) =>
     requests.get(`/permission/${id}`, null, null, headers, 1),
 
-  create: (body: any, headers: any) =>
-    requests.post("/permission", body, headers),
+  create: (body: any, token: any) =>
+    requests.post("/permission", body, {},token),
 
   updatePut: (id: any, body: any, headers: any) =>
     requests.put(`/permission/${id}`, body, headers),
 
-  updatePatch: (id: any, body: any, headers: any) =>
-    requests.patch(`/permission/${id}`, body, headers),
+  updatePatch: (id: any, body: any, token: any) =>
+    requests.patch(`/permission/${id}`, body,{},{}, token),
 
   delete: (id: any, headers: any) =>
     requests.delete(`/permission/${id}`, null, headers),

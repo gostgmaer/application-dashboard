@@ -22,6 +22,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useToast } from "@/hooks/useToast";
 import { useDialog } from "@/hooks/use-dialog";
 import permissionServices from "@/helper/services/permissonServie";
+import { useSession } from "next-auth/react";
 
 const permissionCategory = [
   {
@@ -186,12 +187,28 @@ const permissionCategory = [
       "Manage system alerts, email templates, and push notifications",
   },
 ];
+
+// Define action types
+const actionTypes = {
+  READ: "read",
+  WRITE: "write",
+  MODIFY: "modify",
+  DELETE: "delete",
+  MANAGE: "manage",
+};
 // Zod schema based on the provided Mongoose schema
 const permissionSchema = z
   .object({
     name: z.string().min(1, "Name is required").trim(),
     description: z.string().trim().optional(),
-    category: z.string().trim().optional(),
+    category: z.string().trim(),
+    action: z.enum([
+      actionTypes.READ,
+      actionTypes.WRITE,
+      actionTypes.MODIFY,
+      actionTypes.DELETE,
+      actionTypes.MANAGE,
+    ]),
     isDefault: z.boolean(),
     isActive: z.boolean(),
   })
@@ -201,23 +218,19 @@ interface permissionData {
   name: string;
   description?: string;
   category?: string;
+  action?: keyof typeof actionTypes;
   //   permissions: string[];
   isDefault: boolean;
   isActive: boolean;
 }
 
-export default function PermissionForm({ data, id }: any) {
-  // const [permission, setPermission] = useState<permissionData>({
-  //   name: data.name||"",
-  //   description: data.description||"",
-  //   category: data.category||"",
-  //   // permissions: [],
-  //   isDefault:data.isDefault|| false,
-  //   isActive:data.isActive|| true,
-  // });
+export default function PermissionForm({ p, id }: any) {
 
-  console.log(data);
+  const { data: session, status,update } = useSession();
+
+  console.log(p,id);
   
+
   const { toast } = useToast();
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const {
@@ -230,11 +243,12 @@ export default function PermissionForm({ data, id }: any) {
   } = useForm<permissionData>({
     resolver: zodResolver(permissionSchema),
     defaultValues: {
-      name: data.name || "",
-      description: data.description || "",
-      category: data.category || "",
-      isDefault: data.isDefault || false,
-      isActive: data.isActive || true,
+      name: p?.name?.split(":")[0] || "",
+      description: p?.description || "",
+      category: p?.category || "",
+      action: p?.action || "read",
+      isDefault: p?.isDefault || false,
+      isActive: p?.isActive || true,
     },
   });
 
@@ -249,19 +263,18 @@ export default function PermissionForm({ data, id }: any) {
     switch (status) {
       case "update":
         {
-          res = await permissionServices.updatePatch(id, updateData, {});
+          res = await permissionServices.updatePatch(id, updateData, session?.accessToken);
         }
         break;
 
       default:
         {
-          res = await permissionServices.create(updateData, {});
+          res = await permissionServices.create(updateData, session?.accessToken);
         }
         break;
     }
     toast({
       title: res.message,
-      // description: "We'll get back to you within 24 hours.",
       duration: 5000,
     });
     closeDialog();
@@ -325,8 +338,8 @@ export default function PermissionForm({ data, id }: any) {
                     <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
                       {permissionCategory.map((category) => (
                         <SelectItem
-                          key={category.name}
-                          value={category.name}
+                          key={category.label}
+                          value={category.label}
                           className="hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           {category.label}
@@ -343,6 +356,49 @@ export default function PermissionForm({ data, id }: any) {
                 </p>
               )}
             </div>
+            <div className="mt-6">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Action
+              </Label>
+              <div className="flex flex-wrap gap-6 mt-2">
+                <Controller
+                  name="action"
+                  control={control}
+                  render={({ field }) => (
+                    <>
+                      {Object.values(actionTypes).map((action) => (
+                        <div
+                          key={action}
+                          className="flex items-center space-x-2"
+                        >
+                          <input
+                            type="radio"
+                            id={`action-${action}`}
+                            name="action" // Ensures only one radio button can be selected
+                            value={action}
+                            checked={field.value === action}
+                            onChange={(e) => field.onChange(e.target.value)}
+                            className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 dark:border-gray-600 cursor-pointer"
+                          />
+                          <Label
+                            htmlFor={`action-${action}`}
+                            className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
+                          >
+                            {action.charAt(0).toUpperCase() + action.slice(1)}
+                          </Label>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                />
+              </div>
+              {errors.action && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.action.message}
+                </p>
+              )}
+            </div>
+
             <div className="mt-6">
               <Label
                 htmlFor="description"
@@ -364,12 +420,11 @@ export default function PermissionForm({ data, id }: any) {
                 </p>
               )}
             </div>
-          
 
-             <div className="mt-6 space-y-3">
+            <div className="mt-6 space-y-3">
               <div className="flex items-center justify-between">
                 <Label className="text-sm text-gray-700 dark:text-gray-300">
-                  Default Role
+                  Default ?
                 </Label>
                 <Controller
                   control={control}
@@ -385,7 +440,7 @@ export default function PermissionForm({ data, id }: any) {
               </div>
               <div className="flex items-center justify-between">
                 <Label className="text-sm text-gray-700 dark:text-gray-300">
-                  Active Role
+                  Active ?
                 </Label>
                 <Controller
                   control={control}

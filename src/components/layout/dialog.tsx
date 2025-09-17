@@ -10,7 +10,6 @@ import { cn } from '@/lib/utils/utils'
 
 export function ReusableDialog() {
   const { isOpen, closeDialog, content, options } = useDialog()
-  console.log(options)
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {

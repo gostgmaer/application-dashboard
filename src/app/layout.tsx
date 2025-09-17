@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { SessionProviderWrapper } from "@/components/Sessionproviders";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "./api/auth/authOptions";
 import { DialogProvider } from "@/hooks/use-dialog";
 import { ReusableDialog } from "@/components/layout/dialog";
 
@@ -22,9 +20,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-  console.log("session", session);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${roboto.className} overflow-hidden`}>

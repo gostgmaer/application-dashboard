@@ -1,7 +1,4 @@
 
-
-
-
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
@@ -11,19 +8,19 @@ import { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import { Account, Profile } from "next-auth";
 
-// Extend the Session type to include custom properties
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
     refreshToken?: string;
     id_token?: string;
     token_type?: string;
-    role?: String;
+    role?: string;
     user: {
       role?: string;
-      permissions?: Record<string, string[]>; // page -> actions[]
+      permissions?: Record<string, string[]>;
       [key: string]: any;
     };
+    error?: string; // Add error to session for refresh failures
   }
 }
 
@@ -51,7 +48,7 @@ interface CustomToken extends JWT {
   exp?: number;
   error?: string;
   role?: string;
-  permissions?: Record<string, string[]>; // page -> [actions]
+  permissions?: Record<string, string[]>;
 }
 
 interface CustomUser extends User {
@@ -65,16 +62,21 @@ interface CustomUser extends User {
 
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
   try {
-    const response = await authService.refreshToken({ refreshToken: token.refreshToken })
-    if (!response.ok) throw new Error("Failed to refresh token");
+    const response = await authService.refreshToken({ refreshToken: token.refreshToken });
+    if (!response.success) {
+      throw new Error(response?.message || "Failed to refresh token");
+    }
 
+    const { accessToken, refreshToken, expiresAt } = response.data;
     return {
       ...token,
-      accessToken: response.data.accessToken,
-      accessTokenExpires: Date.parse(response.data.expiresAt),
-      refreshToken: response.data.refreshToken ?? token.refreshToken,
+      accessToken,
+      accessTokenExpires: Date.parse(expiresAt),
+      refreshToken: refreshToken ?? token.refreshToken,
+      error: undefined, // Clear any previous error
     };
   } catch (error) {
+    console.error("Refresh token error:", error);
     return {
       ...token,
       error: "RefreshAccessTokenError",
@@ -98,13 +100,10 @@ export const authOptions: AuthOptions = {
         };
         const res = await authService.userLogin(payload);
         if (!res || !res.success) {
-          // Throw an error with message from your backend
           throw new Error(res?.message || "Invalid credentials");
         }
 
         const { user, tokens } = res.data;
-        const exp = Date.parse(tokens.accessTokenExpiresAt)
-
         return {
           id: user.id,
           name: user.fullName ?? user.username,
@@ -115,9 +114,8 @@ export const authOptions: AuthOptions = {
           refreshToken: tokens.refreshToken,
           token_type: "access",
           id_token: tokens.idToken,
-          accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt)
+          accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt),
         };
-
       },
     }),
     GitHubProvider({
@@ -147,7 +145,7 @@ export const authOptions: AuthOptions = {
     TwitterProvider({
       clientId: twitterClient || "",
       clientSecret: twitterSecret || "",
-      version: "2.0", // use OAuth 2.0 if supported
+      version: "2.0",
     }),
   ],
 
@@ -164,51 +162,39 @@ export const authOptions: AuthOptions = {
   },
 
   callbacks: {
-    async signIn({ user, account, profile }: {
-      user: CustomUser;
-      account: Account | null;
-      profile?: Profile;
-    }) {
-
-      if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter") && profile?.email) {
-
+    async signIn({ user, account, profile }: { user: CustomUser; account: Account | null; profile?: Profile }) {
+      if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter" || account?.provider === "google") && profile?.email) {
         try {
-
-
           const data = await authService.socialAuth({
             identifier: profile.email, profileData: {
-              socialID: user.id,
-              email: profile.email,
-              provider:account.provider,
-              providerId:account.providerId,
-              profilePicture: user.image,
-              username: profile.email,
+              ...profile,
+              ...account
+
             }
 
-          })
+          });
 
           user.accessToken = data.data.accessToken;
           user.refreshToken = data.data.refreshToken;
           user.id_token = data.data.id_token;
           user.token_type = data.data.token_type;
           user.role = data.data.role || "";
+          user.accessTokenExpires = Date.parse(data.data.expiresAt);
 
           return true;
         } catch (error) {
-          console.error(`Error during ${account.provider} sign-in:`, error);
+          console.error(`Error during ${account?.provider} sign-in:`, error);
           return false;
         }
       }
 
       return !!user?.accessToken;
     },
-    async jwt({ token, user, account, profile, trigger, isNewUser, session }) {
-      console.log(profile);
+
+    async jwt({ token, user, account, profile, trigger }) {
       const customToken = token as CustomToken;
       if (user) {
         const customUser = user as CustomUser;
-
-
         customToken.accessToken = customUser.accessToken;
         customToken.refreshToken = customUser.refreshToken;
         customToken.id_token = customUser.id_token;
@@ -235,65 +221,35 @@ export const authOptions: AuthOptions = {
         } else {
           customToken.permissions = { "*": ["read", "write", "modify", "delete", "manage"] };
         }
-
-        return customToken;
       }
-      // console.log(customToken);
+      console.log("customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires", customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires);
 
-      console.log(Date.now() < (customToken.accessTokenExpires ?? 0));
-      console.log(customToken.accessTokenExpires);
-
-
-      if (Date.now() < (customToken.accessTokenExpires ?? 0)) {
-        return customToken;
+      // Check if token is expired and refresh if necessary
+      if (customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires) {
+        return await refreshAccessToken(customToken);
       }
-      //  return customToken;
-      return refreshAccessToken(customToken);
+
+      return customToken;
     },
-    // async jwt({ token, user, account, profile, trigger, isNewUser, session }: {
-    //   token: JWT;
-    //   user?: User | null;
-    //   account?: Account | null;
-    //   profile?: Profile;
-    //   trigger?: "signIn" | "signUp" | "update";
-    //   isNewUser?: boolean;
-    //   session?: any;
-    // }) {
-    //   // Cast token to CustomToken for type safety
-    //   const customToken = token as CustomToken;
 
-    //   if (user) {
-    //     const customUser = user as CustomUser;
-    //     return {
-    //       ...customToken,
-    //       accessToken: customUser.accessToken,
-    //       refreshToken: customUser.refreshToken,
-    //       id_token: customUser.id_token,
-    //       token_type: customUser.token_type,
-    //     };
-    //   }
-
-    //   return customToken;
-    // },
-
-    async session({ session, token }: {
-      session: Session;
-      token: CustomToken;
-    }) {
-
-
+    async session({ session, token }: { session: Session; token: CustomToken }) {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.id_token = token.id_token;
-      session.role = token.role;
       session.token_type = token.token_type;
+      session.role = token.role;
+      session.user = {
+        ...session.user,
+        role: token.role,
+        permissions: token.permissions,
+      };
+      session.error = token.error; // Include error in session for debugging
+
       return session;
     },
 
     async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-      return url.startsWith("/") || new URL(url).origin === baseUrl
-        ? baseUrl
-        : baseUrl;
+      return url.startsWith("/") || new URL(url).origin === baseUrl ? url : baseUrl;
     },
   },
 
@@ -305,4 +261,3 @@ export const authOptions: AuthOptions = {
 
   debug: process.env.NODE_ENV === "development",
 };
-

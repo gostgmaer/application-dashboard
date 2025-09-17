@@ -23,12 +23,14 @@ interface permission {
   _id: string;
   name: string;
   category: string;
+  action: string;
   isDefault: string;
   isActive: string;
   description: string;
 }
 
 export default function Table({ props }: any) {
+
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const fetch = (state: TableState) => {
     return {
@@ -39,10 +41,11 @@ export default function Table({ props }: any) {
   };
 
   const handleUpdate = (data: any) => {
+
     openDialog(
       <div>
         <CustomDialog showHeader title="Update Permission">
-          <PermissionForm data={data} id={data._id} />
+          <PermissionForm p={data} id={data._id} />
         </CustomDialog>
       </div>,
       {
@@ -58,7 +61,7 @@ export default function Table({ props }: any) {
     openDialog(
       <div>
         <CustomDialog showHeader title="Create Permission">
-          <PermissionForm data={data} id={undefined} />
+          <PermissionForm p={data} id={undefined} />
         </CustomDialog>
       </div>,
       {
@@ -149,55 +152,74 @@ export default function Table({ props }: any) {
         );
       },
     },
-
-     {
-      accessorKey: "isActive",
+    {
+      accessorKey: "action",
       header: ({ column }) => (
-        <div className="flex items-center space-x-2">   <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-3 h-8 data-[state=open]:bg-accent"
-        >
-          Is Active?
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-         </div>
-     
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            Permission Action
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          <ColumnFilter column={column} title="Action" />
+        </div>
       ),
       cell: ({ row }) => {
-        
-        
-        const isActive = row.getValue("isActive") as boolean;
-   
+        const p = row.original;
         return (
-          <div className="text-muted-foreground">
-            {isActive?"Yes":"No"}
+          <div className="flex items-center space-x-3">
+            <div className="font-medium capitalize">{p.action}</div>
           </div>
         );
       },
     },
-     {
-      accessorKey: "isDefault",
+    {
+      accessorKey: "isActive",
       header: ({ column }) => (
-        <div className="flex items-center space-x-2">   <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-3 h-8 data-[state=open]:bg-accent"
-        >
-          Is Default?
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          {" "}
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            Is Active?
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
         </div>
-     
       ),
       cell: ({ row }) => {
-        
-        
+        const isActive = row.getValue("isActive") as boolean;
+
+        return (
+          <div className="text-muted-foreground">{isActive ? "Yes" : "No"}</div>
+        );
+      },
+    },
+    {
+      accessorKey: "isDefault",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">
+          {" "}
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            Is Default?
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+      ),
+      cell: ({ row }) => {
         const isDefault = row.getValue("isDefault") as boolean;
-       
+
         return (
           <div className="text-muted-foreground">
-            {isDefault?"Yes":"No"}
+            {isDefault ? "Yes" : "No"}
           </div>
         );
       },
@@ -206,7 +228,7 @@ export default function Table({ props }: any) {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const role = row.original;
+        const permission = row.original;
 
         return (
           <DropdownMenu>
@@ -219,14 +241,13 @@ export default function Table({ props }: any) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(role._id)}
+                onClick={() => navigator.clipboard.writeText(permission._id)}
               >
                 Copy ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleUpdate(role)}>
+              <DropdownMenuItem onClick={() => handleUpdate(permission)}>
                 View
               </DropdownMenuItem>
-
             </DropdownMenuContent>
           </DropdownMenu>
         );
