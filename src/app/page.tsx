@@ -1,10 +1,12 @@
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Shield, UserPlus, Lock, CheckCircle } from 'lucide-react';
+import { PublicLayout } from '@/components/layout/main-layout';
 
 export default function Home() {
   return (
-    <div className="container mx-auto px-4 py-12">
+   <PublicLayout>
+     <div className="container mx-auto px-4 py-12">
       {/* Hero Section */}
       <section className="py-16 md:py-24 text-center">
         <div className="max-w-3xl mx-auto space-y-6">
@@ -154,5 +156,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+   </PublicLayout>
   );
 }
