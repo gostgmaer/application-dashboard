@@ -4,6 +4,7 @@ import { DataTable } from "@/components/elements/data-table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCommonModal } from "@/components/layout/common/commonModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,10 @@ import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PermissionForm from "./form";
+import permissionServices from "@/helper/services/permissonServie";
+import { useSession } from "next-auth/react";
+import { toast } from "@/hooks/useToast";
+import { useModal } from "@/contexts/modal-context";
 
 interface permission {
   _id: string;
@@ -30,47 +35,102 @@ interface permission {
 }
 
 export default function Table({ props }: any) {
-
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+  // const { openDialog, closeDialog, confirm,monfirmModal, alert, options } = useDialog();
+  const { showConfirm, showAlert, showCustom } = useModal();
+  const { data: session } = useSession();
+  const { openModal } = useCommonModal();
   const fetch = (state: TableState) => {
     return {
-      data: props.results,
-      totalCount: props.total,
-      pageCount: Math.ceil(props.total / state.pagination["limit"]),
+      data: props.data,
+      totalCount: props.pagination.total,
+      pageCount: props.pagination.pages,
     };
   };
 
   const handleUpdate = (data: any) => {
+    showCustom({
+      title: `Edit Permission: ${data.name}`,
+      content: (
+         <PermissionForm p={data} id={data._id} />
+      ),
+      footer: (
+        <>
+          <Button variant="outline">Cancel</Button>
+          <Button>Save Changes</Button>
+        </>
+      ),
+    });
+  };
 
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Update Permission">
-          <PermissionForm p={data} id={data._id} />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+  const deleteRequest = async (id: any) => {
+    return await permissionServices.delete(id, session?.accessToken);
+  };
+
+  const handleDelete = async (data: any) => {
+    const confirmed = await showConfirm({
+      title: "Delete Item",
+      description:
+        "Are you sure you want to delete this item? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        deleteRequest(data._id);
+      },
+    });
+
+    if (confirmed) {
+      await showAlert({
+        title: "Success",
+        description: "Item has been deleted successfully.",
+        variant: "success",
+      });
+    }
+  };
+
+  const handleDeleteNew = async (data: any) => {
+    // const confirmed = await confirm({
+    //   title: "Delete Item",
+    //   description: "This action cannot be undone. Are you sure?",
+    //   confirmText: "Delete",
+    //   cancelText: "Cancel",
+    //   variant: "destructive",
+    // });
+    // if (confirmed) {
+    //   try {
+    //     // Your API call
+    //     const res = await permissionServices.delete(
+    //       data._id,
+    //       session?.accessToken
+    //     );
+    //     if (res.status!="OK") throw new Error("Failed to delete");
+    //      toast({
+    //       title: "Deleted",
+    //       description: "The item has been deleted successfully."
+    //     });
+    //   } catch (err: any) {
+    //      toast({
+    //       title: "Error",
+    //       description: err.message,
+    //       variant:'destructive'
+    //     });
+    //   }
+    // }
   };
 
   const handleCreate = (data: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Create Permission">
-          <PermissionForm p={data} id={undefined} />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+    showCustom({
+      title: `Create New Permission`,
+      content: (
+         <PermissionForm p={data} id={undefined} />
+      ),
+      footer: (
+        <>
+          <Button variant="outline">Cancel</Button>
+          <Button>Save Changes</Button>
+        </>
+      ),
+    });
   };
 
   const columns: ColumnDef<permission>[] = [
@@ -247,6 +307,9 @@ export default function Table({ props }: any) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleUpdate(permission)}>
                 View
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDelete(permission)}>
+                Remove
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -5,6 +5,8 @@ import { Providers } from "@/components/providers";
 import { SessionProviderWrapper } from "@/components/Sessionproviders";
 import { DialogProvider } from "@/hooks/use-dialog";
 import { ReusableDialog } from "@/components/layout/dialog";
+import { ModalProvider } from "@/contexts/modal-context";
+import ModalManager from "@/components/layout/modals/modal-manager";
 
 // const inter = Inter({ subsets: ['latin'] });
 const roboto = Roboto({ subsets: ["latin"] });
@@ -26,10 +28,12 @@ export default async function RootLayout({
         <SessionProviderWrapper>
           <Providers>
             <DialogProvider>
-              {children}
-
+              <ModalProvider>{children}
               <ReusableDialog />
+              <ModalManager />
+              </ModalProvider>
             </DialogProvider>
+            
           </Providers>
         </SessionProviderWrapper>
       </body>

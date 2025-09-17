@@ -35,13 +35,12 @@ export default function UsersTable({ props }:any) {
   console.log(props);
   
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
-  console.log(props);
 
   const fetch = (state: TableState) => {
     return {
-      data: props.results,
-      totalCount: props.total,
-      pageCount: Math.ceil(props.total / state.pagination["limit"]),
+      data: props.users,
+      totalCount: props.pagination.totalUsers,
+      pageCount: props.pagination.totalPages,
     };
   };
 
@@ -100,13 +99,9 @@ export default function UsersTable({ props }:any) {
         return (
           <div className="flex items-center space-x-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.firstName} />
+              <AvatarImage src={user.avatar} alt={user?.firstName} />
               <AvatarFallback>
-                {user?.firstName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
+                {user?.firstName}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -247,7 +242,7 @@ export default function UsersTable({ props }:any) {
   ];
   return (
     <>
-      <Breadcrumbs heading={"Create User"} btn={{ show: true }}></Breadcrumbs>
+      <Breadcrumbs heading={"User Dashboard"} btn={{ show: true }}></Breadcrumbs>
 
       <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
         <DataTable

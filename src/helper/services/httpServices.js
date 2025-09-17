@@ -117,9 +117,9 @@ const requests = {
     await fetchData(endpoint, {
       method: 'PATCH', body, params, headers,token
     }),
-  delete: async (endpoint, params, headers) =>
+  delete: async (endpoint, params, headers,token) =>
     await fetchData(endpoint, {
-      method: 'DELETE', params, headers // Cache for 5 minutes
+      method: 'DELETE', params, headers,token // Cache for 5 minutes
     }),
 
 

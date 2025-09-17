@@ -5,8 +5,8 @@ const userServices = {
   createUser: (body: any, headers: any) =>
     requests.post("/user", body, headers),
 
-  getAllUsers: (query: any, headers: any) =>
-    requests.get("/user", query, null, headers, 1),
+  getAllUsers: (query: any, token: any) =>
+    requests.get("/users", query, null, {}, 3600,token),
   getProfile: ( token: any) =>
     requests.get("/user/profile", {}, null, {}, 1,token),
   getActiveUsers: (headers: any) =>

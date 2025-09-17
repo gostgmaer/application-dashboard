@@ -2,11 +2,13 @@ import requests from "./httpServices";
 
 const roleServices = {
   // 🔍 Basic CRUD
-  create: (body: any, headers: any) =>
-    requests.post("/roles", body, headers),
+  create: (body: any, token: any) =>
+    requests.post("/roles", body, {},token),
 
   getAll: (query: any, headers: any) =>
     requests.get("/roles", query, null, headers, 1),
+  getStatistics: (query: any, token: any) =>
+    requests.get("/roles/statistics", query, null, {}, 1, token),
 
   getById: (id: any, headers: any) =>
     requests.get(`/roles/${id}`, null, null, headers, 1),
@@ -14,8 +16,8 @@ const roleServices = {
   updatePut: (id: any, body: any, headers: any) =>
     requests.put(`/roles/${id}`, body, headers),
 
-  updatePatch: (id: any, body: any, headers: any) =>
-    requests.patch(`/roles/${id}`, body, headers),
+  updatePatch: (id: any, body: any, token: any) =>
+    requests.patch(`/roles/${id}`, body, {}, {}, token),
 
   delete: (id: any, headers: any) =>
     requests.delete(`/roles/${id}`, null, headers),
@@ -33,8 +35,8 @@ const roleServices = {
   getRoleWithPermissions: (id: any, headers: any) =>
     requests.get(`/roles/${id}/permissions`, null, null, headers, 1),
 
-  assignPermissions: (id: any, body: any, headers: any) =>
-    requests.post(`/roles/${id}/permissions`, body, headers),
+  assignPermissions: (id: any, body: any, token: any) =>
+    requests.post(`/roles/${id}/permissions`, body, {},token),
 
   removePermissions: (id: any, body: any, headers: any) =>
     requests.delete(`/roles/${id}/permissions`, body, headers),

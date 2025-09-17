@@ -34,7 +34,6 @@ import Image from "next/image";
 import roleServices from "@/helper/services/roleServices";
 import { useRouter } from "next/navigation";
 
-
 interface Role {
   _id: string;
   name: string;
@@ -54,7 +53,7 @@ const userSchema = z
     firstName: z.string().min(1, "First name is required").trim(),
     status: z.string().min(1, "Status is Required").trim(),
     lastName: z.string().min(1, "Last name is required").trim(),
-     role: z.string().min(1, "Role is required").trim(),
+    role: z.string().min(1, "Role is required").trim(),
     dateOfBirth: z.string().optional().nullable(),
     gender: z
       .enum(["male", "female", "other", "prefer_not_to_say"])
@@ -107,7 +106,7 @@ interface UserData {
   phoneNumber?: string;
   // address: Address[];
   profilePicture?: string;
-   role?: string;
+  role?: string;
   isVerified: boolean;
   socialMedia: {
     facebook?: string;
@@ -147,19 +146,18 @@ const paymentMethodTypes = ["credit_card", "paypal", "bank_transfer"];
 const subscriptionTypes = ["free", "premium", "enterprise"];
 
 export default function UserCreate({ data, id }: any) {
-
   console.log(data);
-  
-  const route = useRouter()
+
+  const route = useRouter();
   const { toast } = useToast();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
-const [role, setRole] = useState<Array<Role> | []>([]);
+  const [role, setRole] = useState<Array<Role> | []>([]);
 
   const generateReferralCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
-const roles = roleServices.getActiveRoles({})
- const fetchRoles = async () => {
+  const roles = roleServices.getActiveRoles({});
+  const fetchRoles = async () => {
     try {
       const response = await roleServices.getActiveRoles({});
       setRole(response?.results || []);
@@ -169,9 +167,9 @@ const roles = roleServices.getActiveRoles({})
     }
   };
 
-useEffect( () => {
-fetchRoles()
-}, []);
+  useEffect(() => {
+    fetchRoles();
+  }, []);
   const onSubmit = async (
     values: UserData,
     s: "draft" | "published" | "update"
@@ -183,7 +181,6 @@ fetchRoles()
       profilePicture,
     };
     let res: any = {};
-    console.log(s);
 
     switch (s) {
       case "draft":
@@ -204,20 +201,22 @@ fetchRoles()
         }
         break;
     }
- route.push("/dashboard/users")
 
-    toast({
-      title: res.message,
-      // description: "We'll get back to you within 24 hours.",
-      duration: 5000,
-    });
-    reset();
-
-    // const jsonString = JSON.stringify(updatedUser, null, 2);
-    // setJsonOutput(jsonString);
-    // setShowJsonOutput(true);
-
-    // console.log("User JSON:", jsonString);
+    if (res.error) {
+      const error = JSON.parse(res.error);
+      toast({
+        title: error.status,
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      reset();
+      toast({
+        title: res.status,
+        description: res.message,
+      });
+      route.push("/dashboard/users");
+    }
   };
 
   const {
@@ -236,7 +235,7 @@ fetchRoles()
       firstName: data?.firstName || "",
       lastName: data?.lastName || "",
       isVerified: data?.isVerified || false,
-      role:data?.role||"",
+      role: data?.role || "",
       status: data?.status || "draft",
       socialMedia: data?.socialMedia || {
         facebook: "",
@@ -827,26 +826,26 @@ fetchRoles()
                   </p>
                 )}
               </div>
-                <div>
+              <div>
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-400">
                   Role
                 </Label>
                 <Controller
                   name="role"
                   control={control}
-                  
                   render={({ field }) => (
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
-                      
                       defaultValue={getValues("role")}
                     >
                       <SelectTrigger className={`mt-1 `}>
-                        <SelectValue className="text-gray-600" placeholder="Select" />
+                        <SelectValue
+                          className="text-gray-600"
+                          placeholder="Select"
+                        />
                       </SelectTrigger>
                       <SelectContent className="">
-                          
                         {role.map((s) => (
                           <SelectItem
                             key={s["_id"]}

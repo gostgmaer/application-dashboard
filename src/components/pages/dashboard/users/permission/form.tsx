@@ -32,6 +32,16 @@ const permissionCategory = [
       "Create, update, and track promotional coupons and discount rules",
   },
   {
+    name: "Cart",
+    label: "Cart Management",
+    description: "Create, update, and track Cart",
+  },
+  {
+    name: "Address",
+    label: "Address Management",
+    description: "Create, update, and track Address",
+  },
+  {
     name: "Review",
     label: "Review Moderation",
     description: "Moderate product reviews, ratings, and user feedback",
@@ -194,7 +204,7 @@ const actionTypes = {
   WRITE: "write",
   MODIFY: "modify",
   DELETE: "delete",
-  MANAGE: "manage",
+  MANAGE: "full",
 };
 // Zod schema based on the provided Mongoose schema
 const permissionSchema = z
@@ -225,11 +235,9 @@ interface permissionData {
 }
 
 export default function PermissionForm({ p, id }: any) {
+  const { data: session, status, update } = useSession();
 
-  const { data: session, status,update } = useSession();
-
-  console.log(p,id);
-  
+  console.log(p, id);
 
   const { toast } = useToast();
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
@@ -263,21 +271,37 @@ export default function PermissionForm({ p, id }: any) {
     switch (status) {
       case "update":
         {
-          res = await permissionServices.updatePatch(id, updateData, session?.accessToken);
+          res = await permissionServices.updatePatch(
+            id,
+            updateData,
+            session?.accessToken
+          );
         }
         break;
 
       default:
         {
-          res = await permissionServices.create(updateData, session?.accessToken);
+          res = await permissionServices.create(
+            updateData,
+            session?.accessToken
+          );
         }
         break;
     }
-    toast({
-      title: res.message,
-      duration: 5000,
-    });
-    closeDialog();
+    if (res.error) {
+      const error = JSON.parse(res.error);
+      toast({
+        title: error.status,
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      closeDialog();
+      toast({
+        title: res.status,
+        description: res.message,
+      });
+    }
   };
 
   return (

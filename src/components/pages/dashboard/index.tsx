@@ -304,7 +304,7 @@ export default function DashboardLayout() {
       >
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-            Here's an overview of your current system status and recent activity.
+            Here s an overview of your current system status and recent activity.
           </p>
           
           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
