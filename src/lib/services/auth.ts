@@ -51,6 +51,7 @@ const authService = {
     refreshToken: async (body: any) => {
         return await requests.post("/auth/refresh-token", body, {});
     },
+   
 
     changePassword: async (body: any, headers: any) => {
         return await requests.post("/auth/change-password", body, headers);
@@ -107,6 +108,10 @@ const authService = {
     // ========================================
     getProfile: async (headers: any) => {
         return await requests.get("/auth/profile", {}, {}, headers, 3600); // Cache for 1 hour
+    },
+     
+    getPermissions: async (headers:any) => {
+        return await requests.get("/auth/permissions", {}, {}, headers, 3600);
     },
 
     getProfileById: async (headers: any) => {

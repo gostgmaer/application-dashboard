@@ -20,7 +20,7 @@ export async function GET() {
 
     const headers = { "Authorization": `Bearer ${session.accessToken}` }
     const { data } = await authService.getProfile(headers);
-    const permission = await authService.getProfile(headers);
+    const permission = await authService.getPermissions(headers);
 
 
     // const { id, ...cleanUser } = currentUser;    
