@@ -10,7 +10,7 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-export function MainLayout({ children }: MainLayoutProps) {
+export function PublicLayout({ children }: MainLayoutProps) {
   const { data: session, status } = useSession();
 
   useEffect(() => {
@@ -30,17 +30,9 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex flex-col bg-white dark:bg-gray-900 min-h-screen">
       <>
-        {!session ? (
-          <>
-            <Header />
-            <main className="flex-grow container mx-auto px-4">{children}</main>
-            <Footer />
-          </>
-        ) : (
-          <Dashboard>
-            <main className="flex-grow container mx-auto px-4">{children}</main>
-          </Dashboard>
-        )}
+        <Header />
+        <main className="flex-grow container mx-auto px-4">{children}</main>
+        <Footer />
       </>
     </div>
   );

@@ -19,12 +19,14 @@ export async function GET() {
     // var id = jwtDecode(session.id_token || "") as any;
 
     const headers = { "Authorization": `Bearer ${session.accessToken}` }
-    const currentUser = await authService.getUserProfile(headers);
+    const { data } = await authService.getProfile(headers);
+    const permission = await authService.getProfile(headers);
 
-    const { id, ...cleanUser } = currentUser;
-    const idkeys = Object.keys(cleanUser);
+
+    // const { id, ...cleanUser } = currentUser;    
+    const idkeys = Object.keys(data);
     idkeys.forEach(key => {
-        (cookieStore).set(`${key}`, cleanUser[key] || "", {
+        (cookieStore).set(`${key}`, data[key] || "", {
             httpOnly: true,
             secure: true,
             sameSite: "lax",
@@ -33,9 +35,9 @@ export async function GET() {
         });
     });
 
-const sdata:any=session;
-     const keys = Object.keys(sdata);
-    idkeys.forEach(key => {
+    const sdata: any = session;
+    const keys = Object.keys(sdata);
+    keys.forEach(key => {
         (cookieStore).set(`${key}`, sdata[key] || "", {
             httpOnly: true,
             secure: true,

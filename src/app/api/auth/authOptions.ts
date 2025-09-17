@@ -18,6 +18,7 @@ declare module "next-auth" {
     refreshToken?: string;
     id_token?: string;
     token_type?: string;
+    role?: String;
     user: {
       role?: string;
       permissions?: Record<string, string[]>; // page -> actions[]
@@ -65,8 +66,6 @@ interface CustomUser extends User {
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
   try {
     const response = await authService.refreshToken({ refreshToken: token.refreshToken })
-    console.log(response);
-
     if (!response.ok) throw new Error("Failed to refresh token");
 
     return {
@@ -114,6 +113,7 @@ export const authOptions: AuthOptions = {
           role: user.role,
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
+          token_type: "access",
           id_token: tokens.idToken,
           accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt)
         };
@@ -173,35 +173,25 @@ export const authOptions: AuthOptions = {
       if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter") && profile?.email) {
 
         try {
-          const response = await fetch(`${baseurl}/user/auth/checkUser`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              username: profile.email,
+
+
+          const data = await authService.socialAuth({
+            identifier: profile.email, profileData: {
+              socialID: user.id,
               email: profile.email,
-            }),
-          });
-          let userData = await response.json();
+              provider:account.provider,
+              providerId:account.providerId,
+              profilePicture: user.image,
+              username: profile.email,
+            }
 
-          if (userData["statusCode"] === "404") {
-            const createUserResponse = await fetch(`${baseurl}/user/auth/social-register`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                socialID: user.id,
-                email: profile.email,
-                profilePicture: user.image,
-                username: profile.email,
-              }),
-            });
-            userData = await createUserResponse.json();
-          }
+          })
 
-          user.accessToken = userData.accessToken;
-          user.refreshToken = userData.refreshToken;
-          user.id_token = userData.id_token;
-          user.token_type = userData.token_type;
-          user.role = userData.role || "";
+          user.accessToken = data.data.accessToken;
+          user.refreshToken = data.data.refreshToken;
+          user.id_token = data.data.id_token;
+          user.token_type = data.data.token_type;
+          user.role = data.data.role || "";
 
           return true;
         } catch (error) {
@@ -295,6 +285,7 @@ export const authOptions: AuthOptions = {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.id_token = token.id_token;
+      session.role = token.role;
       session.token_type = token.token_type;
       return session;
     },

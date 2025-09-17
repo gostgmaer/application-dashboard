@@ -3,13 +3,10 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { SessionProviderWrapper } from "@/components/Sessionproviders";
-import { MainLayout } from "@/components/layout/main-layout";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/authOptions";
-import Dashboard from "@/components/layout/dashboard";
-import Breadcrumbs from "@/components/layout/common/breadcrumb";
-import { DialogProvider } from '@/hooks/use-dialog';
-import { ReusableDialog } from '@/components/layout/dialog';
+import { DialogProvider } from "@/hooks/use-dialog";
+import { ReusableDialog } from "@/components/layout/dialog";
 
 // const inter = Inter({ subsets: ['latin'] });
 const roboto = Roboto({ subsets: ["latin"] });
@@ -26,7 +23,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  // console.log("session", session);
+  console.log("session", session);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -34,14 +31,9 @@ export default async function RootLayout({
         <SessionProviderWrapper>
           <Providers>
             <DialogProvider>
-            {!session ? (
-              <MainLayout>{children}</MainLayout>
-            ) : (
-              <Dashboard>
-                {children}
-              </Dashboard>
-            )}
-             <ReusableDialog />
+              {children}
+
+              <ReusableDialog />
             </DialogProvider>
           </Providers>
         </SessionProviderWrapper>

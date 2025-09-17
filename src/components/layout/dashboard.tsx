@@ -17,7 +17,7 @@ import Breadcrumbs from "./common/breadcrumb";
 interface DashboardProps {
   children: React.ReactNode;
 }
-export default function Dashboard({ children }: DashboardProps) {
+export default function PrivateLayout({ children }: DashboardProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
