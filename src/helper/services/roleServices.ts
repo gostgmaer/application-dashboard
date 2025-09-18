@@ -5,8 +5,8 @@ const roleServices = {
   create: (body: any, token: any) =>
     requests.post("/roles", body, {},token),
 
-  getAll: (query: any, headers: any) =>
-    requests.get("/roles", query, null, headers, 1),
+  getAll: (query: any, t: any) =>
+    requests.get("/roles", query, null, {}, 1,t),
   getStatistics: (query: any, token: any) =>
     requests.get("/roles/statistics", query, null, {}, 1, token),
 
@@ -48,8 +48,8 @@ const roleServices = {
   toggleActive: (id: any, headers: any) =>
     requests.patch(`/roles/${id}/toggle-active`, {}, headers),
 
-  getActiveRoles: (headers: any) =>
-    requests.get("/roles/active", null, null, headers, 1),
+  getActiveRoles: (token: any) =>
+    requests.get("/roles/active", null, null, {}, 3600,token),
 
   bulkDeactivate: (body: any, headers: any) =>
     requests.patch("/roles/bulk-deactivate", body, headers),

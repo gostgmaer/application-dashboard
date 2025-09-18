@@ -109,9 +109,9 @@ const requests = {
       method: 'POST',
       body, headers,token // Cache for 5 minutes
     }),
-  put: async (endpoint, body, params, headers) =>
+  put: async (endpoint, body, params, headers,token) =>
     await fetchData(endpoint, {
-      method: 'PUT', body, params, headers // Cache for 5 minutes
+      method: 'PUT', body, params, headers,token // Cache for 5 minutes
     }),
   patch: async (endpoint, body, params, headers,token) =>
     await fetchData(endpoint, {

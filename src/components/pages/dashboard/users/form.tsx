@@ -33,6 +33,7 @@ import { useDialog } from "@/hooks/use-dialog";
 import Image from "next/image";
 import roleServices from "@/helper/services/roleServices";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface Role {
   _id: string;
@@ -82,7 +83,7 @@ const userSchema = z
       currency: z.string(),
       theme: z.enum(["light", "dark"]),
     }),
-    loyaltyPoints: z.number().min(0, "Loyalty points cannot be negative"),
+    loyaltyPoints: z.coerce.number().min(0, "Loyalty points cannot be negative"),
     referralCode: z.string().optional(),
     subscriptionType: z.enum(["free", "premium", "enterprise"]),
   })
@@ -145,8 +146,9 @@ const deliveryMethods = ["standard", "express"];
 const paymentMethodTypes = ["credit_card", "paypal", "bank_transfer"];
 const subscriptionTypes = ["free", "premium", "enterprise"];
 
-export default function UserCreate({ data, id }: any) {
-  console.log(data);
+export default function UserCreate({ data, id ,master}: any) {
+  console.log(data, id ,master);
+   const {data:session}= useSession()
 
   const route = useRouter();
   const { toast } = useToast();
@@ -156,20 +158,20 @@ export default function UserCreate({ data, id }: any) {
   const generateReferralCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
-  const roles = roleServices.getActiveRoles({});
-  const fetchRoles = async () => {
-    try {
-      const response = await roleServices.getActiveRoles({});
-      setRole(response?.results || []);
-    } catch (error) {
-      console.error("Failed to fetch active roles:", error);
-      setRole([]);
-    }
-  };
+  // const roles = roleServices.getActiveRoles({});
+  // const fetchRoles = async () => {
+  //   try {
+  //     const response = await roleServices.getActiveRoles(sessioon?.accessToken);
+  //     setRole(response?.results || []);
+  //   } catch (error) {
+  //     console.error("Failed to fetch active roles:", error);
+  //     setRole([]);
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchRoles();
-  }, []);
+  // useEffect(() => {
+  //   fetchRoles();
+  // }, []);
   const onSubmit = async (
     values: UserData,
     s: "draft" | "published" | "update"
@@ -185,19 +187,19 @@ export default function UserCreate({ data, id }: any) {
     switch (s) {
       case "draft":
         {
-          res = await UserServices.createUser(updatedUser, {});
+          res = await UserServices.createUser(updatedUser, session?.accessToken);
         }
 
         break;
       case "update":
         {
-          res = await UserServices.updateUserPatch(id, updatedUser, {});
+          res = await UserServices.updateUserPatch(id, updatedUser, session?.accessToken);
         }
         break;
 
       default:
         {
-          res = await UserServices.createUser(updatedUser, {});
+          res = await UserServices.createUser(updatedUser, session?.accessToken);
         }
         break;
     }
@@ -235,6 +237,8 @@ export default function UserCreate({ data, id }: any) {
       firstName: data?.firstName || "",
       lastName: data?.lastName || "",
       isVerified: data?.isVerified || false,
+      gender:data.gender||"",
+      dateOfBirth:data.dateofBirth||"",
       role: data?.role || "",
       status: data?.status || "draft",
       socialMedia: data?.socialMedia || {
@@ -846,7 +850,7 @@ export default function UserCreate({ data, id }: any) {
                         />
                       </SelectTrigger>
                       <SelectContent className="">
-                        {role.map((s) => (
+                        {master.roles.map((s:any) => (
                           <SelectItem
                             key={s["_id"]}
                             value={s["_id"]}

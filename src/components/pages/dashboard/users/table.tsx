@@ -25,7 +25,7 @@ interface User {
   firstName: string;
   email: string;
   status: "active" | "inactive" | "pending";
-  role: object;
+  role: string;
   lastLogin: string;
   avatar?: string;
 }
@@ -244,7 +244,7 @@ export default function UsersTable({ props }:any) {
     <>
       <Breadcrumbs heading={"User Dashboard"} btn={{ show: true }}></Breadcrumbs>
 
-      <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
+      <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">
         <DataTable
           columns={columns}
           fetchData={fetch}

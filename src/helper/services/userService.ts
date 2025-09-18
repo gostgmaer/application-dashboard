@@ -3,14 +3,14 @@ import requests from "./httpServices";
 const userServices = {
   // ---------- STATIC ROUTES ----------
   createUser: (body: any, headers: any) =>
-    requests.post("/user", body, headers),
+    requests.post("/users", body, headers),
 
   getAllUsers: (query: any, token: any) =>
     requests.get("/users", query, null, {}, 3600,token),
   getProfile: ( token: any) =>
-    requests.get("/user/profile", {}, null, {}, 1,token),
+    requests.get("/users/profile", {}, null, {}, 1,token),
   getActiveUsers: (headers: any) =>
-    requests.get("/user/active", null, null, headers, 1),
+    requests.get("/users/active", null, null, headers, 1),
 
   getVerifiedUsers: (headers: any) =>
     requests.get("/user/verified", null, null, headers, 1),
@@ -58,14 +58,14 @@ const userServices = {
     requests.get("/user/table-report", null, null, headers, 1),
 
   // ---------- DYNAMIC ROUTES ----------
-  getSingleUser: (id: any, headers: any) =>
-    requests.get(`/user/${id}`, null, null, headers, 1),
+  getSingleUser: (id: any, token: any) =>
+    requests.get(`/users/${id}`, null, null, {}, 1,token),
 
-  updateUser: (id: any, body: any, headers: any) =>
-    requests.put(`/user/${id}`, body, headers),
+  updateUser: (id: any, body: any, token: any) =>
+    requests.put(`/users/${id}`, body,{},{}, token),
 
-   updateUserPatch: (id: any, body: any, headers: any) =>
-    requests.patch(`/user/${id}`, body, headers),
+   updateUserPatch: (id: any, body: any, token: any) =>
+    requests.patch(`/users/${id}`, body,{},{}, token),
 
   dynamicUpdate: (id: any, body: any, headers: any) =>
     requests.patch(`/user/${id}/dynamic-update`, body, headers),
