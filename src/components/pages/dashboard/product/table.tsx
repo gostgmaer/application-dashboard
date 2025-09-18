@@ -41,9 +41,9 @@ export default function Table({ props }:any) {
 
   const fetch = (state: TableState) => {
     return {
-      data: props.results || [],
-      totalCount: props.total || 0,
-      pageCount: Math.ceil(props.total || 0 / state.pagination["limit"]),
+      data: props.products || [],
+      totalCount: props.pagination.totalProducts || 0,
+      pageCount: props.pagination.totalPages
     };
   };
 
@@ -278,7 +278,7 @@ export default function Table({ props }:any) {
   ];
   return (
     <>
-      <Breadcrumbs heading={"Create Product"} btn={{ show: true }}></Breadcrumbs>
+      <Breadcrumbs heading={"All Products"} btn={{ show: true }}></Breadcrumbs>
 
       <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
         <DataTable

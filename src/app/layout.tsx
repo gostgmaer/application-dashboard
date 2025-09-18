@@ -7,6 +7,8 @@ import { DialogProvider } from "@/hooks/use-dialog";
 import { ReusableDialog } from "@/components/layout/dialog";
 import { ModalProvider } from "@/contexts/modal-context";
 import ModalManager from "@/components/layout/modals/modal-manager";
+import ErrorPage from "./_error";
+import ErrorBoundary from "next/dist/client/components/error-boundary";
 
 // const inter = Inter({ subsets: ['latin'] });
 const roboto = Roboto({ subsets: ["latin"] });
@@ -27,13 +29,15 @@ export default async function RootLayout({
       <body className={`${roboto.className} overflow-hidden`}>
         <SessionProviderWrapper>
           <Providers>
+            
             <DialogProvider>
-              <ModalProvider>{children}
-              <ReusableDialog />
-              <ModalManager />
+              <ModalProvider>
+                {children}
+
+                <ReusableDialog />
+                <ModalManager />
               </ModalProvider>
             </DialogProvider>
-            
           </Providers>
         </SessionProviderWrapper>
       </body>

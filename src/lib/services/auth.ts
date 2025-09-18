@@ -53,8 +53,8 @@ const authService = {
     },
    
 
-    changePassword: async (body: any, headers: any) => {
-        return await requests.post("/auth/change-password", body, headers);
+    changePassword: async (body: any, token: any) => {
+        return await requests.patch("/auth/change-password", body,{},{} token);
     },
 
     // ========================================

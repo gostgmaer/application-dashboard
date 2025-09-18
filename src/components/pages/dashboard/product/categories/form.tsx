@@ -21,6 +21,8 @@ import { Plus, X, Upload, Image as ImageIcon, Save, Eye } from "lucide-react";
 import CategoryServices from "@/helper/services/CategoryServices";
 import { useDialog } from "@/hooks/use-dialog";
 import {  useToast } from "@/hooks/useToast";
+import { useSession } from "next-auth/react";
+import categoryServices from "@/helper/services/categoryService";
 
 // Zod schema for validation
 const categorySchema = z.object({
@@ -29,9 +31,7 @@ const categorySchema = z.object({
     .min(1, "Category title is required")
     .max(100, "Title cannot exceed 100 characters"),
   slug: z
-    .string()
-    .min(1, "Slug is required")
-    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+    .string().optional(),
   // child: z
   //   .array(z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid category ID"))
   //   .optional(),
@@ -83,6 +83,8 @@ interface CategoryData {
 export function CategoryCreate({ data, id }: any) {
   // console.log(data);
    const { toast } = useToast()
+   const { data: session } = useSession();
+   
     const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 
   const {
@@ -175,19 +177,19 @@ export function CategoryCreate({ data, id }: any) {
     switch (status) {
       case "draft":
         {
-          res = await CategoryServices.createCategory({ ...updateData, status }, {});
+          res = await categoryServices.create({ ...updateData, status }, session?.accessToken);
         }
 
         break;
       case "update":
         {
-          res = await CategoryServices.updateCategoryPatch(id, updateData, {});
+          res = await categoryServices.updatePatch(id, updateData, session?.accessToken);
         }
         break;
 
       default:
         {
-         res = await CategoryServices.createCategory(updateData, {});
+         res = await categoryServices.create(updateData, session?.accessToken);
         }
         break;
     }

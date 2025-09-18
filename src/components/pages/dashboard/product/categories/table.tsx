@@ -37,9 +37,9 @@ export default function Table({ props }:any) {
 
   const fetch = (state: TableState) => {
     return {
-      data: props.results || [],
+      data: props.data || [],
       totalCount: props.total || 0,
-      pageCount: Math.ceil(props.total / state.pagination["limit"]),
+      pageCount: props.totalPages,
     };
   };
 
@@ -103,8 +103,33 @@ export default function Table({ props }:any) {
         );
       },
     },
+     {
+      accessorKey: "slug",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            Slag
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+          <ColumnFilter column={column} title="Slug" />
+        </div>
+      ),
+      cell: ({ row }) => {
+        const slug = row.getValue("slug") as string;
+
+        return (
+          <div className="flex items-center space-x-3">
+             <div className="font-medium">{slug}</div>
+          </div>
+        );
+      },
+    },
     {
-      accessorKey: "total",
+      accessorKey: "productCount",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -115,16 +140,16 @@ export default function Table({ props }:any) {
             Total Items
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="Total" />
+          <ColumnFilter column={column} title="Items" />
         </div>
       ),
       cell: ({ row }) => {
-        const total = row.getValue("total") as string;
+        const productCount = row.getValue("productCount") as string;
 
         return (
           <div className="flex items-center space-x-3">
             <div>
-              <div className="font-medium">{total}</div>
+              <div className="font-medium">{productCount}</div>
             </div>
           </div>
         );
@@ -220,7 +245,7 @@ export default function Table({ props }:any) {
   ];
   return (
     <>
-      <Breadcrumbs btn={{ event: handleCreate }}></Breadcrumbs>
+      <Breadcrumbs btn={{show:true, event: handleCreate }} ></Breadcrumbs>
 
       <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
         <DataTable

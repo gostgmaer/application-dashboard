@@ -18,6 +18,7 @@ import { MapPin, Activity, User, Plus, X, CreditCard, Lock, LucideUsersRound, Us
 import { useDebounce } from 'use-debounce';
 import Image from 'next/image';
 import Link from 'next/link';
+import authService from '@/lib/services/auth';
 
 // Zod schema for Address
 const AddressSchema = z.object({
@@ -201,14 +202,8 @@ export default function Profile({ userData, activityLogs = [], otherUsers = [] }
     setError(null);
     setPasswordSuccess(null);
     try {
-      const response = await fetch('/api/users/me/password', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentPassword: data.currentPassword,
-          newPassword: data.newPassword,
-        }),
-      });
+      const response = await authService.changePassword({currentPassword: data.currentPassword,
+          newPassword: data.newPassword,},);
       if (!response.ok) throw new Error('Failed to change password');
       setPasswordSuccess('Password changed successfully');
       resetPassword();
@@ -242,7 +237,7 @@ export default function Profile({ userData, activityLogs = [], otherUsers = [] }
           </CardHeader>
           <CardContent className="p-6 space-y-6">
             {error && <p className="text-red-600 text-sm">{error}</p>}
-            <div className="flex  sm:flex-row items-start gap-6">
+            <div className="flex  sm:flex-row items-start gap-6 border-b border-spacing-4">
               {userData.profilePicture && (
                 <Image
                   src={userData.profilePicture}

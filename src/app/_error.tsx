@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 
 export const metadata: Metadata = {
   title: 'Error | NextApp',
@@ -8,7 +7,6 @@ export const metadata: Metadata = {
 };
 
 export default function ErrorPage({ statusCode }: { statusCode?: number }) {
-  const router = useRouter();
 
   const message = statusCode === 404 
     ? 'The page you are looking for could not be found.'
