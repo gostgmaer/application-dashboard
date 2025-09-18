@@ -18,7 +18,8 @@ import { MapPin, Activity, User, Plus, X, CreditCard, Lock, LucideUsersRound, Us
 import { useDebounce } from 'use-debounce';
 import Image from 'next/image';
 import Link from 'next/link';
-import authService from '@/lib/services/auth';
+import { useSession } from 'next-auth/react';
+import authService from '@/helper/services/authServices';
 
 // Zod schema for Address
 const AddressSchema = z.object({
@@ -93,7 +94,7 @@ interface ProfilePageProps {
 }
 
 export default function Profile({ userData, activityLogs = [], otherUsers = [] }: ProfilePageProps) {
-
+const {data:session} = useSession()
     console.log(userData);
     
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
@@ -203,8 +204,8 @@ export default function Profile({ userData, activityLogs = [], otherUsers = [] }
     setPasswordSuccess(null);
     try {
       const response = await authService.changePassword({currentPassword: data.currentPassword,
-          newPassword: data.newPassword,},);
-      if (!response.ok) throw new Error('Failed to change password');
+          newPassword: data.newPassword,},session?.accessToken);
+      if (!response.success) throw new Error('Failed to change password');
       setPasswordSuccess('Password changed successfully');
       resetPassword();
       // Placeholder for future notification

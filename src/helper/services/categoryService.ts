@@ -7,7 +7,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/categories", body, headers, token));
+    return safeApiCall(() => requests.post("/categories", body, token, headers));
   },
 
   getAll: async (
@@ -15,7 +15,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories", query, {}, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories", token, query, undefined, headers, 1));
   },
 
   getSingle: async (
@@ -23,7 +23,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/categories/${id}`, null, null, headers, 1, token));
+    return safeApiCall(() => requests.get(`/categories/${id}`, token, undefined, undefined, headers, 1));
   },
 
   updatePut: async (
@@ -32,7 +32,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/categories/${id}`, body, null, headers, token));
+    return safeApiCall(() => requests.put(`/categories/${id}`, body, token, headers));
   },
 
   updatePatch: async (
@@ -41,7 +41,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/categories/${id}`, body, null, headers, token));
+    return safeApiCall(() => requests.patch(`/categories/${id}`, body, token, headers));
   },
 
   remove: async (
@@ -49,7 +49,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/categories/${id}`, null, headers, token));
+    return safeApiCall(() => requests.delete(`/categories/${id}`, token, undefined, headers));
   },
 
   getActive: async (
@@ -57,7 +57,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/active", query, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/active", token, query, undefined, headers, 1));
   },
 
   getFeatured: async (
@@ -65,7 +65,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/featured", query, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/featured", token, query, undefined, headers, 1));
   },
 
   search: async (
@@ -73,7 +73,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/search", searchParams, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/search", token, searchParams, undefined, headers, 1));
   },
 
   getTree: async (
@@ -81,7 +81,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/tree", query, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/tree", token, query, undefined, headers, 1));
   },
 
   getStats: async (
@@ -89,7 +89,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/stats", query, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/stats", token, query, undefined, headers, 1));
   },
 
   getProductCount: async (
@@ -97,7 +97,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/data/product-count", query, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/data/product-count", token, query, undefined, headers, 1));
   },
 
   getShowing: async (
@@ -105,7 +105,7 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/data/show", query, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/data/show", token, query, undefined, headers, 1));
   },
 
   bulkUpdateStatus: async (
@@ -113,14 +113,14 @@ const categoryServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch("/categories/bulk-status", bulkData, null, headers, token));
+    return safeApiCall(() => requests.patch("/categories/bulk-status", bulkData, token, headers));
   },
 
   getRouteDocs: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/categories/docs/routes", null, null, headers, 1, token));
+    return safeApiCall(() => requests.get("/categories/docs/routes", token, undefined, undefined, headers, 1));
   },
 };
 

@@ -93,7 +93,7 @@ const requests = {
     await fetchData(endpoint, {
       method: 'PUT', body, params, headers 
     }),
-  patch: async (endpoint: string, body: any, params: any, headers: any) =>
+  patch: async (endpoint: string, body: any, params: any, headers: any,token:any) =>
     await fetchData(endpoint, {
       method: 'PATCH', body, params, headers 
     }),

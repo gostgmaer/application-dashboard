@@ -18,7 +18,7 @@ import Link from "next/link";
 
 import Cookies from "js-cookie";
 
-export function UserStatus() {
+export function UserStatus({data}:any) {
   //   const { user, login, logout, isAuthenticated } = useAuth()
   const { data: session, status } = useSession();
   const [username, setUsername] = useState("");
@@ -32,21 +32,12 @@ export function UserStatus() {
   //   }
 
   const handleSignOut = (): void => {
-    // Clear localStorage and sessionStorage
-    // if (typeof window !== "undefined") {
-    //   localStorage.clear();
-    //   sessionStorage.clear(); // Clear client-side cookies
-
-    //   Object.keys(Cookies.get()).forEach((cookieName) => {
-    //     Cookies.remove(cookieName);
-    //   });
-    // } // Sign out using NextAuth
+  
  signOut();
     localStorage.clear();
     sessionStorage.clear(); // Debug: Log cookies before removing
 
     console.log("Cookies before removal:", Cookies.get()); // Remove all cookies set via js-cookie
-
     Object.keys(Cookies.get()).forEach((cookieName) => {
       Cookies.remove(cookieName, { path: "/" });
     }); // Debug: Log cookies after removal
@@ -86,20 +77,20 @@ export function UserStatus() {
             <div className="flex flex-col">
               <span className="text-sm font-medium">{session.user?.name}</span>
               <span className="text-xs text-muted-foreground">
-                @{session.user?.name?.toLowerCase()}
+                @{session.user?.email?.toLowerCase()}
               </span>
             </div>
           </div>
           <div className="flex flex-col gap-1 pt-2">
             <Link
-              href="/profile"
+              href="/dashboard/profile"
               className="w-full justify-start gap-2 flex items-center py-2 "
             >
               <User size={16} />
               My Profile
             </Link>
             <Link
-              href="/account"
+              href="/dashboard/profile/settings"
               className="w-full justify-start gap-2 flex items-center py-2"
             >
               <Settings size={16} />
