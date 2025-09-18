@@ -42,6 +42,15 @@ interface Role {
   // Add other fields as needed
 }
 
+const socialMediaFields = {
+  facebook: "Facebook",
+  twitter: "Twitter",
+  instagram: "Instagram",
+  linkedin: "LinkedIn",
+  google: "Google",
+  pinterest: "Pinterest",
+};
+
 // Zod schema based on the provided Mongoose schema
 const userSchema = z
   .object({
@@ -83,7 +92,9 @@ const userSchema = z
       currency: z.string(),
       theme: z.enum(["light", "dark"]),
     }),
-    loyaltyPoints: z.coerce.number().min(0, "Loyalty points cannot be negative"),
+    loyaltyPoints: z.coerce
+      .number()
+      .min(0, "Loyalty points cannot be negative"),
     referralCode: z.string().optional(),
     subscriptionType: z.enum(["free", "premium", "enterprise"]),
   })
@@ -146,32 +157,16 @@ const deliveryMethods = ["standard", "express"];
 const paymentMethodTypes = ["credit_card", "paypal", "bank_transfer"];
 const subscriptionTypes = ["free", "premium", "enterprise"];
 
-export default function UserCreate({ data, id ,master}: any) {
-  console.log(data, id ,master);
-   const {data:session}= useSession()
+export default function UserCreate({ data, id, master }: any) {
+  console.log(data, id, master);
+  const { data: session } = useSession();
 
   const route = useRouter();
   const { toast } = useToast();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [role, setRole] = useState<Array<Role> | []>([]);
-
   const generateReferralCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
-  // const roles = roleServices.getActiveRoles({});
-  // const fetchRoles = async () => {
-  //   try {
-  //     const response = await roleServices.getActiveRoles(sessioon?.accessToken);
-  //     setRole(response?.results || []);
-  //   } catch (error) {
-  //     console.error("Failed to fetch active roles:", error);
-  //     setRole([]);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchRoles();
-  // }, []);
   const onSubmit = async (
     values: UserData,
     s: "draft" | "published" | "update"
@@ -187,19 +182,29 @@ export default function UserCreate({ data, id ,master}: any) {
     switch (s) {
       case "draft":
         {
-          res = await UserServices.createUser(updatedUser, session?.accessToken);
+          res = await UserServices.createUser(
+            updatedUser,
+            session?.accessToken
+          );
         }
 
         break;
       case "update":
         {
-          res = await UserServices.updateUserPatch(id, updatedUser, session?.accessToken);
+          res = await UserServices.updateUserPatch(
+            id,
+            updatedUser,
+            session?.accessToken
+          );
         }
         break;
 
       default:
         {
-          res = await UserServices.createUser(updatedUser, session?.accessToken);
+          res = await UserServices.createUser(
+            updatedUser,
+            session?.accessToken
+          );
         }
         break;
     }
@@ -237,24 +242,28 @@ export default function UserCreate({ data, id ,master}: any) {
       firstName: data?.firstName || "",
       lastName: data?.lastName || "",
       isVerified: data?.isVerified || false,
-      gender:data.gender||"",
-      dateOfBirth:data.dateofBirth||"",
+      phoneNumber: data?.phoneNumber || "",
+      gender: data.gender || "",
+      referralCode: data.referralCode || "",
+      dateOfBirth: data?.dateOfBirth
+        ? new Date(data.dateOfBirth).toISOString().split("T")[0]
+        : "",
       role: data?.role || "",
       status: data?.status || "draft",
       socialMedia: data?.socialMedia || {
-        facebook: "",
-        twitter: "",
-        instagram: "",
-        linkedin: "",
-        google: "",
-        pinterest: "",
+        facebook: null,
+        twitter: null,
+        instagram: null,
+        linkedin: null,
+        google: null,
+        pinterest: null,
       },
       preferences: {
-        newsletter: data?.preferences.newsletter || true,
-        notifications: data?.preferences.notifications || true,
-        language: data?.preferences.language || "en",
-        currency: data?.preferences.currency || "USD",
-        theme: data?.preferences.theme || "light",
+        newsletter: data?.newsletter || true,
+        notifications: data?.notifications || true,
+        language: data?.language || "en",
+        currency: data?.currency || "USD",
+        theme: data?.theme || "light",
       },
       loyaltyPoints: data?.loyaltyPoints || 0,
       subscriptionType: data?.subscriptionType || "free",
@@ -523,34 +532,35 @@ export default function UserCreate({ data, id ,master}: any) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {[
-                  "facebook",
-                  "twitter",
-                  "instagram",
-                  "linkedin",
-                  "google",
-                  "pinterest",
-                ].map((platform) => (
-                  <div key={platform}>
-                    <Label
-                      htmlFor={platform}
-                      className="text-sm font-medium text-gray-700 dark:text-gray-400"
-                    >
-                      {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                    </Label>
-                    <Input
-                      id={platform}
-                      {...register(`socialMedia.${platform}`)}
-                      className={`mt-1  `}
-                      placeholder={`Enter ${platform} profile URL`}
-                    />
-                    {errors.socialMedia?.[platform] && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {errors.socialMedia[platform]?.message}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                {Object.entries(socialMediaFields).map(
+                  ([platform, displayName]) => (
+                    <div key={platform}>
+                      <Label
+                        htmlFor={platform}
+                        className="text-sm font-medium text-gray-700 dark:text-gray-400"
+                      >
+                        {displayName}
+                      </Label>
+                      <Input
+                        id={platform}
+                        {...register(`socialMedia.${platform}` as any)}
+                        className="mt-1"
+                        placeholder={`Enter ${displayName} profile URL`}
+                      />
+                      {errors.socialMedia?.[
+                        platform as keyof typeof errors.socialMedia
+                      ]?.message && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {
+                            errors.socialMedia[
+                              platform as keyof typeof errors.socialMedia
+                            ]?.message
+                          }
+                        </p>
+                      )}
+                    </div>
+                  )
+                )}
               </div>
             </CardContent>
           </Card>
@@ -572,33 +582,46 @@ export default function UserCreate({ data, id ,master}: any) {
                   <Label className="text-sm text-gray-700 dark:text-gray-400">
                     Newsletter
                   </Label>
-                  <Switch
-                    {...register("preferences.newsletter")}
-                    onCheckedChange={(checked) =>
-                      setValue("preferences.newsletter", checked)
-                    }
+
+                  <Controller
+                    name="preferences.newsletter"
+                    control={control}
+                    render={({ field }) => (
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label className="text-sm text-gray-700 dark:text-gray-400">
                     Notifications
                   </Label>
-                  <Switch
-                    {...register("preferences.notifications")}
-                    onCheckedChange={(checked) =>
-                      setValue("preferences.notifications", checked)
-                    }
+                  <Controller
+                    name="preferences.notifications"
+                    control={control}
+                    render={({ field }) => (
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   />
                 </div>
                 <div className="flex items-center justify-between">
                   <Label className="text-sm text-gray-700 dark:text-gray-400">
                     Verified Account
                   </Label>
-                  <Switch
-                    {...register("isVerified")}
-                    onCheckedChange={(checked) =>
-                      setValue("isVerified", checked)
-                    }
+                  <Controller
+                    name="isVerified"
+                    control={control}
+                    render={({ field }) => (
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    )}
                   />
                 </div>
               </div>
@@ -850,7 +873,7 @@ export default function UserCreate({ data, id ,master}: any) {
                         />
                       </SelectTrigger>
                       <SelectContent className="">
-                        {master.roles.map((s:any) => (
+                        {master.roles.map((s: any) => (
                           <SelectItem
                             key={s["_id"]}
                             value={s["_id"]}

@@ -21,8 +21,8 @@ import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
 interface User {
-  _id: string;
-  firstName: string;
+  id: string;
+  fullName: string;
   email: string;
   status: "active" | "inactive" | "pending";
   role: string;
@@ -80,7 +80,7 @@ export default function UsersTable({ props }:any) {
 
   const columns: ColumnDef<User>[] = [
     {
-      accessorKey: "firstName",
+      accessorKey: "fullName",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -91,7 +91,7 @@ export default function UsersTable({ props }:any) {
             Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="firstName" />
+          <ColumnFilter column={column} title="fullName" />
         </div>
       ),
       cell: ({ row }) => {
@@ -99,13 +99,13 @@ export default function UsersTable({ props }:any) {
         return (
           <div className="flex items-center space-x-3">
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user?.firstName} />
+              <AvatarImage src={user.avatar} alt={user?.fullName} />
               <AvatarFallback>
-                {user?.firstName}
+                {user?.avatar}
               </AvatarFallback>
             </Avatar>
             <div>
-              <div className="font-medium">{user.firstName}</div>
+              <div className="font-medium">{user.fullName}</div>
             </div>
           </div>
         );
@@ -161,7 +161,7 @@ export default function UsersTable({ props }:any) {
       },
     },
     {
-      accessorKey: "role",
+      accessorKey: "rolename",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -176,16 +176,16 @@ export default function UsersTable({ props }:any) {
         </div>
       ),
        cell: ({ row }) => {
-        const role = row.getValue("role") as object;
+        const rolename = row.getValue("rolename") as string;
         return (
           <div className="text-muted-foreground">
-            {role?.name}
+            {rolename}
           </div>
         );
       },
     },
     {
-      accessorKey: "lastLogin",
+      accessorKey: "lastLoginAttempt",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -197,10 +197,10 @@ export default function UsersTable({ props }:any) {
         </Button>
       ),
       cell: ({ row }) => {
-        const lastLogin = row.getValue("lastLogin") as string;
+        const lastLoginAttempt = row.getValue("lastLoginAttempt") as string;
         return (
           <div className="text-muted-foreground">
-            {lastLogin}
+            {lastLoginAttempt}
           </div>
         );
       },
@@ -222,7 +222,7 @@ export default function UsersTable({ props }:any) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(user._id)}
+                onClick={() => navigator.clipboard.writeText(user.id)}
               >
                 Copy ID
               </DropdownMenuItem>
@@ -230,7 +230,7 @@ export default function UsersTable({ props }:any) {
                 View
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href={`/dashboard/users/${user["_id"]}/update`}>
+                <Link href={`/dashboard/users/${user["id"]}/update`}>
                   Edit
                 </Link>
               </DropdownMenuItem>

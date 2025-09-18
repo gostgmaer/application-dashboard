@@ -58,8 +58,8 @@ const userServices = {
     requests.get("/user/table-report", null, null, headers, 1),
 
   // ---------- DYNAMIC ROUTES ----------
-  getSingleUser: (id: any, token: any) =>
-    requests.get(`/users/${id}`, null, null, {}, 1,token),
+  getSingleUser: (identifier: any, token: any) =>
+    requests.get(`/users/${identifier}`, null, null, {}, 1,token),
 
   updateUser: (id: any, body: any, token: any) =>
     requests.put(`/users/${id}`, body,{},{}, token),

@@ -101,7 +101,7 @@ const requests = {
     
     await fetchData(endpoint, {
       method: 'GET',
-      cacheTime: cacheTime,
+      cacheTime: 0,
       query, params, headers, token // Cache for 5 minutes
     }),
   post: async (endpoint, body, headers,token) =>

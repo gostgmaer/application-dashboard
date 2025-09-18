@@ -21,6 +21,10 @@ import Link from "next/link";
 import RoleForm from "./form";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import RolePermissionForm from "./assign";
+import authService from "@/lib/services/auth";
+import roleServices from "@/helper/services/roleServices";
+import { useSession } from "next-auth/react";
+import { useModal } from "@/contexts/modal-context";
 
 interface Roles {
   _id: string;
@@ -31,10 +35,10 @@ interface Roles {
 }
 
 export default function Table({ props }: any) {
-console.log(props);
-
+  const { data: session } = useSession();
   
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+    const { showConfirm, showAlert, showCustom } = useModal();
   const fetch = (state: TableState) => {
     return {
       data: props.roles,
@@ -57,6 +61,32 @@ console.log(props);
         closeOnEscape: true,
       }
     );
+  };
+
+  const deleteRequest = async (id: any) => {
+    return await roleServices.delete(id, session?.accessToken);
+  };
+
+  const handleDelete = async (data: any) => {
+    const confirmed = await showConfirm({
+      title: "Delete Item",
+      description:
+        "Are you sure you want to delete this item? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        deleteRequest(data._id);
+      },
+    });
+
+    if (confirmed) {
+      await showAlert({
+        title: "Success",
+        description: "Item has been deleted successfully.",
+        variant: "success",
+      });
+    }
   };
 
   const handlePermissionUI = (data: any) => {
@@ -264,6 +294,9 @@ console.log(props);
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handlePermissionUI(role)}>
                 Check Permissions
+              </DropdownMenuItem>,
+                <DropdownMenuItem onClick={() => handleDelete(role)}>
+                Remove
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -108,7 +108,7 @@ export default function PrivateLayout({ children }: DashboardProps) {
           </div>  
         </header>
 
-        <main className="flex-grow px-6 py-2 overflow-y-auto space-y-6  text-black  dark:text-white">
+        <main className="flex-grow px-6 py-2 space-y-6 max-h-[calc(100vh-64px)] overflow-y-auto  text-black  dark:text-white">
           {children}
         </main>
       </div>

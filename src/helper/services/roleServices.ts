@@ -19,8 +19,8 @@ const roleServices = {
   updatePatch: (id: any, body: any, token: any) =>
     requests.patch(`/roles/${id}`, body, {}, {}, token),
 
-  delete: (id: any, headers: any) =>
-    requests.delete(`/roles/${id}`, null, headers),
+  delete: (id: any, token:any) =>
+    requests.delete(`/roles/${id}`, {}, {},token),
 
   // 🔐 Permission Management
   addPermission: (id: any, body: any, headers: any) =>

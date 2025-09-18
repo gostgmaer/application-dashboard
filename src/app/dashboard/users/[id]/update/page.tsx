@@ -27,7 +27,7 @@ const Page = async (url: any) => {
           <div className="rounded-md  shadow-sm overflow-auto ">
             <UserCreate
               data={data.data}
-              id={data.data._id}
+              id={id}
               master={{ roles: role["results"] }}
             ></UserCreate>
           </div>
