@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
+  // ColumnDef,
+  // ColumnFiltersState,
+  // SortingState,
+  // VisibilityState,
   flexRender,
   getCoreRowModel,
   useReactTable,
-  PaginationState,
+  // PaginationState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -60,7 +60,7 @@ export function DataTable<T>({
   const initialState = getTableStateFromSearchParams(searchParams);
   
   const [tableState, setTableState] = useState<TableState>({
-    pagination: initialState.pagination || { pageIndex: 0, limit: initiallimit },
+    pagination: initialState.pagination || { pageIndex: 0, pageSize: initiallimit },
     sorting: initialState.sorting ?? [],
     columnFilters: initialState.columnFilters ?? [],
     globalFilter: initialState.globalFilter ?? '',
@@ -79,7 +79,7 @@ export function DataTable<T>({
     
     if (newState.pagination) {
       updates.page = newState.pagination.pageIndex + 1; // Convert to 1-based
-      updates.limit = newState.pagination.limit;
+      updates.limit = newState.pagination.pageSize;
     }
     
     if (newState.sorting !== undefined) {
@@ -173,15 +173,15 @@ export function DataTable<T>({
     updateTableState({
       pagination: {
         pageIndex,
-        limit: limit ?? tableState.pagination.limit,
+        pageSize: limit ?? tableState.pagination.pageSize,
       },
     });
-  }, [updateTableState, tableState.pagination.limit]);
+  }, [updateTableState, tableState.pagination.pageSize]);
 
   // Reset function
   const handleReset = useCallback(() => {
     const resetState = {
-      pagination: { pageIndex: 0, limit: initiallimit },
+      pagination: { pageIndex: 0, pageSize: initiallimit },
       sorting: defaultSorting,
       columnFilters: defaultFilters,
       globalFilter: '',
@@ -239,7 +239,7 @@ export function DataTable<T>({
       const newPagination = typeof updater === 'function' 
         ? updater(tableState.pagination) 
         : updater;
-      handlePaginationChange(newPagination.pageIndex, newPagination.limit);
+      handlePaginationChange(newPagination.pageIndex, newPagination.pageSize);
     },
     onSortingChange: (updater) => {
       const newSorting = typeof updater === 'function' 
@@ -324,7 +324,7 @@ export function DataTable<T>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({ length: tableState.pagination.limit }).map((_, index) => (
+              Array.from({ length: tableState.pagination.pageSize }).map((_, index) => (
                 <TableRow key={index}>
                   {columns.map((_, cellIndex) => (
                     <TableCell key={cellIndex}>
@@ -367,7 +367,7 @@ export function DataTable<T>({
 
       <TablePagination
         pageIndex={tableState.pagination.pageIndex}
-        limit={tableState.pagination.limit}
+        limit={tableState.pagination.pageSize}
         totalCount={totalCount}
         pageCount={pageCount}
         canPreviousPage={table.getCanPreviousPage()}

@@ -11,7 +11,7 @@ import authService from "@/helper/services/authServices";
 import addressServices from "@/helper/services/addressService";
 // Adjust path based on your project structure
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page() {
   const session = await getServerSession(authOptions);
   const userData = await authService.getAccountSetting(session?.accessToken);
      const address = await addressServices.getUser(session?.accessToken);

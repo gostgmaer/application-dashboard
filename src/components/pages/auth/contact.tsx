@@ -82,7 +82,7 @@ export default function ContactForm() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Get in Touch</h1>
           <p className="text-lg text-gray-600 dark:text-gray-300 max-w-lg mx-auto">
-            We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            We`&apos;d love to hear from you. Send us a message and we`&apos;ll respond as soon as possible.
           </p>
         </div>
 
@@ -90,7 +90,7 @@ export default function ContactForm() {
           <CardHeader className="text-center pb-8">
             <CardTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Contact Us</CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
-              Fill out the form below and we'll get back to you shortly.
+              Fill out the form below and we`&apos;ll get back to you shortly.
             </CardDescription>
           </CardHeader>
           

@@ -1,6 +1,6 @@
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
-import ProductCreate from "@/components/pages/dashboard/product/nf";
+import ProductCreate from "@/components/pages/dashboard/product/form";
 import React, { Suspense } from "react";
 
 const Page = () => {  

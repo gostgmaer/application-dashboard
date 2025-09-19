@@ -185,7 +185,7 @@ export default function InterestsTab({ user }: InterestsTabProps) {
             </div>
             {suggestedInterests.filter(interest => !interests.includes(interest)).length === 0 && (
               <p className="text-sm text-muted-foreground">
-                You've added all our suggested interests! Feel free to add your own.
+                You&apos;ve added all our suggested interests! Feel free to add your own.
               </p>
             )}
           </div>

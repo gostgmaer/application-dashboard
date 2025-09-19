@@ -26,7 +26,7 @@ import { useSession } from "next-auth/react";
 const DashboardHeader: React.FC = () => {
   const { data: session } = useSession();
 
-  const notifications = [
+  const notifications:any = [
     {
       id: 1,
       title: "Low Stock Alert",

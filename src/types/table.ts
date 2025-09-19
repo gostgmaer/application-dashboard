@@ -1,8 +1,11 @@
+
+
+interface PaginationState {
+  pageIndex: number;
+  pageSize: number; // Note: pageSize, not limit
+}
 export interface TableState {
-  pagination: {
-    pageIndex: number;
-    limit: number;
-  };
+  pagination: PaginationState;
   sorting: Array<{
     id: string;
     desc: boolean;

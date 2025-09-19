@@ -9,7 +9,7 @@ import PrivateLayout from "@/components/layout/dashboard";
 import addressServices from "@/helper/services/addressService";
 // Adjust path based on your project structure
 
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page() {
   const session = await getServerSession(authOptions);
 
   const userData = await userServices.getProfile(session?.accessToken);

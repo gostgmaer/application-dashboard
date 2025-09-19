@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-interface Notification {
+export interface Notification {
   id: number;
   title: string;
   message: string;

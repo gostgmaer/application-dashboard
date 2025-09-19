@@ -206,9 +206,24 @@ export const resetPasswordSchema = yup.object().shape({
     .oneOf([yup.ref('password')], 'Passwords must match'),
 });
 
+export const resetPasswordFormSchema = z
+  .object({
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+      ),
+    confirmPassword: z.string().min(8, "Please confirm your password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 
-
+export type ResetPasswordFormData = z.infer<typeof resetPasswordFormSchema>;
 
 export const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
