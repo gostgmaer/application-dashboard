@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
 
-export default function Breadcrumbs({ btn,heading }:any) {
+export default function Breadcrumbs({ btn, heading, desc }: any) {
   const pathname = usePathname();
 
   const segments = pathname
@@ -23,6 +23,7 @@ export default function Breadcrumbs({ btn,heading }:any) {
         <h1 className="text-2xl font-bold tracking-tight">
           {heading || segments[segments.length - 1]?.label}
         </h1>
+       { desc && <h3 className="text-md font-normal text-gray-700 dark:text-gray-300 tracking-tight">{desc}</h3>}
         <nav className="text-sm text-gray-700 dark:text-gray-300 flex flex-wrap gap-1">
           {segments.map((seg, idx) => (
             <React.Fragment key={seg.href}>

@@ -72,6 +72,10 @@ const authService = {
   verifyMFA: (body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
     safeApiCall(() => requests.post("/auth/mfa/verify", body, token, headers)),
 
+  getAccountSetting: (token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
+    safeApiCall(() => requests.get("/auth/account-settng", token, undefined, undefined, headers)),
+
+
   findFullyPopulatedProfile: (token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get("/auth/profile-data", token, undefined, undefined, headers)),
 

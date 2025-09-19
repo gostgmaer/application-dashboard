@@ -196,3 +196,13 @@ export function transformSortParams(params: SortParams): string | undefined {
   const direction = String(sortDesc).toLowerCase() === "true" ? "desc" : "asc";
   return `${sortBy}:${direction}`;
 }
+
+
+
+export function removeKeysFromObject(obj:any, keysToRemove:any) {
+  const newObj = { ...obj }; // clone to avoid mutating original
+  keysToRemove.forEach((key:string) => {
+    delete newObj[key];
+  });
+  return newObj;
+}

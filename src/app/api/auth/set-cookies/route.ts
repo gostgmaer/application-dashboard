@@ -4,6 +4,7 @@ import { authOptions } from "../authOptions"; // adjust path if needed
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import authService from "@/lib/services/auth";
+import { removeKeysFromObject } from "@/helper/function";
 // import { storeCookiesOfObject } from "@/helper/function";
 
 
@@ -24,7 +25,8 @@ export async function GET() {
 
 
     // const { id, ...cleanUser } = currentUser;    
-    const idkeys = Object.keys(data);
+    const idkeys = Object.keys(removeKeysFromObject(data,["dateOfBirth",'gender','image','preferences','loyaltyPoints','phoneNumber','role']));
+
     idkeys.forEach(key => {
         (cookieStore).set(`${key}`, data[key] || "", {
             httpOnly: true,
@@ -35,17 +37,34 @@ export async function GET() {
         });
     });
 
-    const sdata: any = session;
-    const keys = Object.keys(sdata);
-    keys.forEach(key => {
-        (cookieStore).set(`${key}`, sdata[key] || "", {
+
+     (cookieStore).set(`accessToken`, session.accessToken || "", {
             httpOnly: true,
             secure: true,
             sameSite: "lax",
             path: "/",
-            maxAge: 60 * 60 * 24 * 30,
+            maxAge: 60 * 60 * 24 * 7,
         });
-    });
+
+         (cookieStore).set(`refreshToken`, session.refreshToken || "", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            path: "/",
+            maxAge: 60 * 60 * 24 * 7,
+        });
+
+    // const sdata: any = session;
+    // const keys = Object.keys(sdata);
+    // keys.forEach(key => {
+    //     (cookieStore).set(`${key}`, sdata[key] || "", {
+    //         httpOnly: true,
+    //         secure: true,
+    //         sameSite: "lax",
+    //         path: "/",
+    //         maxAge: 60 * 60 * 24 * 7,
+    //     });
+    // });
     // console.log(session);
     return NextResponse.json({ message: "Session cookies set successfully" });
 }

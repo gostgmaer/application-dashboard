@@ -17,3 +17,4 @@ export const twitterClient =""
 export const twitterSecret =""
 export const oidcClient =""
 export const oidcIssuer =""
+export const sitekey =process.env.NEXT_PUBLIC_SITEKEY
