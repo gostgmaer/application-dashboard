@@ -1,22 +1,42 @@
+"use client";
 import React, { useState, useEffect, useRef } from 'react';
-
-export interface Notification {
-  id: number;
-  title: string;
-  message: string;
-  time: string;
-  type: 'warning' | 'success' | 'info';
-}
+import NotificationClient, { Notification } from '../../utils/socket';
 
 interface NotificationsPopoverProps {
-  notifications: Notification[];
+  token: string;
 }
 
-const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ notifications }) => {
+const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ token }) => {
   const [visible, setVisible] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const containerRef = useRef<HTMLDivElement>(null);
+  const clientRef = React.useRef<NotificationClient | null>(null);
 
   useEffect(() => {
+    // Initialize notification client once with token and callbacks for updates
+    const client = new NotificationClient(token, {
+      onNew: (notification) => {
+        setNotifications((prev) => [notification, ...prev]);
+        setUnreadCount((count) => count + 1);
+      },
+      onUpdate: (id, status) => {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, metadata: { ...n.metadata, status } } : n))
+        );
+        if (status === 'read') setUnreadCount((count) => Math.max(count - 1, 0));
+      },
+      onReadAll: () => setUnreadCount(0),
+    });
+    clientRef.current = client;
+
+    // Cleanup on unmount
+    return () => client.disconnect();
+  }, [token]);
+
+  useEffect(() => {
+    // Close popover if clicking outside
     function handleClickOutside(event: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setVisible(false);
@@ -26,55 +46,93 @@ const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ notificatio
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const toggleVisible = () => setVisible((v) => !v);
+
+  const markAsRead = (id: string) => {
+    clientRef.current?.markAsRead(id);
+  };
+
+  const markAllRead = () => {
+    clientRef.current?.markAllRead();
+    setUnreadCount(0);
+  };
+
   return (
-    <div className="relative" ref={containerRef}>
+    <div ref={containerRef} className="relative">
+      {/* Notification Bell Button */}
       <button
-        onClick={() => setVisible(v => !v)}
-        className="p-2 rounded-lg transition-colors duration-200 relative text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+        onClick={toggleVisible}
         aria-label="Notifications"
+        className="p-2 rounded-lg relative text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
       >
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path d="M15 17h5l-1.405-1.405M19 13V8a7 7 0 10-14 0v5l-1.405 1.405" />
-        </svg>
-        {notifications.length > 0 && (
-          <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-            {notifications.length}
+        🔔
+        {unreadCount > 0 && (
+          <span className="absolute top-0 right-0 rounded-full bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center">
+            {unreadCount}
           </span>
         )}
       </button>
 
+      {/* Dropdown List */}
       {visible && (
-        <div className="absolute right-0 mt-2 w-80 rounded-lg shadow-lg border bg-white border-gray-200 z-50 dark:bg-gray-800 dark:border-gray-700 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-96 max-h-96 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg z-50 dark:bg-gray-800 dark:border-gray-700">
+          <div className="flex justify-between items-center px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
+            {unreadCount > 0 && (
+              <button
+                className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600"
+                onClick={markAllRead}
+              >
+                Mark all read
+              </button>
+            )}
           </div>
-          {notifications.map(n => (
-            <div
-              key={n.id}
-              className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
-            >
-              <div className="flex items-start space-x-3">
-                <div
-                  className={`w-2 h-2 rounded-full mt-2 ${
-                    n.type === 'warning' ? 'bg-yellow-500' :
-                    n.type === 'success' ? 'bg-green-500' : 'bg-blue-500'
+
+          {notifications.length === 0 && (
+            <p className="p-4 text-center text-gray-500 dark:text-gray-400">No notifications</p>
+          )}
+
+          <ul>
+            {notifications.map((n) => {
+              const isRead = n.metadata?.status === 'read';
+              return (
+                <li
+                  key={n.id}
+                  className={`px-4 py-2 border-b border-gray-200 dark:border-gray-700 ${
+                    isRead ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'
                   }`}
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-sm text-gray-900 dark:text-white">{n.title}</p>
-                  <p className="text-sm mt-1 text-gray-600 dark:text-gray-300">{n.message}</p>
-                  <p className="text-xs mt-2 text-gray-500 dark:text-gray-400">{n.time}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-          <div className="p-4">
-            <button
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-200">{n.title}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{n.message}</p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">
+                        {new Date(n.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    {!isRead && (
+                      <button
+                        onClick={() => markAsRead(n.id)}
+                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-600"
+                      >
+                        Mark read
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Optional link to view all notifications page */}
+          <div className="text-center py-2">
+            <a
+              href="/notifications"
+              className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
               onClick={() => setVisible(false)}
-              className="w-full text-center text-sm font-medium py-2 rounded-lg transition-colors duration-200 text-blue-600 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-gray-700"
             >
               View All Notifications
-            </button>
+            </a>
           </div>
         </div>
       )}

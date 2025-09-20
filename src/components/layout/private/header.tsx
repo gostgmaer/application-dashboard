@@ -72,7 +72,7 @@ const DashboardHeader: React.FC = () => {
               </div>
             </div>
             {/* Navigation */}
-            <div className="flex-1 max-w-lg mx-8 hidden md:block">
+            <div className="flex-1 max-w-xl w-auto mx-8 hidden md:block">
               <SearchBar></SearchBar>
             </div>
           </div>
@@ -85,8 +85,7 @@ const DashboardHeader: React.FC = () => {
               <Menu className="h-5 w-5 text-gray-600 dark:text-gray-300" />
             </button>
             {/* Notifications */}
-            <NotificationsPopover
-              notifications={notifications}
+            <NotificationsPopover token={session?.accessToken || ""}
             ></NotificationsPopover>
             {/* Theme Toggle */}
             <ThemeSwitch />
