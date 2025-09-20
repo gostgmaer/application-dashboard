@@ -4,11 +4,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Loader2, Facebook, Twitter, Linkedin, Chrome, Github } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Facebook, Twitter, Instagram, Linkedin, Chrome, Pin, Github, CheckCircle, AlertCircle, Unlink } from 'lucide-react'
 import { socialMediaSchema, connectedAccountsSchema, SocialMediaFormData, ConnectedAccountsFormData } from '@/lib/validation/account'
 import { User } from '@/types/user'
 import { toast } from 'sonner'
@@ -17,324 +20,318 @@ interface SocialMediaTabProps {
   user: User
 }
 
-interface ConnectedAccount {
-  provider: string
-  providerId: string | undefined
-  email: string
-  verified: boolean
-  connectedAt: Date
-}
-
 export default function SocialMediaTab({ user }: SocialMediaTabProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogType, setDialogType] = useState<'disconnect' | 'connect-social' | null>(null)
-  const [dialogPlatform, setDialogPlatform] = useState<keyof SocialMediaFormData | null>(null)
-  const [originalValue, setOriginalValue] = useState<string | ConnectedAccount | null>(null)
-  const [connecting, setConnecting] = useState<keyof ConnectedAccountsFormData | null>(null)
+  const [isLoadingSocial, setIsLoadingSocial] = useState(false)
+  const [isLoadingConnected, setIsLoadingConnected] = useState(false)
+  const [connectedAccounts, setConnectedAccounts] = useState(user.socialAccounts || [])
 
-  // Initialize connectedAccounts form
-  const connectedForm = useForm<ConnectedAccountsFormData>({
-    resolver: zodResolver(connectedAccountsSchema),
-    defaultValues: {
-      facebook: user.connectedAccounts?.find(acc => acc.provider === 'facebook' && acc.verified)?.providerId || '',
-      twitter: user.connectedAccounts?.find(acc => acc.provider === 'twitter' && acc.verified)?.providerId || '',
-      linkedin: user.connectedAccounts?.find(acc => acc.provider === 'linkedin' && acc.verified)?.providerId || '',
-      google: user.connectedAccounts?.find(acc => acc.provider === 'google' && acc.verified)?.providerId || '',
-      github: user.connectedAccounts?.find(acc => acc.provider === 'github' && acc.verified)?.providerId || ''
-    }
-  })
-
-  // Initialize socialMedia form
-  const socialForm = useForm<SocialMediaFormData>({
+  const socialMediaForm = useForm<SocialMediaFormData>({
     resolver: zodResolver(socialMediaSchema),
     defaultValues: {
-      facebook: user.socialMedia?.facebook || '',
-      twitter: user.socialMedia?.twitter || '',
-      linkedin: user.socialMedia?.linkedin || '',
-      google: user.socialMedia?.google || '',
-      github: user.socialMedia?.github || ''
+      facebook: user.socialMedia.facebook || '',
+      twitter: user.socialMedia.twitter || '',
+      instagram: user.socialMedia.instagram || '',
+      linkedin: user.socialMedia.linkedin || '',
+      google: user.socialMedia.google || '',
+      pinterest: user.socialMedia.pinterest || ''
     }
   })
 
-  const connectedValues = connectedForm.watch()
-  const socialValues = socialForm.watch()
-
-  // Combined submit handler for both forms
-  const onSubmit = async () => {
-    // Validate both forms
-    const connectedValid = await connectedForm.trigger()
-    const socialValid = await socialForm.trigger()
-
-    if (!connectedValid || !socialValid) {
-      toast.error('Please fix form errors before submitting.')
-      return
+  const connectedAccountsForm = useForm<ConnectedAccountsFormData>({
+    resolver: zodResolver(connectedAccountsSchema),
+    defaultValues: {
+      google: connectedAccounts.some(acc => acc.provider === 'google'),
+      facebook: connectedAccounts.some(acc => acc.provider === 'facebook'),
+      twitter: connectedAccounts.some(acc => acc.provider === 'twitter'),
+      github: connectedAccounts.some(acc => acc.provider === 'github'),
+      linkedin: connectedAccounts.some(acc => acc.provider === 'linkedin')
     }
+  })
 
-    setIsLoading(true)
+  const onSocialMediaSubmit = async (data: SocialMediaFormData) => {
+    setIsLoadingSocial(true)
     try {
       await new Promise(resolve => setTimeout(resolve, 1000))
-      // Construct connectedAccounts array of objects based on non-empty values
-      const connectedAccounts: ConnectedAccount[] = Object.keys(connectedValues)
-        .filter(key => connectedValues[key as keyof ConnectedAccountsFormData])
-        .map(key => ({
-          provider: key,
-          providerId: connectedValues[key as keyof ConnectedAccountsFormData],
-          email: `${key}@example.com`, // Placeholder; real app would get from API
-          verified: true,
-          connectedAt: new Date()
-        }))
-      console.log('Updated connected accounts:', connectedAccounts)
-      console.log('Updated social media:', socialForm.getValues())
-      toast.success('Accounts updated successfully!')
+      console.log('Updated social media:', data)
+      toast.success('Social media links updated successfully!')
     } catch (error) {
-      toast.error('Failed to update accounts. Please try again.')
+      toast.error('Failed to update social media links. Please try again.')
     } finally {
-      setIsLoading(false)
+      setIsLoadingSocial(false)
     }
   }
 
-  const handleConnectedToggle = (name: keyof ConnectedAccountsFormData, checked: boolean) => {
-    const isCurrentlyConnected = !!connectedValues[name]
-
-    if (checked) {
-      if (!isCurrentlyConnected) {
-        // Simulate API call for connection verification (e.g., OAuth flow)
-        setConnecting(name)
-        setIsLoading(true)
-        new Promise((resolve, reject) => setTimeout(() => Math.random() > 0.1 ? resolve('success') : reject('error'), 1500))
-          .then(() => {
-            connectedForm.setValue(name, `${name}-provider-id-${Date.now()}`, { shouldValidate: true })
-            toast.success(`${name.charAt(0).toUpperCase() + name.slice(1)} connected successfully!`)
-            setConnecting(null)
-            setIsLoading(false)
-          })
-          .catch(() => {
-            connectedForm.setValue(name, '', { shouldValidate: true })
-            toast.error(`Failed to connect to ${name}. Please try again.`)
-            setConnecting(null)
-            setIsLoading(false)
-          })
-      }
-    } else {
-      if (isCurrentlyConnected) {
-        // Show disconnect confirmation modal
-        const origAccount = user.connectedAccounts?.find(acc => acc.provider === name && acc.verified)
-        setOriginalValue(origAccount || null)
-        connectedForm.setValue(name, '', { shouldValidate: true })
-        setDialogPlatform(name)
-        setDialogType('disconnect')
-        setDialogOpen(true)
-      }
-    }
-  }
-
-  const handleSocialToggle = (name: keyof SocialMediaFormData, checked: boolean) => {
-    const isCurrentlyConnected = !!socialValues[name]
-
-    if (checked) {
-      if (!isCurrentlyConnected) {
-        // Show connect confirmation modal
-        setDialogPlatform(name)
-        setDialogType('connect-social')
-        setDialogOpen(true)
-      }
-    } else {
-      if (isCurrentlyConnected) {
-        // Show disconnect confirmation modal
-        const origValue = socialForm.getValues(name)
-        setOriginalValue(origValue)
-        socialForm.setValue(name, '', { shouldValidate: true })
-        setDialogPlatform(name)
-        setDialogType('disconnect')
-        setDialogOpen(true)
-      }
-    }
-  }
-
-  const handleConfirmSocialConnect = () => {
-    if (dialogPlatform) {
-      const baseUrl = dialogPlatform === 'google' ? 'plus.google' : dialogPlatform
-      socialForm.setValue(dialogPlatform, `https://${baseUrl}.com/yourusername`, { shouldValidate: true })
-      toast.success(`${dialogPlatform.charAt(0).toUpperCase() + dialogPlatform.slice(1)} added successfully!`)
-    }
-    setDialogOpen(false)
-    setDialogPlatform(null)
-    setDialogType(null)
-  }
-
-  const handleCancelDialog = () => {
-    if (dialogPlatform && dialogType === 'disconnect') {
-      if (originalValue) {
-        if (typeof originalValue === 'string') {
-          socialForm.setValue(dialogPlatform, originalValue, { shouldValidate: true })
-        } else {
-          connectedForm.setValue(dialogPlatform, originalValue.providerId || '', { shouldValidate: true })
+  const handleConnectAccount = async (provider: string, connect: boolean) => {
+    setIsLoadingConnected(true)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      if (connect) {
+        // Simulate OAuth connection
+        const newAccount = {
+          id: Date.now().toString(),
+          provider: provider as any,
+          providerId: `${provider}_${Math.random().toString(36).substr(2, 9)}`,
+          email: user.email,
+          verified: true,
+          connectedAt: new Date().toISOString()
         }
+        setConnectedAccounts(prev => [...prev, newAccount])
+        toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account connected successfully!`)
+      } else {
+        // Disconnect account
+        setConnectedAccounts(prev => prev.filter(acc => acc.provider !== provider))
+        toast.success(`${provider.charAt(0).toUpperCase() + provider.slice(1)} account disconnected successfully!`)
       }
+    } catch (error) {
+      toast.error(`Failed to ${connect ? 'connect' : 'disconnect'} ${provider} account.`)
+    } finally {
+      setIsLoadingConnected(false)
     }
-    setDialogOpen(false)
-    setDialogPlatform(null)
-    setDialogType(null)
-    setOriginalValue(null)
   }
 
-  const accountPlatforms = [
+  const socialPlatforms = [
     {
-      name: 'facebook' as const,
+      name: 'facebook',
       label: 'Facebook',
       icon: Facebook,
+      placeholder: 'https://facebook.com/yourusername',
       color: 'text-blue-600'
     },
     {
-      name: 'twitter' as const,
+      name: 'twitter',
       label: 'Twitter',
       icon: Twitter,
+      placeholder: 'https://twitter.com/yourusername',
       color: 'text-sky-500'
     },
     {
-      name: 'linkedin' as const,
+      name: 'instagram',
+      label: 'Instagram',
+      icon: Instagram,
+      placeholder: 'https://instagram.com/yourusername',
+      color: 'text-pink-600'
+    },
+    {
+      name: 'linkedin',
       label: 'LinkedIn',
       icon: Linkedin,
+      placeholder: 'https://linkedin.com/in/yourusername',
       color: 'text-blue-700'
     },
     {
-      name: 'google' as const,
+      name: 'google',
       label: 'Google',
       icon: Chrome,
+      placeholder: 'https://plus.google.com/yourid',
       color: 'text-red-500'
     },
     {
-      name: 'github' as const,
-      label: 'GitHub',
+      name: 'pinterest',
+      label: 'Pinterest',
+      icon: Pin,
+      placeholder: 'https://pinterest.com/yourusername',
+      color: 'text-red-600'
+    }
+  ] as const
+
+  const connectedProviders = [
+    {
+      id: 'google',
+      name: 'Google',
+      icon: Chrome,
+      color: 'text-red-500',
+      description: 'Sign in with your Google account'
+    },
+    {
+      id: 'facebook',
+      name: 'Facebook',
+      icon: Facebook,
+      color: 'text-blue-600',
+      description: 'Sign in with your Facebook account'
+    },
+    {
+      id: 'twitter',
+      name: 'Twitter',
+      icon: Twitter,
+      color: 'text-sky-500',
+      description: 'Sign in with your Twitter account'
+    },
+    {
+      id: 'github',
+      name: 'GitHub',
       icon: Github,
-      color: 'text-gray-800'
+      color: 'text-gray-800',
+      description: 'Sign in with your GitHub account'
+    },
+    {
+      id: 'linkedin',
+      name: 'LinkedIn',
+      icon: Linkedin,
+      color: 'text-blue-700',
+      description: 'Sign in with your LinkedIn account'
     }
   ]
 
-  const isConnectedChecked = (name: keyof ConnectedAccountsFormData) => !!connectedValues[name] || connecting === name
-  const isSocialChecked = (name: keyof SocialMediaFormData) => !!socialValues[name]
+  const isAccountConnected = (provider: string) => {
+    return connectedAccounts.some(acc => acc.provider === provider)
+  }
+
+  const getConnectedAccount = (provider: string) => {
+    return connectedAccounts.find(acc => acc.provider === provider)
+  }
 
   return (
-    <>
-           <form onSubmit={(e) => { e.preventDefault(); onSubmit(); }} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Connected Accounts */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Connected Accounts</h3>
-                {accountPlatforms.map((platform) => {
-                  const Icon = platform.icon
-                  return (
-                    <div key={platform.name} className="flex items-center justify-between">
-                      <Label 
-                        htmlFor={`connected-${platform.name}`}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Icon className={`h-4 w-4 ${platform.color}`} />
-                        {platform.label}
-                      </Label>
-                      <Switch
-                        id={`connected-${platform.name}`}
-                        checked={isConnectedChecked(platform.name)}
-                        onCheckedChange={(checked) => handleConnectedToggle(platform.name, checked)}
-                        disabled={isLoading}
-                      />
-                      {connectedForm.formState.errors[platform.name] && (
-                        <p className="text-sm text-destructive mt-1">{connectedForm.formState.errors[platform.name]?.message}</p>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
+    <div className="space-y-8">
+      {/* Connected Accounts for Login */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5" />
+            Connected Accounts
+          </CardTitle>
+          <CardDescription>
+            Connect social accounts to enable quick sign-in options. You can use these accounts to log in to your account.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Connected accounts allow you to sign in quickly without entering your password. 
+              Make sure to keep at least one login method available.
+            </AlertDescription>
+          </Alert>
 
-              {/* Social Media Accounts */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Social Media Accounts</h3>
-                {accountPlatforms.map((platform) => {
-                  const Icon = platform.icon
-                  return (
-                    <div key={platform.name} className="flex items-center justify-between">
-                      <Label 
-                        htmlFor={`social-${platform.name}`}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Icon className={`h-4 w-4 ${platform.color}`} />
-                        {platform.label}
-                      </Label>
-                      <Switch
-                        id={`social-${platform.name}`}
-                        checked={isSocialChecked(platform.name)}
-                        onCheckedChange={(checked) => handleSocialToggle(platform.name, checked)}
-                        disabled={isLoading}
-                      />
-                      {socialForm.formState.errors[platform.name] && (
-                        <p className="text-sm text-destructive mt-1">{socialForm.formState.errors[platform.name]?.message}</p>
-                      )}
+          <div className="space-y-4">
+            {connectedProviders.map((provider) => {
+              const Icon = provider.icon
+              const isConnected = isAccountConnected(provider.id)
+              const connectedAccount = getConnectedAccount(provider.id)
+              
+              return (
+                <div key={provider.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <div className={`p-2 rounded-full bg-gray-100`}>
+                      <Icon className={`h-5 w-5 ${provider.color}`} />
                     </div>
-                  )
-                })}
-              </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-medium">{provider.name}</h4>
+                        {isConnected && (
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Connected
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {isConnected 
+                          ? `Connected as ${connectedAccount?.email} on ${new Date(connectedAccount?.connectedAt || '').toLocaleDateString()}`
+                          : provider.description
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {isConnected && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleConnectAccount(provider.id, false)}
+                        disabled={isLoadingConnected}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Unlink className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Switch
+                      checked={isConnected}
+                      onCheckedChange={(checked) => handleConnectAccount(provider.id, checked)}
+                      disabled={isLoadingConnected}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {isLoadingConnected && (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span className="text-sm text-muted-foreground">Processing connection...</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Social Media Profile Links */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Instagram className="h-5 w-5" />
+            Social Media Profiles
+          </CardTitle>
+          <CardDescription>
+            Add links to your social media profiles to display on your public profile
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={socialMediaForm.handleSubmit(onSocialMediaSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {socialPlatforms.map((platform) => {
+                const Icon = platform.icon
+                return (
+                  <div key={platform.name} className="space-y-2">
+                    <Label 
+                      htmlFor={platform.name}
+                      className="flex items-center gap-2"
+                    >
+                      <Icon className={`h-4 w-4 ${platform.color}`} />
+                      {platform.label}
+                    </Label>
+                    <Input
+                      id={platform.name}
+                      {...socialMediaForm.register(platform.name)}
+                      placeholder={platform.placeholder}
+                      type="url"
+                    />
+                    {socialMediaForm.formState.errors[platform.name] && (
+                      <p className="text-sm text-destructive">
+                        {socialMediaForm.formState.errors[platform.name]?.message}
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
             <div className="bg-muted/50 p-4 rounded-lg">
               <h4 className="font-medium mb-2">Privacy Notice</h4>
               <p className="text-sm text-muted-foreground">
-                Your connected accounts and social media links will be displayed on your public profile. 
+                Your social media links will be displayed on your public profile. 
                 Only share links you&apos;re comfortable with others seeing.
               </p>
             </div>
 
             <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" disabled={isLoadingSocial}>
+                {isLoadingSocial ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Updating...
                   </>
                 ) : (
-                  'Save Changes'
+                  'Update Social Links'
                 )}
               </Button>
             </div>
           </form>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {dialogType === 'connect-social' ? 'Add Social Media Account' : 'Disconnect Account'}
-            </DialogTitle>
-            <DialogDescription>
-              {dialogType === 'connect-social'
-                ? `Do you want to add your ${dialogPlatform} social media account?`
-                : `Are you sure you want to disconnect your ${dialogPlatform} account? This action cannot be undone.`}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={handleCancelDialog}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                if (dialogType === 'connect-social') {
-                  handleConfirmSocialConnect()
-                } else {
-                  toast.success(`${dialogPlatform} disconnected successfully!`)
-                  setDialogOpen(false)
-                  setDialogPlatform(null)
-                  setDialogType(null)
-                  setOriginalValue(null)
-                }
-              }}
-            >
-              {dialogType === 'connect-social' ? 'Add' : 'Disconnect'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

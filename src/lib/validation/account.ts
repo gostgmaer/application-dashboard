@@ -16,7 +16,7 @@ export const personalDetailsSchema = z.object({
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
       'Password must contain uppercase, lowercase, number and special character'),
   confirmPassword: z.string().min(1, 'Please confirm your password')
 }).refine((data) => data.newPassword === data.confirmPassword, {
@@ -44,8 +44,16 @@ export const socialMediaSchema = z.object({
   instagram: z.string().url('Invalid Instagram URL').optional().or(z.literal('')),
   linkedin: z.string().url('Invalid LinkedIn URL').optional().or(z.literal('')),
   google: z.string().url('Invalid Google URL').optional().or(z.literal('')),
-  github: z.string().url('Invalid Github URL').optional().or(z.literal('')),
   pinterest: z.string().url('Invalid Pinterest URL').optional().or(z.literal(''))
+})
+
+// Connected Accounts Schema
+export const connectedAccountsSchema = z.object({
+  google: z.boolean(),
+  facebook: z.boolean(),
+  twitter: z.boolean(),
+  github: z.boolean(),
+  linkedin: z.boolean()
 })
 
 // Address Schema
@@ -85,15 +93,6 @@ export const subscriptionSchema = z.object({
 // Interests Schema  
 export const interestsSchema = z.object({
   interests: z.array(z.string()).max(20, 'Maximum 20 interests allowed')
-})
-
-
-export const connectedAccountsSchema = z.object({
-  facebook: z.string().optional(),
-  twitter: z.string().optional(),
-  linkedin: z.string().optional(),
-  google: z.string().optional(),
-  github: z.string().optional()
 })
 
 export type PersonalDetailsFormData = z.infer<typeof personalDetailsSchema>

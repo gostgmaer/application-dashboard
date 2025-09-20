@@ -70,7 +70,14 @@ export default function PaymentMethodsTab({ user }: PaymentMethodsTabProps) {
           ...data,
           cardNumber: `**** **** **** ${data.cardNumber.slice(-4)}`
         }
-        setPaymentMethods(prev => [...prev, newMethod])
+           setPaymentMethods((prev) =>
+          prev.map((addr) =>
+            addr.id === editingMethod
+              ? { ...addr, ...data } // data must have compatible shape with Address
+              : addr
+          )
+        );
+        // setPaymentMethods(prev => [...prev, newMethod])
         toast.success('Payment method added successfully!')
       }
 

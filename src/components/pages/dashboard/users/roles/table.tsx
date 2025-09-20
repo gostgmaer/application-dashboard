@@ -36,13 +36,14 @@ interface Roles {
 
 export default function Table({ props }: any) {
   const { data: session } = useSession();
-  
+
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
-    const { showConfirm, showAlert, showCustom } = useModal();
-  const fetch = (state: TableState) => {
+  const { showConfirm, showAlert, showCustom } = useModal();
+
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
-      data: props.roles,
-      totalCount: props.pagination.totalItems,
+      data: props.roles || [],
+      totalCount: props.pagination.totalItems || 0,
       pageCount: props.pagination.totalPages,
     };
   };
@@ -51,7 +52,11 @@ export default function Table({ props }: any) {
     openDialog(
       <div>
         <CustomDialog showHeader title="Update Role">
-          <RoleForm initialData={data} id={data._id} permissionData={props.permissions} />
+          <RoleForm
+            initialData={data}
+            id={data._id}
+            permissionData={props.permissions}
+          />
         </CustomDialog>
       </div>,
       {
@@ -93,7 +98,11 @@ export default function Table({ props }: any) {
     openDialog(
       <div>
         <CustomDialog showHeader title="Update Permissions">
-          <RolePermissionForm initialData={data} id={data._id} permissionData={props.permissions} />
+          <RolePermissionForm
+            initialData={data}
+            id={data._id}
+            permissionData={props.permissions}
+          />
         </CustomDialog>
       </div>,
       {
@@ -109,7 +118,11 @@ export default function Table({ props }: any) {
     openDialog(
       <div>
         <CustomDialog showHeader title="Create Role">
-          <RoleForm initialData={data} id={undefined} permissionData={props.permissions} />
+          <RoleForm
+            initialData={data}
+            id={undefined}
+            permissionData={props.permissions}
+          />
         </CustomDialog>
       </div>,
       {
@@ -294,8 +307,9 @@ export default function Table({ props }: any) {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handlePermissionUI(role)}>
                 Check Permissions
-              </DropdownMenuItem>,
-                <DropdownMenuItem onClick={() => handleDelete(role)}>
+              </DropdownMenuItem>
+              ,
+              <DropdownMenuItem onClick={() => handleDelete(role)}>
                 Remove
               </DropdownMenuItem>
             </DropdownMenuContent>

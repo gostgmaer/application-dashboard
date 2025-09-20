@@ -105,7 +105,7 @@ export default function SubscriptionTab({ user }: SubscriptionTabProps) {
   }
 
   const getCurrentPlan = () => {
-    return plans.find(plan => plan.id === currentPlan)
+    return plans.find(plan => plan.id === currentPlan)||{ name: 'Free', price: 0, color: 'bg-gray-100 text-gray-800', icon: Users}
   }
 
   return (

@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 // import XLSX from "xlsx";
 import moment from "moment";
 // Export the calculateTimeGap function with maxGap parameter
-export function calculateTimeGap(date1, date2, maxGap) {
+export function calculateTimeGap(date1:any, date2:any, maxGap:any) {
   const momentDate1 = moment(date1, "YYYY-MM-DD HH:mm:ss");
   const momentDate2 = date2 ? moment(date2, "YYYY-MM-DD HH:mm:ss") : moment();
 
@@ -34,7 +34,7 @@ export function calculateTimeGap(date1, date2, maxGap) {
   return `${formattedDuration}`;
 }
 
-export const formatFileSize = (bytes) => {
+export const formatFileSize = (bytes:any) => {
   if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
@@ -44,8 +44,8 @@ export const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
-export const findIndex = (array, index) => {
-  const found = array.find(function (element, ind) {
+export const findIndex = (array:any, index:any) => {
+  const found = array.find(function (element:any, ind:any) {
     return index === ind;
   });
   return found;
@@ -65,7 +65,7 @@ export const findIndex = (array, index) => {
 //   return filteredArrays;
 // };
 
-export const setToken = (name, value, days, type) => {
+export const setToken = (name: any, value: string, days: any, type: string) => {
   if (type === "ACCESS_TOKEN") {
     const token = value.split(".");
     setClientCookie("headerPayload", `${token[0]}.${token[1]}`, days);
@@ -76,13 +76,13 @@ export const setToken = (name, value, days, type) => {
 };
 
 
-export const setClientCookie = (name, value, timestamp) => {
+export const setClientCookie = (name: string, value: string, timestamp: number) => {
   const expirationDate = new Date(timestamp * 1000); // Convert Unix timestamp to milliseconds
   Cookies.set(name, value, { expires: expirationDate });
 };
 
 
-export const generateSlug = (text) => {
+export const generateSlug = (text: string) => {
   return text
     .toLowerCase()
     .replace(/[^a-zA-Z0-9]/g, "-") // Replace non-alphanumeric characters with hyphens
@@ -91,10 +91,10 @@ export const generateSlug = (text) => {
 };
 
 
-export function generateUrlFromNestedObject(nestedObject) {
-  const queryParams = [];
+export function generateUrlFromNestedObject(nestedObject: any) {
+  const queryParams: string[] = [];
 
-  const processNestedObject = (obj, prefix = '') => {
+  const processNestedObject = (obj: { [x: string]: any; hasOwnProperty: (arg0: string) => any; }, prefix = '') => {
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
         const value = obj[key];
@@ -117,33 +117,33 @@ export function generateUrlFromNestedObject(nestedObject) {
   }
 }
 
-export function parseUrlWithQueryParams(url) {
-  const queryString = url.split('?')[1];
-  if (!queryString) {
-    return {};
-  }
+// export function parseUrlWithQueryParams(url: string) {
+//   const queryString = url.split('?')[1];
+//   if (!queryString) {
+//     return {};
+//   }
 
-  const params = new URLSearchParams(queryString);
-  const nestedObject = {};
+//   const params = new URLSearchParams(queryString);
+//   const nestedObject = {};
 
-  params.forEach((value, key) => {
-    const keys = key.split('.');
-    let currentLevel = nestedObject;
+//   params.forEach((value, key) => {
+//     const keys = key.split('.');
+//     let currentLevel = nestedObject;
 
-    for (let i = 0; i < keys.length - 1; i++) {
-      currentLevel[keys[i]] = currentLevel[keys[i]] || {};
-      currentLevel = currentLevel[keys[i]];
-    }
+//     for (let i = 0; i < keys.length - 1; i++) {
+//       currentLevel[keys[i]] = currentLevel[keys[i]] || {};
+//       currentLevel = currentLevel[keys[i]];
+//     }
 
-    // Check for empty or undefined values before decoding
-    const decodedValue = value === 'undefined' ? undefined : decodeURIComponent(value);
-    currentLevel[keys[keys.length - 1]] = decodedValue;
-  });
+//     // Check for empty or undefined values before decoding
+//     const decodedValue = value === 'undefined' ? undefined : decodeURIComponent(value);
+//     currentLevel[keys[keys.length - 1]] = decodedValue;
+//   });
 
-  return nestedObject;
-}
+//   return nestedObject;
+// }
 
-export function storeCookiesOfObject(data,exp) {
+export function storeCookiesOfObject(data: { [x: string]: any; },exp:any) {
   console.log("Storing cookies for data:", data);
   
   if (data) {

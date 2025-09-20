@@ -1,18 +1,32 @@
 "use client";
-import { useEffect, useState } from 'react';
-import { z } from 'zod';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Plus, X, Upload, Image as ImageIcon, Save, Eye, Video } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import {
+  Plus,
+  X,
+  Upload,
+  Image as ImageIcon,
+  Save,
+  Eye,
+  Video,
+} from "lucide-react";
 
 // Zod schema for ProductVariant
 const ProductVariantSchema = z.object({
@@ -21,7 +35,10 @@ const ProductVariantSchema = z.object({
   sku: z.string().min(1, "Variant SKU is required"),
   price: z.number().min(0, "Price must be non-negative"),
   comparePrice: z.number().min(0, "Compare price must be non-negative"),
-  inventory: z.number().int().min(0, "Inventory must be a non-negative integer"),
+  inventory: z
+    .number()
+    .int()
+    .min(0, "Inventory must be a non-negative integer"),
   barcode: z.string().optional(),
   trackQuantity: z.boolean(),
   allowBackorder: z.boolean(),
@@ -83,7 +100,7 @@ const ProductDataSchema = z.object({
   msrp: z.number().min(0).optional(),
   taxClass: z.string().optional(),
   taxRate: z.number().min(0).optional(),
-  discountType: z.enum(['none', 'percentage', 'fixed']),
+  discountType: z.enum(["none", "percentage", "fixed"]),
   discountValue: z.number().min(0).optional(),
   discountStartDate: z.string().optional(),
   discountEndDate: z.string().optional(),
@@ -131,11 +148,11 @@ const ProductDataSchema = z.object({
     robotsMeta: z.string().optional(),
     structuredData: z.string().optional(),
   }),
-  visibility: z.enum(['public', 'private', 'password']),
+  visibility: z.enum(["public", "private", "password"]),
   password: z.string().optional(),
   publishDate: z.string().optional(),
   expiryDate: z.string().optional(),
-  status: z.enum(['draft', 'published']),
+  status: z.enum(["draft", "published"]),
   featured: z.boolean(),
   trending: z.boolean(),
   newArrival: z.boolean(),
@@ -155,16 +172,26 @@ const ProductDataSchema = z.object({
   variants: z.array(ProductVariantSchema).optional(),
   mainImage: z.string().url("Main image must be a valid URL").optional(),
   images: z.array(z.string().url("Image URL must be valid")).optional(),
-  downloadableFiles: z.array(z.object({
-    name: z.string().optional(),
-    url: z.string().optional(),
-    fileSize: z.string().optional(),
-  })).optional(),
+  downloadableFiles: z
+    .array(
+      z.object({
+        name: z.string().optional(),
+        url: z.string().optional(),
+        fileSize: z.string().optional(),
+      })
+    )
+    .optional(),
   videoUrls: z.array(z.string().url("Video URL must be valid")).optional(),
   threeDModelUrl: z.string().url("3D model URL must be valid").optional(),
   virtualTryOnEnabled: z.boolean(),
   augmentedRealityEnabled: z.boolean(),
 });
+
+type ProductFieldArrayNames =
+  | "variants"
+  | "downloadableFiles"
+  | "tags"
+  | "videoUrls";
 
 interface ProductVariant {
   id: string;
@@ -233,7 +260,7 @@ interface ProductData {
   msrp: number;
   taxClass: string;
   taxRate: number;
-  discountType: 'none' | 'percentage' | 'fixed';
+  discountType: "none" | "percentage" | "fixed";
   discountValue: number;
   discountStartDate: string;
   discountEndDate: string;
@@ -281,11 +308,11 @@ interface ProductData {
     robotsMeta: string;
     structuredData: string;
   };
-  visibility: 'public' | 'private' | 'password';
+  visibility: "public" | "private" | "password";
   password: string;
   publishDate: string;
   expiryDate: string;
-  status: 'draft' | 'published';
+  status: "draft" | "published";
   featured: boolean;
   trending: boolean;
   newArrival: boolean;
@@ -317,30 +344,78 @@ interface ProductData {
 }
 
 const categories = {
-  'Electronics': ['Smartphones', 'Laptops', 'Tablets', 'Accessories', 'Gaming'],
-  'Clothing': ['Men', 'Women', 'Kids', 'Shoes', 'Accessories'],
-  'Books': ['Fiction', 'Non-Fiction', 'Educational', 'Comics', 'Magazines'],
-  'Home & Garden': ['Furniture', 'Decor', 'Kitchen', 'Garden', 'Tools'],
-  'Sports': ['Fitness', 'Outdoor', 'Team Sports', 'Water Sports', 'Winter Sports'],
-  'Beauty': ['Skincare', 'Makeup', 'Hair Care', 'Fragrance', 'Tools'],
-  'Toys': ['Educational', 'Action Figures', 'Dolls', 'Games', 'Outdoor']
+  Electronics: ["Smartphones", "Laptops", "Tablets", "Accessories", "Gaming"],
+  Clothing: ["Men", "Women", "Kids", "Shoes", "Accessories"],
+  Books: ["Fiction", "Non-Fiction", "Educational", "Comics", "Magazines"],
+  "Home & Garden": ["Furniture", "Decor", "Kitchen", "Garden", "Tools"],
+  Sports: [
+    "Fitness",
+    "Outdoor",
+    "Team Sports",
+    "Water Sports",
+    "Winter Sports",
+  ],
+  Beauty: ["Skincare", "Makeup", "Hair Care", "Fragrance", "Tools"],
+  Toys: ["Educational", "Action Figures", "Dolls", "Games", "Outdoor"],
 };
-const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-const colors = ['Black', 'White', 'Red', 'Blue', 'Green', 'Yellow', 'Purple', 'Orange'];
-const materials = ['Cotton', 'Polyester', 'Leather', 'Wool', 'Silk', 'Denim'];
-const shippingClasses = ['Standard', 'Express', 'Overnight', 'Free Shipping', 'Heavy Items'];
-const ageGroups = ['Baby', 'Toddler', 'Kids', 'Teen', 'Adult', 'Senior'];
-const genders = ['Unisex', 'Male', 'Female', 'Boys', 'Girls'];
-const seasons = ['Spring', 'Summer', 'Fall', 'Winter', 'All Season'];
-const occasions = ['Casual', 'Formal', 'Business', 'Party', 'Wedding', 'Sports', 'Travel'];
-const styles = ['Classic', 'Modern', 'Vintage', 'Bohemian', 'Minimalist', 'Trendy'];
-const patterns = ['Solid', 'Striped', 'Polka Dot', 'Floral', 'Geometric', 'Abstract'];
-const taxClasses = ['Standard', 'Reduced', 'Zero Rate', 'Exempt'];
-const discountTypes = ['none', 'percentage', 'fixed'] as const;
-const robotsOptions = ['index,follow', 'noindex,nofollow', 'index,nofollow', 'noindex,follow'];
+const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
+const colors = [
+  "Black",
+  "White",
+  "Red",
+  "Blue",
+  "Green",
+  "Yellow",
+  "Purple",
+  "Orange",
+];
+const materials = ["Cotton", "Polyester", "Leather", "Wool", "Silk", "Denim"];
+const shippingClasses = [
+  "Standard",
+  "Express",
+  "Overnight",
+  "Free Shipping",
+  "Heavy Items",
+];
+const ageGroups = ["Baby", "Toddler", "Kids", "Teen", "Adult", "Senior"];
+const genders = ["Unisex", "Male", "Female", "Boys", "Girls"];
+const seasons = ["Spring", "Summer", "Fall", "Winter", "All Season"];
+const occasions = [
+  "Casual",
+  "Formal",
+  "Business",
+  "Party",
+  "Wedding",
+  "Sports",
+  "Travel",
+];
+const styles = [
+  "Classic",
+  "Modern",
+  "Vintage",
+  "Bohemian",
+  "Minimalist",
+  "Trendy",
+];
+const patterns = [
+  "Solid",
+  "Striped",
+  "Polka Dot",
+  "Floral",
+  "Geometric",
+  "Abstract",
+];
+const taxClasses = ["Standard", "Reduced", "Zero Rate", "Exempt"];
+const discountTypes = ["none", "percentage", "fixed"] as const;
+const robotsOptions = [
+  "index,follow",
+  "noindex,nofollow",
+  "index,nofollow",
+  "noindex,follow",
+];
 
 export default function ProductCreate({ data }: { data?: ProductData }) {
-  console.log('Received data:', data);
+  console.log("Received data:", data);
 
   const isUpdateMode = !!data;
 
@@ -356,68 +431,68 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   } = useForm<ProductData>({
     resolver: zodResolver(ProductDataSchema),
     defaultValues: data || {
-      name: '',
-      description: '',
-      shortDescription: '',
-      category: '',
-      subcategory: '',
-      brand: '',
-      vendor: '',
-      manufacturer: '',
-      model: '',
-      warranty: '',
-      origin: '',
-      material: '',
-      color: '',
-      size: '',
-      ageGroup: '',
-      gender: '',
-      season: '',
-      occasion: '',
-      style: '',
-      pattern: '',
-      careInstructions: '',
-      ingredients: '',
-      nutritionalInfo: '',
-      allergens: '',
+      name: "",
+      description: "",
+      shortDescription: "",
+      category: "",
+      subcategory: "",
+      brand: "",
+      vendor: "",
+      manufacturer: "",
+      model: "",
+      warranty: "",
+      origin: "",
+      material: "",
+      color: "",
+      size: "",
+      ageGroup: "",
+      gender: "",
+      season: "",
+      occasion: "",
+      style: "",
+      pattern: "",
+      careInstructions: "",
+      ingredients: "",
+      nutritionalInfo: "",
+      allergens: "",
       certifications: [],
       awards: [],
       reviews: { averageRating: 0, totalReviews: 0 },
-      socialMedia: { hashtags: [], instagramHandle: '', twitterHandle: '' },
+      socialMedia: { hashtags: [], instagramHandle: "", twitterHandle: "" },
       analytics: { views: 0, clicks: 0, conversions: 0 },
-      tags: [],
+      tags: [""],
       basePrice: 0,
       comparePrice: 0,
       costPrice: 0,
       profitMargin: 0,
       wholesalePrice: 0,
       msrp: 0,
-      taxClass: 'Standard',
+      taxClass: "Standard",
       taxRate: 0,
-      discountType: 'none',
+      discountType: "none",
       discountValue: 0,
-      discountStartDate: '',
-      discountEndDate: '',
+      discountStartDate: "",
+      discountEndDate: "",
       loyaltyPoints: 0,
-      sku: '',
-      barcode: '',
+      sku: "",
+      barcode: "",
       inventory: 0,
       trackQuantity: true,
       allowBackorder: false,
       lowStockThreshold: 5,
       maxOrderQuantity: 999,
       minOrderQuantity: 1,
-      stockLocation: '',
-      supplier: '',
-      supplierSku: '',
+      stockLocation: "",
+      supplier: "",
+      supplierSku: "",
       leadTime: 0,
-      restockDate: '',
+      restockDate: "",
       weight: 0,
       dimensions: { length: 0, width: 0, height: 0 },
       packageDimensions: { length: 0, width: 0, height: 0, weight: 0 },
       shipping: {
         requiresShipping: true,
-        shippingClass: 'Standard',
+        shippingClass: "Standard",
         handlingTime: 1,
         freeShippingThreshold: 0,
         shippingRestrictions: [],
@@ -425,19 +500,19 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
         fragile: false,
       },
       seo: {
-        title: '',
-        description: '',
-        keywords: '',
-        slug: '',
-        canonicalUrl: '',
-        robotsMeta: 'index,follow',
-        structuredData: '',
+        title: "",
+        description: "",
+        keywords: "",
+        slug: "",
+        canonicalUrl: "",
+        robotsMeta: "index,follow",
+        structuredData: "",
       },
-      visibility: 'public',
-      password: '',
-      publishDate: new Date().toISOString().split('T')[0],
-      expiryDate: '',
-      status: 'draft',
+      visibility: "public",
+      password: "",
+      publishDate: new Date().toISOString().split("T")[0],
+      expiryDate: "",
+      status: "draft",
       featured: false,
       trending: false,
       newArrival: false,
@@ -455,37 +530,78 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
       replacementParts: [],
       customFields: {},
       variants: [],
-      mainImage: '',
+      mainImage: "",
       images: [],
       downloadableFiles: [],
-      videoUrls: [],
-      threeDModelUrl: '',
+      videoUrls: [""],
+      threeDModelUrl: "",
       virtualTryOnEnabled: false,
       augmentedRealityEnabled: false,
     },
   });
 
-  const { fields: variants, append: appendVariant, remove: removeVariant } = useFieldArray({
+  // useFieldArray for string arrays requires specifying the field type as string
+  // const tagsArray = useFieldArray({ control, name: "tags" as ProductFieldArrayNames });
+  // const videoUrlsArray = useFieldArray({ control, name: "videoUrls" as ProductFieldArrayNames });
+
+  const {
+    fields: variants,
+    append: appendVariant,
+    remove: removeVariant,
+  } = useFieldArray({
     control,
-    name: 'variants',
+    name: "variants",
   });
 
-  const { fields: tags, append: appendTag, remove: removeTag } = useFieldArray({
-    control,
-    name: 'tags',
-  });
+  // const { fields: tags, append: appendTag, remove: removeTag } = useFieldArray({
+  //   control,
+  //   name: 'tags',
+  // });
 
-  const { fields: videoUrls, append: appendVideoUrl, remove: removeVideoUrl } = useFieldArray({
-    control,
-    name: 'videoUrls',
-  });
+  // const { fields: videoUrls, append: appendVideoUrl, remove: removeVideoUrl } = useFieldArray({
+  //   control,
+  //   name: 'videoUrls',
+  // });
 
-  const [newTag, setNewTag] = useState('');
-  const [newVideoUrl, setNewVideoUrl] = useState('');
+  // const [newTag, setNewTag] = useState("");
+  // const [newVideoUrl, setNewVideoUrl] = useState("");
+  const [tags, setTags] = useState<string[]>([""]);
+  const [videoUrls, setVideoUrls] = useState<string[]>([""]);
   const [mainImageFile, setMainImageFile] = useState<File | null>(null);
-  const [additionalImagesFiles, setAdditionalImagesFiles] = useState<File[]>([]);
+  const [additionalImagesFiles, setAdditionalImagesFiles] = useState<File[]>(
+    []
+  );
   const [showJsonOutput, setShowJsonOutput] = useState(false);
-  const [jsonOutput, setJsonOutput] = useState('');
+  const [jsonOutput, setJsonOutput] = useState("");
+
+  const updateTag = (index: number, value: string) => {
+    const newTags = [...tags];
+    newTags[index] = value;
+    setTags(newTags);
+  };
+
+  const addTag = () => {
+    setTags([...tags, ""]);
+  };
+
+  const removeTag = (index: number) => {
+    const newTags = tags.filter((_, i) => i !== index);
+    setTags(newTags);
+  };
+
+  const updateVideoUrl = (index: number, value: string) => {
+    const newUrls = [...videoUrls];
+    newUrls[index] = value;
+    setVideoUrls(newUrls);
+  };
+
+  const addVideoUrl = () => {
+    setVideoUrls([...videoUrls, ""]);
+  };
+  const removeVideoUrl = (index: number) => {
+    const newUrls = videoUrls.filter((_, i) => i !== index);
+    setVideoUrls(newUrls);
+  };
 
   // Initialize form with existing data for update mode
   useEffect(() => {
@@ -495,13 +611,13 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   }, [data, reset, isUpdateMode]);
 
   // Watch basePrice and costPrice for profit margin calculation
-  const basePrice = watch('basePrice');
-  const costPrice = watch('costPrice');
+  const basePrice = watch("basePrice");
+  const costPrice = watch("costPrice");
 
   useEffect(() => {
     if (costPrice > 0 && basePrice > 0) {
       const margin = ((basePrice - costPrice) / basePrice) * 100;
-      setValue('profitMargin', Math.round(margin * 100) / 100);
+      setValue("profitMargin", Math.round(margin * 100) / 100);
     }
   }, [basePrice, costPrice, setValue]);
 
@@ -511,91 +627,100 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
     if (file) {
       setMainImageFile(file);
       const url = URL.createObjectURL(file);
-      setValue('mainImage', url);
+      setValue("mainImage", url);
     }
   };
 
   // Handle additional images upload
-  const handleAdditionalImagesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAdditionalImagesUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = Array.from(e.target.files || []);
-    setAdditionalImagesFiles(prev => [...prev, ...files]);
-    const urls = files.map(file => URL.createObjectURL(file));
-    setValue('images', [...getValues('images'), ...urls]);
+    setAdditionalImagesFiles((prev) => [...prev, ...files]);
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setValue("images", [...getValues("images"), ...urls]);
   };
 
   const addVariant = () => {
-    const productName = getValues('name');
-    const productSku = getValues('sku');
+    const productName = getValues("name");
+    const productSku = getValues("sku");
     appendVariant({
       id: Date.now().toString(),
-      name: `${productName || 'Product'} - Variant ${variants.length + 1}`,
-      sku: `${productSku || 'SKU'}-${variants.length + 1}`,
-      price: getValues('basePrice') || 0,
-      comparePrice: getValues('comparePrice') || 0,
+      name: `${productName || "Product"} - Variant ${variants.length + 1}`,
+      sku: `${productSku || "SKU"}-${variants.length + 1}`,
+      price: getValues("basePrice") || 0,
+      comparePrice: getValues("comparePrice") || 0,
       inventory: 0,
-      barcode: '',
+      barcode: "",
       trackQuantity: true,
       allowBackorder: false,
       attributes: {},
     });
   };
 
-  const addTag = () => {
-    if (newTag.trim() && !tags.some(tag => tag === newTag.trim())) {
-      appendTag(newTag.trim());
-      setNewTag('');
-    }
-  };
+  // const addTag = () => {
+  //   if (newTag.trim() && !tags.some(tag => tag === newTag.trim())) {
+  //     appendTag(newTag.trim());
+  //     setNewTag('');
+  //   }
+  // };
 
-  const addVideoUrl = () => {
-    if (newVideoUrl.trim() && !videoUrls.some(url => url === newVideoUrl.trim())) {
-      appendVideoUrl(newVideoUrl.trim());
-      setNewVideoUrl('');
-    }
-  };
+  // const addVideoUrl = () => {
+  //   if (newVideoUrl.trim() && !videoUrls.some(url => url === newVideoUrl.trim())) {
+  //     appendVideoUrl(newVideoUrl.trim());
+  //     setNewVideoUrl('');
+  //   }
+  // };
 
   const generateSlug = (name: string) => {
-    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   };
 
-  const onSubmit = (status: 'draft' | 'published') => (formData: ProductData) => {
-    const updatedProduct = {
-      ...formData,
-      status,
-      seo: {
-        ...formData.seo,
-        slug: formData.seo.slug || generateSlug(formData.name),
-      },
-      mainImage: mainImageFile ? URL.createObjectURL(mainImageFile) : formData.mainImage,
-      images: [...(formData.images || []), ...additionalImagesFiles.map(file => URL.createObjectURL(file))],
-      createdAt: isUpdateMode ? data?.createdAt || new Date().toISOString() : new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+  const onSubmit =
+    (status: "draft" | "published") => (formData: ProductData) => {
+      const updatedProduct = {
+        ...formData,
+        status,
+        seo: {
+          ...formData.seo,
+          slug: formData.seo.slug || generateSlug(formData.name),
+        },
+        mainImage: mainImageFile
+          ? URL.createObjectURL(mainImageFile)
+          : formData.mainImage,
+        images: [
+          ...(formData.images || []),
+          ...additionalImagesFiles.map((file) => URL.createObjectURL(file)),
+        ],
+      };
+
+      const jsonString = JSON.stringify(updatedProduct, null, 2);
+
+      if (isUpdateMode) {
+        // console.log(`Updating product with ID: ${data?.id || 'unknown'}`, jsonString);
+        // Example: Send to API for update
+        // fetch(`/api/products/${data.id}`, {
+        //   method: 'PUT',
+        //   body: jsonString,
+        //   headers: { 'Content-Type': 'application/json' },
+        // });
+      } else {
+        console.log("Creating new product:", jsonString);
+        // Example: Send to API for create
+        // fetch('/api/products', {
+        //   method: 'POST',
+        //   body: jsonString,
+        //   headers: { 'Content-Type': 'application/json' },
+        // });
+      }
+
+      // For demonstration, show JSON output
+      setJsonOutput(jsonString);
+      setShowJsonOutput(true);
     };
-
-    const jsonString = JSON.stringify(updatedProduct, null, 2);
-
-    if (isUpdateMode) {
-      console.log(`Updating product with ID: ${data?.id || 'unknown'}`, jsonString);
-      // Example: Send to API for update
-      // fetch(`/api/products/${data.id}`, {
-      //   method: 'PUT',
-      //   body: jsonString,
-      //   headers: { 'Content-Type': 'application/json' },
-      // });
-    } else {
-      console.log('Creating new product:', jsonString);
-      // Example: Send to API for create
-      // fetch('/api/products', {
-      //   method: 'POST',
-      //   body: jsonString,
-      //   headers: { 'Content-Type': 'application/json' },
-      // });
-    }
-
-    // For demonstration, show JSON output
-    setJsonOutput(jsonString);
-    setShowJsonOutput(true);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -604,7 +729,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
           <h3 className="font-semibold">Validation Errors:</h3>
           <ul className="list-disc pl-5">
             {Object.entries(errors).map(([key, error], index) => (
-              <li key={index}>{`${key}: ${error?.message || JSON.stringify(error)}`}</li>
+              <li key={index}>{`${key}: ${
+                error?.message || JSON.stringify(error)
+              }`}</li>
             ))}
           </ul>
         </div>
@@ -622,86 +749,111 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Product Name *
                 </Label>
                 <Input
                   id="name"
-                  {...register('name')}
+                  {...register("name")}
                   className="mt-1"
                   placeholder="Enter product name"
                 />
-                {errors.name && <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>}
+                {errors.name && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="brand" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="brand"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Brand
                   </Label>
                   <Input
                     id="brand"
-                    {...register('brand')}
+                    {...register("brand")}
                     className="mt-1"
                     placeholder="Product brand"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="vendor" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="vendor"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Vendor/Supplier
                   </Label>
                   <Input
                     id="vendor"
-                    {...register('vendor')}
+                    {...register("vendor")}
                     className="mt-1"
                     placeholder="Vendor name"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="manufacturer" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="manufacturer"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Manufacturer
                   </Label>
                   <Input
                     id="manufacturer"
-                    {...register('manufacturer')}
+                    {...register("manufacturer")}
                     className="mt-1"
                     placeholder="Manufacturer name"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="model" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="model"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Model Number
                   </Label>
                   <Input
                     id="model"
-                    {...register('model')}
+                    {...register("model")}
                     className="mt-1"
                     placeholder="Model number"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="warranty" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="warranty"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Warranty Period
                   </Label>
                   <Input
                     id="warranty"
-                    {...register('warranty')}
+                    {...register("warranty")}
                     className="mt-1"
                     placeholder="e.g., 1 year, 6 months"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="origin" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="origin"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Country of Origin
                   </Label>
                   <Input
                     id="origin"
-                    {...register('origin')}
+                    {...register("origin")}
                     className="mt-1"
                     placeholder="Made in..."
                   />
@@ -709,24 +861,30 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
               </div>
 
               <div>
-                <Label htmlFor="shortDesc" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="shortDesc"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Short Description
                 </Label>
                 <Input
                   id="shortDesc"
-                  {...register('shortDescription')}
+                  {...register("shortDescription")}
                   className="mt-1"
                   placeholder="Brief product description"
                 />
               </div>
 
               <div>
-                <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="description"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Detailed Description
                 </Label>
                 <Textarea
                   id="description"
-                  {...register('description')}
+                  {...register("description")}
                   className="mt-1 min-h-[120px]"
                   placeholder="Detailed product description..."
                 />
@@ -734,7 +892,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Category *</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Category *
+                  </Label>
                   <Controller
                     name="category"
                     control={control}
@@ -743,25 +903,33 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                         value={field.value}
                         onValueChange={(value) => {
                           field.onChange(value);
-                          setValue('subcategory', '');
+                          setValue("subcategory", "");
                         }}
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {Object.keys(categories).map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          {Object.keys(categories).map((cat) => (
+                            <SelectItem key={cat} value={cat}>
+                              {cat}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     )}
                   />
-                  {errors.category && <p className="text-red-600 text-sm mt-1">{errors.category.message}</p>}
+                  {errors.category && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.category.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Subcategory</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Subcategory
+                  </Label>
                   <Controller
                     name="subcategory"
                     control={control}
@@ -769,15 +937,20 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                       <Select
                         value={field.value}
                         onValueChange={field.onChange}
-                        disabled={!getValues('category')}
+                        disabled={!getValues("category")}
                       >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select subcategory" />
                         </SelectTrigger>
                         <SelectContent>
-                          {getValues('category') && categories[getValues('category') as keyof typeof categories]?.map(subcat => (
-                            <SelectItem key={subcat} value={subcat}>{subcat}</SelectItem>
-                          ))}
+                          {getValues("category") &&
+                            categories[
+                              getValues("category") as keyof typeof categories
+                            ]?.map((subcat) => (
+                              <SelectItem key={subcat} value={subcat}>
+                                {subcat}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     )}
@@ -787,25 +960,35 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="sku" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="sku"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     SKU *
                   </Label>
                   <Input
                     id="sku"
-                    {...register('sku')}
+                    {...register("sku")}
                     className="mt-1"
                     placeholder="Product SKU"
                   />
-                  {errors.sku && <p className="text-red-600 text-sm mt-1">{errors.sku.message}</p>}
+                  {errors.sku && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.sku.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <Label htmlFor="barcode" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="barcode"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Barcode/UPC
                   </Label>
                   <Input
                     id="barcode"
-                    {...register('barcode')}
+                    {...register("barcode")}
                     className="mt-1"
                     placeholder="Product barcode"
                   />
@@ -830,8 +1013,8 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
                 <div className="flex gap-2">
                   <Input
-                    value={newTag}
-                    onChange={(e) => setNewTag(e.target.value)}
+                    value={tags}
+                    onChange={(e) => addTag()}
                     placeholder="Add a tag"
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   />
@@ -855,18 +1038,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Age Group</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Age Group
+                  </Label>
                   <Controller
                     name="ageGroup"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select age group" />
                         </SelectTrigger>
                         <SelectContent>
-                          {ageGroups.map(age => (
-                            <SelectItem key={age} value={age}>{age}</SelectItem>
+                          {ageGroups.map((age) => (
+                            <SelectItem key={age} value={age}>
+                              {age}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -875,18 +1065,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Gender</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Gender
+                  </Label>
                   <Controller
                     name="gender"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
                         <SelectContent>
-                          {genders.map(gender => (
-                            <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+                          {genders.map((gender) => (
+                            <SelectItem key={gender} value={gender}>
+                              {gender}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -895,18 +1092,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Season</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Season
+                  </Label>
                   <Controller
                     name="season"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select season" />
                         </SelectTrigger>
                         <SelectContent>
-                          {seasons.map(season => (
-                            <SelectItem key={season} value={season}>{season}</SelectItem>
+                          {seasons.map((season) => (
+                            <SelectItem key={season} value={season}>
+                              {season}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -915,18 +1119,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Occasion</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Occasion
+                  </Label>
                   <Controller
                     name="occasion"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select occasion" />
                         </SelectTrigger>
                         <SelectContent>
-                          {occasions.map(occasion => (
-                            <SelectItem key={occasion} value={occasion}>{occasion}</SelectItem>
+                          {occasions.map((occasion) => (
+                            <SelectItem key={occasion} value={occasion}>
+                              {occasion}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -935,18 +1146,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Style</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Style
+                  </Label>
                   <Controller
                     name="style"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select style" />
                         </SelectTrigger>
                         <SelectContent>
-                          {styles.map(style => (
-                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          {styles.map((style) => (
+                            <SelectItem key={style} value={style}>
+                              {style}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -955,18 +1173,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Pattern</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Pattern
+                  </Label>
                   <Controller
                     name="pattern"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select pattern" />
                         </SelectTrigger>
                         <SelectContent>
-                          {patterns.map(pattern => (
-                            <SelectItem key={pattern} value={pattern}>{pattern}</SelectItem>
+                          {patterns.map((pattern) => (
+                            <SelectItem key={pattern} value={pattern}>
+                              {pattern}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -977,24 +1202,30 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="careInstructions" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="careInstructions"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Care Instructions
                   </Label>
                   <Textarea
                     id="careInstructions"
-                    {...register('careInstructions')}
+                    {...register("careInstructions")}
                     className="mt-1"
                     placeholder="Washing, drying, storage instructions..."
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="ingredients" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="ingredients"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Ingredients/Materials
                   </Label>
                   <Textarea
                     id="ingredients"
-                    {...register('ingredients')}
+                    {...register("ingredients")}
                     className="mt-1"
                     placeholder="List of ingredients or materials..."
                   />
@@ -1003,24 +1234,30 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="nutritionalInfo" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="nutritionalInfo"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Nutritional Information
                   </Label>
                   <Textarea
                     id="nutritionalInfo"
-                    {...register('nutritionalInfo')}
+                    {...register("nutritionalInfo")}
                     className="mt-1"
                     placeholder="Calories, nutrients, serving size..."
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="allergens" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="allergens"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Allergen Information
                   </Label>
                   <Textarea
                     id="allergens"
-                    {...register('allergens')}
+                    {...register("allergens")}
                     className="mt-1"
                     placeholder="Contains nuts, dairy, gluten..."
                   />
@@ -1040,39 +1277,48 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="wholesalePrice" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="wholesalePrice"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Wholesale Price
                   </Label>
                   <Input
                     id="wholesalePrice"
                     type="number"
-                    {...register('wholesalePrice', { valueAsNumber: true })}
+                    {...register("wholesalePrice", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="msrp" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="msrp"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     MSRP
                   </Label>
                   <Input
                     id="msrp"
                     type="number"
-                    {...register('msrp', { valueAsNumber: true })}
+                    {...register("msrp", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="loyaltyPoints" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="loyaltyPoints"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Loyalty Points
                   </Label>
                   <Input
                     id="loyaltyPoints"
                     type="number"
-                    {...register('loyaltyPoints', { valueAsNumber: true })}
+                    {...register("loyaltyPoints", { valueAsNumber: true })}
                     className="mt-1"
                   />
                 </div>
@@ -1080,18 +1326,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Tax Class</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Tax Class
+                  </Label>
                   <Controller
                     name="taxClass"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select tax class" />
                         </SelectTrigger>
                         <SelectContent>
-                          {taxClasses.map(taxClass => (
-                            <SelectItem key={taxClass} value={taxClass}>{taxClass}</SelectItem>
+                          {taxClasses.map((taxClass) => (
+                            <SelectItem key={taxClass} value={taxClass}>
+                              {taxClass}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -1100,13 +1353,16 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label htmlFor="taxRate" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="taxRate"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Tax Rate (%)
                   </Label>
                   <Input
                     id="taxRate"
                     type="number"
-                    {...register('taxRate', { valueAsNumber: true })}
+                    {...register("taxRate", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
                   />
@@ -1117,12 +1373,17 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Discount Type</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Discount Type
+                  </Label>
                   <Controller
                     name="discountType"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select discount type" />
                         </SelectTrigger>
@@ -1137,36 +1398,43 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
 
                 <div>
-                  <Label htmlFor="discountValue" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="discountValue"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Discount Value
                   </Label>
                   <Input
                     id="discountValue"
                     type="number"
-                    {...register('discountValue', { valueAsNumber: true })}
+                    {...register("discountValue", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
-                    disabled={watch('discountType') === 'none'}
+                    disabled={watch("discountType") === "none"}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-xs font-medium text-gray-700">Start Date</Label>
+                    <Label className="text-xs font-medium text-gray-700">
+                      Start Date
+                    </Label>
                     <Input
                       type="date"
-                      {...register('discountStartDate')}
+                      {...register("discountStartDate")}
                       className="mt-1"
-                      disabled={watch('discountType') === 'none'}
+                      disabled={watch("discountType") === "none"}
                     />
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-gray-700">End Date</Label>
+                    <Label className="text-xs font-medium text-gray-700">
+                      End Date
+                    </Label>
                     <Input
                       type="date"
-                      {...register('discountEndDate')}
+                      {...register("discountEndDate")}
                       className="mt-1"
-                      disabled={watch('discountType') === 'none'}
+                      disabled={watch("discountType") === "none"}
                     />
                   </div>
                 </div>
@@ -1184,7 +1452,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">Requires Shipping</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Requires Shipping
+                </Label>
                 <Controller
                   name="shipping.requiresShipping"
                   control={control}
@@ -1197,22 +1467,29 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 />
               </div>
 
-              {watch('shipping.requiresShipping') && (
+              {watch("shipping.requiresShipping") && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Shipping Class</Label>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Shipping Class
+                      </Label>
                       <Controller
                         name="shipping.shippingClass"
                         control={control}
                         render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                          >
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select shipping class" />
                             </SelectTrigger>
                             <SelectContent>
-                              {shippingClasses.map(cls => (
-                                <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+                              {shippingClasses.map((cls) => (
+                                <SelectItem key={cls} value={cls}>
+                                  {cls}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -1221,26 +1498,36 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                     </div>
 
                     <div>
-                      <Label htmlFor="shipping.handlingTime" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="shipping.handlingTime"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Handling Time (days)
                       </Label>
                       <Input
                         id="shipping.handlingTime"
                         type="number"
-                        {...register('shipping.handlingTime', { valueAsNumber: true })}
+                        {...register("shipping.handlingTime", {
+                          valueAsNumber: true,
+                        })}
                         className="mt-1"
                         min="0"
                       />
                     </div>
 
                     <div>
-                      <Label htmlFor="shipping.freeShippingThreshold" className="text-sm font-medium text-gray-700">
+                      <Label
+                        htmlFor="shipping.freeShippingThreshold"
+                        className="text-sm font-medium text-gray-700"
+                      >
                         Free Shipping Threshold
                       </Label>
                       <Input
                         id="shipping.freeShippingThreshold"
                         type="number"
-                        {...register('shipping.freeShippingThreshold', { valueAsNumber: true })}
+                        {...register("shipping.freeShippingThreshold", {
+                          valueAsNumber: true,
+                        })}
                         className="mt-1"
                         step="0.01"
                       />
@@ -1249,37 +1536,53 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Package Length (cm)</Label>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Package Length (cm)
+                      </Label>
                       <Input
                         type="number"
-                        {...register('packageDimensions.length', { valueAsNumber: true })}
+                        {...register("packageDimensions.length", {
+                          valueAsNumber: true,
+                        })}
                         className="mt-1"
                         step="0.01"
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Package Width (cm)</Label>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Package Width (cm)
+                      </Label>
                       <Input
                         type="number"
-                        {...register('packageDimensions.width', { valueAsNumber: true })}
+                        {...register("packageDimensions.width", {
+                          valueAsNumber: true,
+                        })}
                         className="mt-1"
                         step="0.01"
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Package Height (cm)</Label>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Package Height (cm)
+                      </Label>
                       <Input
                         type="number"
-                        {...register('packageDimensions.height', { valueAsNumber: true })}
+                        {...register("packageDimensions.height", {
+                          valueAsNumber: true,
+                        })}
                         className="mt-1"
                         step="0.01"
                       />
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-700">Package Weight (kg)</Label>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Package Weight (kg)
+                      </Label>
                       <Input
                         type="number"
-                        {...register('packageDimensions.weight', { valueAsNumber: true })}
+                        {...register("packageDimensions.weight", {
+                          valueAsNumber: true,
+                        })}
                         className="mt-1"
                         step="0.01"
                       />
@@ -1298,7 +1601,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                           />
                         )}
                       />
-                      <Label className="text-sm text-gray-700">Hazardous Material</Label>
+                      <Label className="text-sm text-gray-700">
+                        Hazardous Material
+                      </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Controller
@@ -1311,7 +1616,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                           />
                         )}
                       />
-                      <Label className="text-sm text-gray-700">Fragile Item</Label>
+                      <Label className="text-sm text-gray-700">
+                        Fragile Item
+                      </Label>
                     </div>
                   </div>
                 </div>
@@ -1320,7 +1627,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
           </Card>
 
           {/* Product Variants */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -1336,14 +1643,22 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             <CardContent>
               {variants.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p>No variants added yet. Click "Add Variant" to create product variations.</p>
+                  <p>
+                    No variants added yet. Click &quot;Add Variant&quot; to
+                    create product variations.
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-6">
                   {variants.map((variant, index) => (
-                    <div key={variant.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <div
+                      key={variant.id}
+                      className="border border-gray-200 rounded-lg p-6 bg-gray-50"
+                    >
                       <div className="flex items-center justify-between mb-4">
-                        <h4 className="font-medium text-gray-900">Variant {index + 1}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          Variant {index + 1}
+                        </h4>
                         <Button
                           onClick={() => removeVariant(index)}
                           variant="outline"
@@ -1356,29 +1671,39 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Variant Name</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Variant Name
+                          </Label>
                           <Input
                             {...register(`variants.${index}.name`)}
                             className="mt-1"
                           />
                           {errors.variants?.[index]?.name && (
-                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].name.message}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.variants[index].name.message}
+                            </p>
                           )}
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">SKU</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            SKU
+                          </Label>
                           <Input
                             {...register(`variants.${index}.sku`)}
                             className="mt-1"
                           />
                           {errors.variants?.[index]?.sku && (
-                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].sku.message}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.variants[index].sku.message}
+                            </p>
                           )}
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Barcode</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Barcode
+                          </Label>
                           <Input
                             {...register(`variants.${index}.barcode`)}
                             className="mt-1"
@@ -1386,58 +1711,83 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Price</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Price
+                          </Label>
                           <Input
                             type="number"
-                            {...register(`variants.${index}.price`, { valueAsNumber: true })}
+                            {...register(`variants.${index}.price`, {
+                              valueAsNumber: true,
+                            })}
                             className="mt-1"
                             step="0.01"
                           />
                           {errors.variants?.[index]?.price && (
-                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].price.message}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.variants[index].price.message}
+                            </p>
                           )}
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Compare Price</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Compare Price
+                          </Label>
                           <Input
                             type="number"
-                            {...register(`variants.${index}.comparePrice`, { valueAsNumber: true })}
+                            {...register(`variants.${index}.comparePrice`, {
+                              valueAsNumber: true,
+                            })}
                             className="mt-1"
                             step="0.01"
                           />
                           {errors.variants?.[index]?.comparePrice && (
-                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].comparePrice.message}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.variants[index].comparePrice.message}
+                            </p>
                           )}
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Inventory</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Inventory
+                          </Label>
                           <Input
                             type="number"
-                            {...register(`variants.${index}.inventory`, { valueAsNumber: true })}
+                            {...register(`variants.${index}.inventory`, {
+                              valueAsNumber: true,
+                            })}
                             className="mt-1"
                           />
                           {errors.variants?.[index]?.inventory && (
-                            <p className="text-red-600 text-sm mt-1">{errors.variants[index].inventory.message}</p>
+                            <p className="text-red-600 text-sm mt-1">
+                              {errors.variants[index].inventory.message}
+                            </p>
                           )}
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Size</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Size
+                          </Label>
                           <Controller
                             name={`variants.${index}.attributes.size`}
                             control={control}
                             render={({ field }) => (
-                              <Select value={field.value || ''} onValueChange={field.onChange}>
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                              >
                                 <SelectTrigger className="mt-1">
                                   <SelectValue placeholder="Select size" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {sizes.map(size => (
-                                    <SelectItem key={size} value={size}>{size}</SelectItem>
+                                  {sizes.map((size) => (
+                                    <SelectItem key={size} value={size}>
+                                      {size}
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -1446,18 +1796,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Color</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Color
+                          </Label>
                           <Controller
                             name={`variants.${index}.attributes.color`}
                             control={control}
                             render={({ field }) => (
-                              <Select value={field.value || ''} onValueChange={field.onChange}>
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                              >
                                 <SelectTrigger className="mt-1">
                                   <SelectValue placeholder="Select color" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {colors.map(color => (
-                                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                                  {colors.map((color) => (
+                                    <SelectItem key={color} value={color}>
+                                      {color}
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -1466,18 +1823,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                         </div>
 
                         <div>
-                          <Label className="text-sm font-medium text-gray-700">Material</Label>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Material
+                          </Label>
                           <Controller
                             name={`variants.${index}.attributes.material`}
                             control={control}
                             render={({ field }) => (
-                              <Select value={field.value || ''} onValueChange={field.onChange}>
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={field.onChange}
+                              >
                                 <SelectTrigger className="mt-1">
                                   <SelectValue placeholder="Select material" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {materials.map(material => (
-                                    <SelectItem key={material} value={material}>{material}</SelectItem>
+                                  {materials.map((material) => (
+                                    <SelectItem key={material} value={material}>
+                                      {material}
+                                    </SelectItem>
                                   ))}
                                 </SelectContent>
                               </Select>
@@ -1498,7 +1862,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                               />
                             )}
                           />
-                          <Label className="text-sm text-gray-700">Track Quantity</Label>
+                          <Label className="text-sm text-gray-700">
+                            Track Quantity
+                          </Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Controller
@@ -1511,7 +1877,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                               />
                             )}
                           />
-                          <Label className="text-sm text-gray-700">Allow Backorder</Label>
+                          <Label className="text-sm text-gray-700">
+                            Allow Backorder
+                          </Label>
                         </div>
                       </div>
                     </div>
@@ -1519,7 +1887,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Sidebar */}
@@ -1537,10 +1905,15 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
                 <div className="flex flex-col items-center gap-2">
                   <ImageIcon className="w-8 h-8 text-gray-400" />
-                  <Label htmlFor="mainImageUpload" className="text-sm font-medium text-gray-900 cursor-pointer">
+                  <Label
+                    htmlFor="mainImageUpload"
+                    className="text-sm font-medium text-gray-900 cursor-pointer"
+                  >
                     Upload Main Product Image
                   </Label>
-                  <p className="text-xs text-gray-500">Recommended: 800x800px, JPG/PNG up to 5MB</p>
+                  <p className="text-xs text-gray-500">
+                    Recommended: 800x800px, JPG/PNG up to 5MB
+                  </p>
                   <Input
                     id="mainImageUpload"
                     type="file"
@@ -1550,16 +1923,25 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                   />
                 </div>
               </div>
-              {errors.mainImage && <p className="text-red-600 text-sm">{errors.mainImage.message}</p>}
+              {errors.mainImage && (
+                <p className="text-red-600 text-sm">
+                  {errors.mainImage.message}
+                </p>
+              )}
 
               {/* Additional Images Upload */}
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
                 <div className="flex flex-col items-center gap-2">
                   <ImageIcon className="w-8 h-8 text-gray-400" />
-                  <Label htmlFor="additionalImagesUpload" className="text-sm font-medium text-gray-900 cursor-pointer">
+                  <Label
+                    htmlFor="additionalImagesUpload"
+                    className="text-sm font-medium text-gray-900 cursor-pointer"
+                  >
                     Upload Additional Images (Multiple)
                   </Label>
-                  <p className="text-xs text-gray-500">Up to 10 images, JPG/PNG up to 5MB each</p>
+                  <p className="text-xs text-gray-500">
+                    Up to 10 images, JPG/PNG up to 5MB each
+                  </p>
                   <Input
                     id="additionalImagesUpload"
                     type="file"
@@ -1570,12 +1952,14 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                   />
                 </div>
               </div>
-              {errors.images && <p className="text-red-600 text-sm">{errors.images.message}</p>}
+              {errors.images && (
+                <p className="text-red-600 text-sm">{errors.images.message}</p>
+              )}
             </CardContent>
           </Card>
 
           {/* Video URLs */}
-          <Card>
+          {/* <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <div className="w-2 h-6 bg-red-500 rounded-full"></div>
@@ -1613,7 +1997,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
               </div>
               {errors.videoUrls && <p className="text-red-600 text-sm mt-1">{errors.videoUrls.message}</p>}
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Pricing */}
           <Card>
@@ -1622,45 +2006,66 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="basePrice" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="basePrice"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Base Price *
                 </Label>
                 <Input
                   id="basePrice"
                   type="number"
-                  {...register('basePrice', { valueAsNumber: true })}
+                  {...register("basePrice", { valueAsNumber: true })}
                   className="mt-1"
                   step="0.01"
                 />
-                {errors.basePrice && <p className="text-red-600 text-sm mt-1">{errors.basePrice.message}</p>}
+                {errors.basePrice && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.basePrice.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="comparePrice" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="comparePrice"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Compare Price
                 </Label>
                 <Input
                   id="comparePrice"
                   type="number"
-                  {...register('comparePrice', { valueAsNumber: true })}
+                  {...register("comparePrice", { valueAsNumber: true })}
                   className="mt-1"
                   step="0.01"
                 />
-                {errors.comparePrice && <p className="text-red-600 text-sm mt-1">{errors.comparePrice.message}</p>}
+                {errors.comparePrice && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.comparePrice.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="costPrice" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="costPrice"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Cost Price
                 </Label>
                 <Input
                   id="costPrice"
                   type="number"
-                  {...register('costPrice', { valueAsNumber: true })}
+                  {...register("costPrice", { valueAsNumber: true })}
                   className="mt-1"
                   step="0.01"
                 />
-                {errors.costPrice && <p className="text-red-600 text-sm mt-1">{errors.costPrice.message}</p>}
+                {errors.costPrice && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.costPrice.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -1669,7 +2074,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                    {watch('profitMargin').toFixed(2)}%
+                    {watch("profitMargin").toFixed(2)}%
                   </span>
                 </div>
               </div>
@@ -1683,33 +2088,49 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="inventory" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="inventory"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Stock Quantity
                 </Label>
                 <Input
                   id="inventory"
                   type="number"
-                  {...register('inventory', { valueAsNumber: true })}
+                  {...register("inventory", { valueAsNumber: true })}
                   className="mt-1"
                 />
-                {errors.inventory && <p className="text-red-600 text-sm mt-1">{errors.inventory.message}</p>}
+                {errors.inventory && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.inventory.message}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label htmlFor="lowStockThreshold" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="lowStockThreshold"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Low Stock Threshold
                 </Label>
                 <Input
                   id="lowStockThreshold"
                   type="number"
-                  {...register('lowStockThreshold', { valueAsNumber: true })}
+                  {...register("lowStockThreshold", { valueAsNumber: true })}
                   className="mt-1"
                 />
-                {errors.lowStockThreshold && <p className="text-red-600 text-sm mt-1">{errors.lowStockThreshold.message}</p>}
+                {errors.lowStockThreshold && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.lowStockThreshold.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">Track Quantity</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Track Quantity
+                </Label>
                 <Controller
                   name="trackQuantity"
                   control={control}
@@ -1723,7 +2144,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
               </div>
 
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">Allow Backorder</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Allow Backorder
+                </Label>
                 <Controller
                   name="allowBackorder"
                   control={control}
@@ -1737,49 +2160,74 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
               </div>
 
               <div>
-                <Label htmlFor="weight" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="weight"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Weight (kg)
                 </Label>
                 <Input
                   id="weight"
                   type="number"
-                  {...register('weight', { valueAsNumber: true })}
+                  {...register("weight", { valueAsNumber: true })}
                   className="mt-1"
                   step="0.01"
                 />
-                {errors.weight && <p className="text-red-600 text-sm mt-1">{errors.weight.message}</p>}
+                {errors.weight && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.weight.message}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <Label className="text-xs font-medium text-gray-700">Length</Label>
+                  <Label className="text-xs font-medium text-gray-700">
+                    Length
+                  </Label>
                   <Input
                     type="number"
-                    {...register('dimensions.length', { valueAsNumber: true })}
+                    {...register("dimensions.length", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
                   />
-                  {errors.dimensions?.length && <p className="text-red-600 text-sm mt-1">{errors.dimensions.length.message}</p>}
+                  {errors.dimensions?.length && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.dimensions.length.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-xs font-medium text-gray-700">Width</Label>
+                  <Label className="text-xs font-medium text-gray-700">
+                    Width
+                  </Label>
                   <Input
                     type="number"
-                    {...register('dimensions.width', { valueAsNumber: true })}
+                    {...register("dimensions.width", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
                   />
-                  {errors.dimensions?.width && <p className="text-red-600 text-sm mt-1">{errors.dimensions.width.message}</p>}
+                  {errors.dimensions?.width && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.dimensions.width.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-xs font-medium text-gray-700">Height</Label>
+                  <Label className="text-xs font-medium text-gray-700">
+                    Height
+                  </Label>
                   <Input
                     type="number"
-                    {...register('dimensions.height', { valueAsNumber: true })}
+                    {...register("dimensions.height", { valueAsNumber: true })}
                     className="mt-1"
                     step="0.01"
                   />
-                  {errors.dimensions?.height && <p className="text-red-600 text-sm mt-1">{errors.dimensions.height.message}</p>}
+                  {errors.dimensions?.height && (
+                    <p className="text-red-600 text-sm mt-1">
+                      {errors.dimensions.height.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -1795,20 +2243,14 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 <Label className="text-sm font-medium text-gray-700">
                   Meta Title
                 </Label>
-                <Input
-                  {...register('seo.title')}
-                  className="mt-1"
-                />
+                <Input {...register("seo.title")} className="mt-1" />
               </div>
 
               <div>
                 <Label className="text-sm font-medium text-gray-700">
                   Meta Description
                 </Label>
-                <Textarea
-                  {...register('seo.description')}
-                  className="mt-1"
-                />
+                <Textarea {...register("seo.description")} className="mt-1" />
               </div>
 
               <div>
@@ -1816,7 +2258,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                   URL Slug
                 </Label>
                 <Input
-                  {...register('seo.slug')}
+                  {...register("seo.slug")}
                   className="mt-1"
                   placeholder="auto-generated-from-name"
                 />
@@ -1827,7 +2269,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                   Keywords
                 </Label>
                 <Input
-                  {...register('seo.keywords')}
+                  {...register("seo.keywords")}
                   className="mt-1"
                   placeholder="keyword1, keyword2, keyword3"
                 />
@@ -1842,7 +2284,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-sm font-medium text-gray-700">Visibility</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Visibility
+                </Label>
                 <Controller
                   name="visibility"
                   control={control}
@@ -1854,38 +2298,46 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                       <SelectContent>
                         <SelectItem value="public">Public</SelectItem>
                         <SelectItem value="private">Private</SelectItem>
-                        <SelectItem value="password">Password Protected</SelectItem>
+                        <SelectItem value="password">
+                          Password Protected
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   )}
                 />
               </div>
 
-              {watch('visibility') === 'password' && (
+              {watch("visibility") === "password" && (
                 <div>
-                  <Label className="text-sm font-medium text-gray-700">Password</Label>
+                  <Label className="text-sm font-medium text-gray-700">
+                    Password
+                  </Label>
                   <Input
                     type="password"
-                    {...register('password')}
+                    {...register("password")}
                     className="mt-1"
                   />
                 </div>
               )}
 
               <div>
-                <Label className="text-sm font-medium text-gray-700">Publish Date</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Publish Date
+                </Label>
                 <Input
                   type="date"
-                  {...register('publishDate')}
+                  {...register("publishDate")}
                   className="mt-1"
                 />
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-700">Expiry Date (Optional)</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Expiry Date (Optional)
+                </Label>
                 <Input
                   type="date"
-                  {...register('expiryDate')}
+                  {...register("expiryDate")}
                   className="mt-1"
                 />
               </div>
@@ -1899,7 +2351,9 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium text-gray-700">Featured Product</Label>
+                <Label className="text-sm font-medium text-gray-700">
+                  Featured Product
+                </Label>
                 <Controller
                   name="featured"
                   control={control}
@@ -1916,19 +2370,19 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
               <div className="flex gap-3">
                 <Button
-                  onClick={handleSubmit(onSubmit('draft'))}
+                  onClick={handleSubmit(onSubmit("draft"))}
                   variant="outline"
                   className="flex-1"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Save {isUpdateMode ? 'Changes' : 'Draft'}
+                  Save {isUpdateMode ? "Changes" : "Draft"}
                 </Button>
                 <Button
-                  onClick={handleSubmit(onSubmit('published'))}
+                  onClick={handleSubmit(onSubmit("published"))}
                   className="flex-1"
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  {isUpdateMode ? 'Update & Publish' : 'Publish'}
+                  {isUpdateMode ? "Update & Publish" : "Publish"}
                 </Button>
               </div>
             </CardContent>

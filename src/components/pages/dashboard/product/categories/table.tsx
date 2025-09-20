@@ -33,15 +33,14 @@ interface categorys {
 
 export default function Table({ props }:any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
-  console.log(props);
-
-  const fetch = (state: TableState) => {
+    const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.data || [],
       totalCount: props.total || 0,
       pageCount: props.totalPages,
     };
   };
+
 
   const handleUpdate = (category: any) => {
     openDialog(

@@ -242,7 +242,7 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
                 control={control}
                 render={({ field }) => (
                   <div className=" space-y-2 mt-2">
-                    {permissionData.map((p) => (
+                    {permissionData.map((p:any) => (
                       <div
                         key={p.category}
                         className="space-y-1 flex justify-between"
@@ -251,7 +251,7 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
                           {p.category}
                         </h3>
                         <div className="grid grid-cols-5 gap-3">
-                          {p.action.map((a) => (
+                          {p.action.map((a:any) => (
                             <div
                               key={a.id}
                               className="flex items-center space-x-2"

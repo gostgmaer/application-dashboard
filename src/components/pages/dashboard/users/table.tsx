@@ -30,16 +30,15 @@ interface User {
   avatar?: string;
 }
 
-export default function UsersTable({ props }:any) {
-
+export default function UsersTable({ props }: any) {
   console.log(props);
-  
+
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 
-  const fetch = (state: TableState) => {
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
-      data: props.users,
-      totalCount: props.pagination.totalUsers,
+      data: props.users||[],
+      totalCount: props.pagination.totalUsers||0,
       pageCount: props.pagination.totalPages,
     };
   };
@@ -100,9 +99,7 @@ export default function UsersTable({ props }:any) {
           <div className="flex items-center space-x-3">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.avatar} alt={user?.fullName} />
-              <AvatarFallback>
-                {user?.avatar}
-              </AvatarFallback>
+              <AvatarFallback>{user?.avatar}</AvatarFallback>
             </Avatar>
             <div>
               <div className="font-medium">{user.fullName}</div>
@@ -175,13 +172,9 @@ export default function UsersTable({ props }:any) {
           <ColumnFilter column={column} title="Role" />
         </div>
       ),
-       cell: ({ row }) => {
+      cell: ({ row }) => {
         const rolename = row.getValue("rolename") as string;
-        return (
-          <div className="text-muted-foreground">
-            {rolename}
-          </div>
-        );
+        return <div className="text-muted-foreground">{rolename}</div>;
       },
     },
     {
@@ -198,11 +191,7 @@ export default function UsersTable({ props }:any) {
       ),
       cell: ({ row }) => {
         const lastLoginAttempt = row.getValue("lastLoginAttempt") as string;
-        return (
-          <div className="text-muted-foreground">
-            {lastLoginAttempt}
-          </div>
-        );
+        return <div className="text-muted-foreground">{lastLoginAttempt}</div>;
       },
     },
     {
@@ -230,9 +219,7 @@ export default function UsersTable({ props }:any) {
                 View
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href={`/dashboard/users/${user["id"]}/update`}>
-                  Edit
-                </Link>
+                <Link href={`/dashboard/users/${user["id"]}/update`}>Edit</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -242,7 +229,10 @@ export default function UsersTable({ props }:any) {
   ];
   return (
     <>
-      <Breadcrumbs heading={"User Dashboard"} btn={{ show: true }}></Breadcrumbs>
+      <Breadcrumbs
+        heading={"User Dashboard"}
+        btn={{ show: true }}
+      ></Breadcrumbs>
 
       <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">
         <DataTable

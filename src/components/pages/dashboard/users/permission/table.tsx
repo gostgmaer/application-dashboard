@@ -39,10 +39,10 @@ export default function Table({ props }: any) {
   const { showConfirm, showAlert, showCustom } = useModal();
   const { data: session } = useSession();
   const { openModal } = useCommonModal();
-  const fetch = (state: TableState) => {
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
-      data: props.data,
-      totalCount: props.pagination.total,
+      data: props.data || [],
+      totalCount: props.pagination.total || 0,
       pageCount: props.pagination.pages,
     };
   };
@@ -50,9 +50,7 @@ export default function Table({ props }: any) {
   const handleUpdate = (data: any) => {
     showCustom({
       title: `Edit Permission: ${data.name}`,
-      content: (
-         <PermissionForm p={data} id={data._id} />
-      ),
+      content: <PermissionForm p={data} id={data._id} />,
       footer: (
         <>
           <Button variant="outline">Cancel</Button>
@@ -121,9 +119,7 @@ export default function Table({ props }: any) {
   const handleCreate = (data: any) => {
     showCustom({
       title: `Create New Permission`,
-      content: (
-         <PermissionForm p={data} id={undefined} />
-      ),
+      content: <PermissionForm p={data} id={undefined} />,
       footer: (
         <>
           <Button variant="outline">Cancel</Button>

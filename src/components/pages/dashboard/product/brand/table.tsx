@@ -34,13 +34,11 @@ interface brands {
 export default function Table({ props }: any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 
-  const fetch = (state: TableState) => {
-    // console.log(state);
-
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.results || [],
       totalCount: props.total || 0,
-      pageCount: Math.ceil(props.total / state.pagination["limit"]),
+      pageCount: Math.ceil(props.total / state.pagination["pageSize"]),
     };
   };
 

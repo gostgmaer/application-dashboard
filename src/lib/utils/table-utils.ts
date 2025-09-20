@@ -20,7 +20,7 @@ export function getTableStateFromSearchParams(searchParams: URLSearchParams): Pa
   return {
     pagination: {
       pageIndex: page - 1, // TanStack uses 0-based indexing
-      limit,
+      pageSize: limit,
     },
     sorting: sortBy ? [{ id: sortBy, desc: sortDesc }] : [],
     columnFilters: filters,

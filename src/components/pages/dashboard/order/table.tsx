@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ColumnFilter } from "@/components/elements/data-table/column-filter";
-import { TableState } from "@/types/table";
+import { ServerResponse, TableState } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
@@ -37,13 +37,11 @@ interface order {
 export default function Table({ props }: any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 
-  const fetch = (state: TableState) => {
-    // console.log(state);
-
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.results || [],
-      totalCount: props.total || 0,
-      pageCount: Math.ceil(props.total / state.pagination["limit"]),
+      totalCount: props.total,
+      pageCount: Math.ceil(props.total / state.pagination["pageSize"]),
     };
   };
 
@@ -68,10 +66,12 @@ export default function Table({ props }: any) {
 
         return (
           <div className="flex items-center space-x-3">
-             <Link href={`/dashboard/ecommerce/orders/${order._id}?order_id=${order.order_id}`} className=" text-blue-500">
-               
-               {order.order_id}
-                </Link>
+            <Link
+              href={`/dashboard/ecommerce/orders/${order._id}?order_id=${order.order_id}`}
+              className=" text-blue-500"
+            >
+              {order.order_id}
+            </Link>
           </div>
         );
       },
@@ -104,7 +104,7 @@ export default function Table({ props }: any) {
         );
       },
     },
-  {
+    {
       accessorKey: "payment_status",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
@@ -125,13 +125,17 @@ export default function Table({ props }: any) {
         return (
           <div className="flex items-center space-x-3">
             <div>
-              <div className={`font-medium capitalize status-${payment_status}`}>{payment_status}</div>
+              <div
+                className={`font-medium capitalize status-${payment_status}`}
+              >
+                {payment_status}
+              </div>
             </div>
           </div>
         );
       },
     },
-{
+    {
       accessorKey: "payment_method",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
@@ -175,7 +179,7 @@ export default function Table({ props }: any) {
       ),
       cell: ({ row }) => {
         const totalPrice = row.getValue("totalPrice") as Number;
-console.log(totalPrice);
+        console.log(totalPrice);
 
         return (
           <div className="flex items-center space-x-3">
@@ -210,8 +214,10 @@ console.log(totalPrice);
             ? "destructive"
             : "secondary";
         return (
-         <div className="flex items-center space-x-3">
-           <div className={`font-medium capitalize status-${status}`}>{status}</div>
+          <div className="flex items-center space-x-3">
+            <div className={`font-medium capitalize status-${status}`}>
+              {status}
+            </div>
           </div>
         );
       },
@@ -239,7 +245,6 @@ console.log(totalPrice);
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href={`/dashboard/ecommerce/orders/${order._id}`}>
-               
                   View
                 </Link>
               </DropdownMenuItem>

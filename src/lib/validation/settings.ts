@@ -1,18 +1,16 @@
 import { z } from 'zod'
 
 export const settingsSchema = z.object({
-    basic: z.object({
-        siteName: z.string().trim().min(1, 'Site name is required'),
-        siteKey: z.string().trim().min(1, 'Site key is required'),
-        isDeleted: z.boolean().default(false),
-        name: z.string().trim().optional(),
-        isLive: z.boolean().default(true),
-        maintenanceMode: z.boolean().default(false),
-        siteTimezone: z.string().trim().default('UTC'),
-        siteLocale: z.string().trim().default('en-US'),
-        defaultPageSize: z.number().min(1, 'Page size must be at least 1').default(20),
-        maxUploadSizeMB: z.number().min(1, 'Upload size must be at least 1').default(10),
-    }),
+    siteName: z.string().trim().min(1, 'Site name is required'),
+    siteKey: z.string().trim().min(1, 'Site key is required'),
+    isDeleted: z.boolean().default(false),
+    name: z.string().trim().optional(),
+    isLive: z.boolean().default(true),
+    maintenanceMode: z.boolean().default(false),
+    siteTimezone: z.string().trim().default('UTC'),
+    siteLocale: z.string().trim().default('en-US'),
+    defaultPageSize: z.number().min(1, 'Page size must be at least 1').default(20),
+    maxUploadSizeMB: z.number().min(1, 'Upload size must be at least 1').default(10),
     contactInfo: z.object({
         email: z.string().trim().email('Invalid email address'),
         phone: z.string().trim().optional(),

@@ -1,33 +1,62 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Loader2, MapPin, Plus, Edit2, Trash2, Home, Building, MapIcon } from 'lucide-react'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Loader2,
+  MapPin,
+  Plus,
+  Edit2,
+  Trash2,
+  Home,
+  Building,
+  MapIcon,
+} from "lucide-react";
 // import { addressSchema, AddressFormData } from ''
-import { User } from '@/types/user'
-import { toast } from 'sonner'
-import { AddressFormData, addressSchema } from '@/lib/validation/account'
+import { User } from "@/types/user";
+import { toast } from "sonner";
+import { AddressFormData, addressSchema } from "@/lib/validation/account";
 
 interface AddressesTabProps {
-  user: User
+  user: User;
 }
 
 export default function AddressesTab({ user }: AddressesTabProps) {
-  const [addresses, setAddresses] = useState(user.address)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<string | null>(null)
-console.log(user.address);
+  const [addresses, setAddresses] = useState(user.address);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<string | null>(null);
+  console.log(user.address);
 
   const {
     register,
@@ -35,121 +64,131 @@ console.log(user.address);
     setValue,
     watch,
     reset,
-    formState: { errors }
+    formState: { errors },
   } = useForm<AddressFormData>({
     resolver: zodResolver(addressSchema),
     defaultValues: {
-      label: 'home',
-      addressLine1: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: '',
-      isDefault: false
-    }
-  })
+      label: "home",
+      addressLine1: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+      isDefault: false,
+    },
+  });
 
-  const watchedType = watch('label')
+  const watchedType = watch("label");
 
   const onSubmit = async (data: AddressFormData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (editingAddress) {
         // Update existing address
-        setAddresses(prev => prev.map(addr => 
-          addr.id === editingAddress ? { ...addr, ...data } : addr
-        ))
-        toast.success('Address updated successfully!')
+        setAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === editingAddress ? { ...addr, ...data } : addr
+          )
+        );
+        toast.success("Address updated successfully!");
       } else {
         // Add new address
         const newAddress = {
           id: Date.now().toString(),
-          ...data
-        }
-        setAddresses(prev => [...prev, newAddress])
-        toast.success('Address added successfully!')
+          ...data,
+        };
+        setAddresses((prev) =>
+          prev.map((addr) =>
+            addr.id === editingAddress
+              ? { ...addr, ...data } // data must have compatible shape with Address
+              : addr
+          )
+        );
+        toast.success("Address added successfully!");
       }
 
-      setIsDialogOpen(false)
-      setEditingAddress(null)
-      reset()
+      setIsDialogOpen(false);
+      setEditingAddress(null);
+      reset();
     } catch (error) {
-      toast.error('Failed to save address. Please try again.')
+      toast.error("Failed to save address. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleEdit = (address: any) => {
-    setEditingAddress(address.id)
-    setValue('label', address.label)
-    setValue('addressLine1', address.addressLine1)
-    setValue('city', address.city)
-    setValue('state', address.state)
-    setValue('postalCode', address.postalCode)
-    setValue('country', address.country)
-    setValue('isDefault', address.isDefault)
-    setIsDialogOpen(true)
-  }
+    setEditingAddress(address.id);
+    setValue("label", address.label);
+    setValue("addressLine1", address.addressLine1);
+    setValue("city", address.city);
+    setValue("state", address.state);
+    setValue("postalCode", address.postalCode);
+    setValue("country", address.country);
+    setValue("isDefault", address.isDefault);
+    setIsDialogOpen(true);
+  };
 
   const handleDelete = async (addressId: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setAddresses(prev => prev.filter(addr => addr.id !== addressId))
-      toast.success('Address deleted successfully!')
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setAddresses((prev) => prev.filter((addr) => addr.id !== addressId));
+      toast.success("Address deleted successfully!");
     } catch (error) {
-      toast.error('Failed to delete address.')
+      toast.error("Failed to delete address.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSetDefault = async (addressId: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500))
-      setAddresses(prev => prev.map(addr => ({
-        ...addr,
-        isDefault: addr.id === addressId
-      })))
-      toast.success('Default address updated!')
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setAddresses((prev) =>
+        prev.map((addr) => ({
+          ...addr,
+          isDefault: addr.id === addressId,
+        }))
+      );
+      toast.success("Default address updated!");
     } catch (error) {
-      toast.error('Failed to update default address.')
+      toast.error("Failed to update default address.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleAddNew = () => {
-    reset()
-    setEditingAddress(null)
-    setIsDialogOpen(true)
-  }
+    reset();
+    setEditingAddress(null);
+    setIsDialogOpen(true);
+  };
 
   const getAddressTypeIcon = (label: string) => {
     switch (label) {
-      case 'home':
-        return <Home className="h-4 w-4" />
-      case 'work':
-        return <Building className="h-4 w-4" />
+      case "home":
+        return <Home className="h-4 w-4" />;
+      case "work":
+        return <Building className="h-4 w-4" />;
       default:
-        return <MapIcon className="h-4 w-4" />
+        return <MapIcon className="h-4 w-4" />;
     }
-  }
+  };
 
   const getAddressTypeColor = (label: string) => {
     switch (label) {
-      case 'home':
-        return 'bg-blue-100 text-blue-800'
-      case 'work':
-        return 'bg-green-100 text-green-800'
+      case "home":
+        return "bg-blue-100 text-blue-800";
+      case "work":
+        return "bg-green-100 text-green-800";
       default:
-        return 'bg-gray-100 text-gray-800'
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -170,20 +209,22 @@ console.log(user.address);
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>
-                {editingAddress ? 'Edit Address' : 'Add New Address'}
+                {editingAddress ? "Edit Address" : "Add New Address"}
               </DialogTitle>
               <DialogDescription>
-                {editingAddress 
-                  ? 'Update your address information.' 
-                  : 'Add a new shipping or billing address.'
-                }
+                {editingAddress
+                  ? "Update your address information."
+                  : "Add a new shipping or billing address."}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
                   <Label>Address Type</Label>
-                  <Select value={watchedType} onValueChange={(value) => setValue('label', value as any)}>
+                  <Select
+                    value={watchedType}
+                    onValueChange={(value) => setValue("label", value as any)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select address type" />
                     </SelectTrigger>
@@ -209,7 +250,9 @@ console.log(user.address);
                     </SelectContent>
                   </Select>
                   {errors.label && (
-                    <p className="text-sm text-destructive">{errors.label.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.label.message}
+                    </p>
                   )}
                 </div>
 
@@ -217,11 +260,13 @@ console.log(user.address);
                   <Label htmlFor="street">Street Address</Label>
                   <Input
                     id="addressLine1"
-                    {...register('addressLine1')}
+                    {...register("addressLine1")}
                     placeholder="123 Main Street"
                   />
                   {errors.addressLine1 && (
-                    <p className="text-sm text-destructive">{errors.addressLine1.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.addressLine1.message}
+                    </p>
                   )}
                 </div>
 
@@ -230,22 +275,22 @@ console.log(user.address);
                     <Label htmlFor="city">City</Label>
                     <Input
                       id="city"
-                      {...register('city')}
+                      {...register("city")}
                       placeholder="New York"
                     />
                     {errors.city && (
-                      <p className="text-sm text-destructive">{errors.city.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.city.message}
+                      </p>
                     )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      {...register('state')}
-                      placeholder="NY"
-                    />
+                    <Input id="state" {...register("state")} placeholder="NY" />
                     {errors.state && (
-                      <p className="text-sm text-destructive">{errors.state.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.state.message}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -255,22 +300,26 @@ console.log(user.address);
                     <Label htmlFor="postalCode">ZIP Code</Label>
                     <Input
                       id="postalCode"
-                      {...register('postalCode')}
+                      {...register("postalCode")}
                       placeholder="10001"
                     />
                     {errors.postalCode && (
-                      <p className="text-sm text-destructive">{errors.postalCode.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.postalCode.message}
+                      </p>
                     )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
                     <Input
                       id="country"
-                      {...register('country')}
+                      {...register("country")}
                       placeholder="United States"
                     />
                     {errors.country && (
-                      <p className="text-sm text-destructive">{errors.country.message}</p>
+                      <p className="text-sm text-destructive">
+                        {errors.country.message}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -278,8 +327,10 @@ console.log(user.address);
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="isDefault"
-                    checked={watch('isDefault')}
-                    onCheckedChange={(checked) => setValue('isDefault', checked)}
+                    checked={watch("isDefault")}
+                    onCheckedChange={(checked) =>
+                      setValue("isDefault", checked)
+                    }
                   />
                   <Label htmlFor="isDefault">Set as default address</Label>
                 </div>
@@ -289,9 +340,9 @@ console.log(user.address);
                   type="button"
                   variant="outline"
                   onClick={() => {
-                    setIsDialogOpen(false)
-                    setEditingAddress(null)
-                    reset()
+                    setIsDialogOpen(false);
+                    setEditingAddress(null);
+                    reset();
                   }}
                 >
                   Cancel
@@ -300,10 +351,12 @@ console.log(user.address);
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {editingAddress ? 'Updating...' : 'Adding...'}
+                      {editingAddress ? "Updating..." : "Adding..."}
                     </>
+                  ) : editingAddress ? (
+                    "Update Address"
                   ) : (
-                    editingAddress ? 'Update Address' : 'Add Address'
+                    "Add Address"
                   )}
                 </Button>
               </DialogFooter>
@@ -334,13 +387,14 @@ console.log(user.address);
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className={getAddressTypeColor(address.label)}
                       >
                         <span className="flex items-center gap-1">
                           {getAddressTypeIcon(address.label)}
-                          {address.label.charAt(0).toUpperCase() + address.label.slice(1)}
+                          {address.label.charAt(0).toUpperCase() +
+                            address.label.slice(1)}
                         </span>
                       </Badge>
                       {address.isDefault && (
@@ -392,5 +446,5 @@ console.log(user.address);
         )}
       </div>
     </div>
-  )
+  );
 }

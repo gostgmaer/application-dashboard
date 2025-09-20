@@ -46,7 +46,8 @@ export default function ResetPasswordForm() {
 
   const router = useRouter();
   const query = useSearchParams();
-  const token = query.get("resetToken");
+  const token: string = query.get("resetToken")!;
+
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: {

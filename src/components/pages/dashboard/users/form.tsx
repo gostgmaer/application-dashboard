@@ -275,7 +275,14 @@ export default function UserCreate({ data, id, master }: any) {
   //   setUser((prev) => ({ ...prev, [field]: value }));
   //   setErrors((prev) => ({ ...prev, [field]: "" }));
   // };
-
+  function getErrorMessage(error: unknown): string | null {
+    if (!error) return null;
+    if (typeof error === "string") return error;
+    if (typeof error === "object" && error !== null && "message" in error) {
+      return (error as { message?: string }).message ?? null;
+    }
+    return null;
+  }
   return (
     <div className="min-h-screen  py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -547,17 +554,13 @@ export default function UserCreate({ data, id, master }: any) {
                         className="mt-1"
                         placeholder={`Enter ${displayName} profile URL`}
                       />
-                      {errors.socialMedia?.[
-                        platform as keyof typeof errors.socialMedia
-                      ]?.message && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {
-                            errors.socialMedia[
-                              platform as keyof typeof errors.socialMedia
-                            ]?.message
-                          }
-                        </p>
-                      )}
+                      <p className="text-red-500 text-xs mt-1">
+                        {getErrorMessage(
+                          errors.socialMedia?.[
+                            platform as keyof typeof errors.socialMedia
+                          ]
+                        )}
+                      </p>
                     </div>
                   )
                 )}

@@ -20,11 +20,16 @@ import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
+interface category {
+  _id: string;
+  title: string;
+}
+
 interface products {
   _id: string;
   title: string;
   sku: string;
-  category: object;
+  category: category;
   stock: string;
   price: string;
 
@@ -35,15 +40,15 @@ interface products {
   image?: string;
 }
 
-export default function Table({ props }:any) {
+export default function Table({ props }: any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   console.log(props);
 
-  const fetch = (state: TableState) => {
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.products || [],
       totalCount: props.pagination.totalProducts || 0,
-      pageCount: props.pagination.totalPages
+      pageCount: props.pagination.totalPages,
     };
   };
 
@@ -266,7 +271,9 @@ export default function Table({ props }:any) {
               </DropdownMenuItem>
 
               <DropdownMenuItem>
-                <Link href={`/dashboard/ecommerce/products/${product["_id"]}/update`}>
+                <Link
+                  href={`/dashboard/ecommerce/products/${product["_id"]}/update`}
+                >
                   Edit
                 </Link>
               </DropdownMenuItem>
