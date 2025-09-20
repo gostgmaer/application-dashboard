@@ -35,6 +35,7 @@ import roleServices from "@/helper/services/roleServices";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import userServices from "@/helper/services/userService";
+import FileUploader from "@/components/elements/uploader";
 
 interface Role {
   _id: string;
@@ -159,7 +160,7 @@ const paymentMethodTypes = ["credit_card", "paypal", "bank_transfer"];
 const subscriptionTypes = ["free", "premium", "enterprise"];
 
 export default function UserCreate({ data, id, master }: any) {
-  console.log(data, id, master);
+
   const { data: session } = useSession();
 
   const route = useRouter();
@@ -477,58 +478,18 @@ export default function UserCreate({ data, id, master }: any) {
               </div>
             </CardContent>
           </Card>
-          <Card className="">
-            <CardHeader className="">
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-2 h-6 bg-orange-400 rounded-full"></div>
-                Profile Picture
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 text-gray-200">
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-8 text-center hover:border-blue-500 transition-colors bg-gray-800">
-                <div className="flex flex-col items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">
-                      Upload profile picture
-                    </p>
-                    <p className="text-xs text-gray-400">PNG, JPG up to 5MB.</p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="flex items-center gap-2 border-gray-600 text-gray-700 dark:text-gray-400 hover:bg-gray-700"
-                  >
-                    <Upload className="w-4 h-4" />
-                    Choose File
-                  </Button>
-                </div>
-              </div>
-              {profilePicture && (
-                <div className="mt-4 flex items-center gap-2">
-                  <Image
-                    src={profilePicture}
-                    alt="Profile"
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <Button
-                    onClick={() => setProfilePicture(null)}
-                    variant="outline"
-                    size="sm"
-                    className="border-gray-600 text-red-400"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-              {errors.profilePicture && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.profilePicture.message}
-                </p>
-              )}
-            </CardContent>
-          </Card>
+          <FileUploader
+            title="Upload Gallery Images"
+            allowedTypes={["image/jpeg", "image/png"]}
+            maxFileSize={5 * 1024 * 1024}
+            fileTypeLabel="PNG, JPG up to 5MB"
+            apiEndpoint="/files"
+            authToken={session?.accessToken || ""}
+            multiple={false}
+            onFileChange={(files: File[]) =>
+              console.log("Selected files:", files)
+            }
+          />
 
           {/* Social Media & Interests */}
           <Card className="">

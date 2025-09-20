@@ -60,6 +60,7 @@
     "@types/react-dom": "19.1.5",
     "ag-grid-react": "^34.1.2",
     "autoprefixer": "10.4.15",
+    "axios": "^1.12.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",

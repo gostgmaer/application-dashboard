@@ -21,6 +21,8 @@ import {
 } from "@/lib/validation/account";
 import { User } from "@/types/user";
 import { toast } from "sonner";
+import ProfilePictureUploader from "@/components/elements/profilePhoto";
+import { useSession } from "next-auth/react";
 
 interface PersonalDetailsTabProps {
   user: User;
@@ -31,6 +33,7 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
   const [previewImage, setPreviewImage] = useState<string>(
     user.profilePicture || ""
   );
+ const { data: session } = useSession();
 
   const {
     register,
@@ -94,29 +97,12 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Profile Picture */}
       <div className="flex items-center space-x-4">
-        <div className="relative">
-          <Avatar className="h-20 w-20">
-            <AvatarImage src={previewImage} alt="Profile" />
-            <AvatarFallback className="text-lg">
-              {getInitials(watch("firstName"), watch("lastName"))}
-            </AvatarFallback>
-          </Avatar>
-          <label className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-1.5 cursor-pointer hover:bg-primary/90 transition-colors">
-            <Camera className="h-3 w-3" />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="hidden"
-            />
-          </label>
-        </div>
-        <div>
-          <h4 className="font-medium">Profile Picture</h4>
-          <p className="text-sm text-muted-foreground">
-            Click the camera icon to change your profile picture
-          </p>
-        </div>
+      <ProfilePictureUploader
+        authToken={session?.accessToken || ""}
+        firstName={user.firstName}
+        lastName={user.lastName}
+        initialFile={user.profilePicture || null}
+      />
       </div>
 
       {/* Basic Information */}
