@@ -31,7 +31,6 @@ interface User {
 }
 
 export default function UsersTable({ props }: any) {
-  console.log(props);
 
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 

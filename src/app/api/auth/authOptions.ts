@@ -113,7 +113,7 @@ export const authOptions: AuthOptions = {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
           token_type: "access",
-          id_token: tokens.idToken,
+          // id_token: tokens.idToken,
           accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt),
         };
       },
@@ -222,8 +222,7 @@ export const authOptions: AuthOptions = {
           customToken.permissions = { "*": ["read", "write", "modify", "delete", "manage"] };
         }
       }
-      console.log("customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires", customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires);
-
+  
       // Check if token is expired and refresh if necessary
       if (customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires) {
         return await refreshAccessToken(customToken);

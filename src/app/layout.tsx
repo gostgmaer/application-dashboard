@@ -9,6 +9,9 @@ import { ModalProvider } from "@/contexts/modal-context";
 import ModalManager from "@/components/layout/modals/modal-manager";
 import ErrorPage from "./_error";
 import ErrorBoundary from "next/dist/client/components/error-boundary";
+import { NotificationProvider } from "@/contexts/NotificationContext";
+import { getServerSession } from "next-auth";
+import { authOptions } from "./api/auth/authOptions";
 
 // const inter = Inter({ subsets: ['latin'] });
 const roboto = Roboto({ subsets: ["latin"] });
@@ -24,20 +27,22 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+  const token: string = session?.accessToken || "";
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${roboto.className} overflow-hidden`}>
         <SessionProviderWrapper>
           <Providers>
-            
-            <DialogProvider>
-              <ModalProvider>
-                {children}
-
-                <ReusableDialog />
-                <ModalManager />
-              </ModalProvider>
-            </DialogProvider>
+            <NotificationProvider authToken={token}>
+              <DialogProvider>
+                <ModalProvider>
+                  {children}
+                  <ReusableDialog />
+                  <ModalManager />
+                </ModalProvider>
+              </DialogProvider>
+            </NotificationProvider>
           </Providers>
         </SessionProviderWrapper>
       </body>
