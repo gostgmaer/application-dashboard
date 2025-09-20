@@ -69,18 +69,6 @@ const navigationItems: NavItem[] = [
         icon: ShoppingCart,
       },
       { title: "Orders", href: "/dashboard/ecommerce/orders", icon: Calendar },
-      // { title: "Inventory", href: "/dashboard/ecommerce/inventory", icon: Database },
-      // { title: "Analytics", href: "/dashboard/ecommerce/analytics", icon: BarChart3 },
-      {
-        title: "Shipping",
-        href: "/dashboard/ecommerce/shipping",
-        icon: ShipIcon,
-      },
-      {
-        title: "Customers",
-        href: "/dashboard/ecommerce/customers",
-        icon: User2,
-      },
     ],
   },
 ];
@@ -91,7 +79,6 @@ const personalNavigationItems: NavItem[] = [
     icon: User,
     children: [
       { title: "View Profile", href: "/dashboard/profile", icon: User },
-      { title: "Edit Profile", href: "/dashboard/profile/edit", icon: User },
       {
         title: "Account Settings",
         href: "/dashboard/profile/settings",
@@ -118,16 +105,7 @@ const personalNavigationItems: NavItem[] = [
   {
     title: "Settings",
     icon: Settings,
-    children: [
-      { title: "General", href: "/dashboard/settings", icon: Settings },
-      { title: "Billing", href: "/dashboard/settings/billing", icon: IdCard },
-      { title: "Security", href: "/dashboard/settings/security", icon: Shield },
-      {
-        title: "API Configuration",
-        href: "/dashboard/settings/integration",
-        icon: Database,
-      },
-    ],
+    href: "/dashboard/settings",
   },
   {
     title: "Communication",
@@ -169,8 +147,6 @@ export function Sidebar({
   mobileOpen,
   onMobileClose,
 }: SidebarProps) {
-
-
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<string[]>([
     "User Management",

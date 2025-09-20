@@ -1,21 +1,8 @@
 import React from "react";
 
 import {
-  Search,
-  Bell,
-  User,
-  Settings,
-  LogOut,
-  ChevronDown,
   Menu,
-  Home,
   Package,
-  ShoppingCart,
-  BarChart3,
-  Users,
-  Folder,
-  Tag,
-  HelpCircle,
 } from "lucide-react";
 import { ThemeSwitch } from "@/components/elements/theme-switch";
 import { UserStatus } from "@/components/elements/userpopover";
@@ -25,31 +12,6 @@ import { useSession } from "next-auth/react";
 
 const DashboardHeader: React.FC = () => {
   const { data: session } = useSession();
-
-  const notifications:any = [
-    {
-      id: 1,
-      title: "Low Stock Alert",
-      message: "5 products are running low on stock",
-      time: "2 min ago",
-      type: "warning",
-    },
-    {
-      id: 2,
-      title: "New Order",
-      message: "Order #12345 has been placed",
-      time: "5 min ago",
-      type: "success",
-    },
-    {
-      id: 3,
-      title: "Product Review",
-      message: 'New review for "Wireless Headphones"',
-      time: "10 min ago",
-      type: "info",
-    },
-  ];
-
   return (
     <header className="sticky top-0 z-50 border-b bg-white border-gray-200 dark:bg-gray-900 dark:border-gray-700 transition-colors duration-200">
       {/* Main Header */}

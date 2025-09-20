@@ -1,3 +1,4 @@
+import { appUrl } from '@/config/setting';
 import { io, Socket } from 'socket.io-client';
 
 export interface Notification {
@@ -32,7 +33,7 @@ class NotificationClient {
   constructor(token: string, options: NotificationClientOptions = {}) {
     this.opts = options;
 
-    this.socket = io(process.env.NEXT_PUBLIC_APP_URL as string, {
+    this.socket = io(appUrl as string, {
       auth: { token },
       transports: ['websocket', 'polling'],
       autoConnect: true,
@@ -105,7 +106,7 @@ class NotificationClient {
         status,
         readAt,
       };
-      if (status === 'read') {
+      if (status === 'READ') {
         this.updateNotificationCount(-1);
       }
     }
@@ -114,7 +115,7 @@ class NotificationClient {
   private markAllNotificationsReadInUI() {
     this.notifications = this.notifications.map((n) => ({
       ...n,
-      metadata: { ...n.metadata, status: 'read', readAt: new Date().toISOString() },
+      metadata: { ...n.metadata, status: 'READ', readAt: new Date().toISOString() },
     }));
     this.unreadCount = 0;
   }
@@ -122,7 +123,7 @@ class NotificationClient {
   public markAsRead(notificationId: string) {
     this.socket.emit('mark_notification_read', { id: notificationId });
     // Optimistically update UI
-    this.updateNotificationInUI(notificationId, 'read', new Date().toISOString());
+    this.updateNotificationInUI(notificationId, 'READ', new Date().toISOString());
   }
 
   public markAllRead() {

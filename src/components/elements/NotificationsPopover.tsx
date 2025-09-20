@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import NotificationClient, { Notification } from '../../utils/socket';
-
+import { formatDistanceToNow } from "date-fns";
 interface NotificationsPopoverProps {
   token: string;
 }
@@ -57,6 +57,8 @@ const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ token }) =>
     setUnreadCount(0);
   };
 
+  // const timeAgoString = createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : "No timestamp available";
+
   return (
     <div ref={containerRef} className="relative">
       {/* Notification Bell Button */}
@@ -107,7 +109,8 @@ const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ token }) =>
                       <p className="font-semibold text-gray-900 dark:text-gray-200">{n.title}</p>
                       <p className="text-sm text-gray-700 dark:text-gray-300">{n.message}</p>
                       <p className="text-xs text-gray-400 dark:text-gray-500">
-                        {new Date(n.createdAt).toLocaleString()}
+             
+                        {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                       </p>
                     </div>
                     {!isRead && (

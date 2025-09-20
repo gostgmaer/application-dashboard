@@ -2,8 +2,8 @@ import requests from './httpServices';
 
 const SettingServices = {
   //store setting all function
-  getOnlineStoreSetting: async () => {
-    return requests.get('/setting/store/all');
+  getOnlineStoreSetting: async (key) => {
+    return requests.get(`/settings/${key}`);
   },
   //store customization setting all function
   getStoreCustomizationSetting: async () => {

@@ -12,8 +12,8 @@ const OrderServices = {
   },
 
   // Get all orders (admin)
-  getOrders: async (query: any, headers: any) => {
-    return requests.get("/orders", query, null, headers, 1);
+  getOrders: async (query: any, token: any) => {
+    return requests.get("/orders", query, null, {}, 1,token);
   },
 
   // Get a single order by ID

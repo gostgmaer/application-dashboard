@@ -343,14 +343,11 @@ export default function SettingsPage({ settings }: SettingsPageProps) {
   ];
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="">
       <Card>
         <CardHeader>
-          <CardTitle>Site Settings</CardTitle>
-          <CardDescription>
-            Configure your site settings, including basic, contact, and security
-            settings
-          </CardDescription>
+        
+          
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

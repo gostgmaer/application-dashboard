@@ -113,7 +113,7 @@ const requests = {
     await fetchData(endpoint, {
       method: 'PUT', body, params, headers,token // Cache for 5 minutes
     }),
-  patch: async (endpoint, body, params, headers,token) =>
+  patch: async (endpoint, body,token, params, headers) =>
     await fetchData(endpoint, {
       method: 'PATCH', body, params, headers,token
     }),

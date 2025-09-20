@@ -34,6 +34,7 @@ import Image from "next/image";
 import roleServices from "@/helper/services/roleServices";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import userServices from "@/helper/services/userService";
 
 interface Role {
   _id: string;
@@ -191,7 +192,7 @@ export default function UserCreate({ data, id, master }: any) {
         break;
       case "update":
         {
-          res = await UserServices.updateUserPatch(
+          res = await userServices.updateUserPatch(
             id,
             updatedUser,
             session?.accessToken
@@ -243,8 +244,8 @@ export default function UserCreate({ data, id, master }: any) {
       lastName: data?.lastName || "",
       isVerified: data?.isVerified || false,
       phoneNumber: data?.phoneNumber || "",
-      gender: data.gender || "",
-      referralCode: data.referralCode || "",
+      gender: data?.gender || "",
+      referralCode: data?.referralCode || "",
       dateOfBirth: data?.dateOfBirth
         ? new Date(data.dateOfBirth).toISOString().split("T")[0]
         : "",
