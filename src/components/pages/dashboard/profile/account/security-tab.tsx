@@ -14,12 +14,16 @@ import { Loader2, Shield, Smartphone, Eye, EyeOff, AlertTriangle, Phone, Mail, Q
 import { changePasswordSchema, twoFactorSchema, ChangePasswordFormData, TwoFactorFormData } from '@/lib/validation/account'
 import { User } from '@/types/user'
 import { toast } from 'sonner'
+import authService from '@/helper/services/authService'
+import { useSession } from 'next-auth/react'
 
 interface SecurityTabProps {
   user: User
 }
 
 export default function SecurityTab({ user }: SecurityTabProps) {
+
+  const { data: session } = useSession();
    const [isPasswordLoading, setIsPasswordLoading] = useState(false)
   const [isTwoFactorLoading, setIsTwoFactorLoading] = useState(false)
   const [isPhoneLoading, setIsPhoneLoading] = useState(false)
@@ -105,7 +109,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   const onPasswordSubmit = async (data: ChangePasswordFormData) => {
     setIsPasswordLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // await new Promise(resolve => setTimeout(resolve, 1500))
+      await authService.changePassword(data,session?.accessToken)
       console.log('Password changed:', data)
       toast.success('Password updated successfully!')
       passwordForm.reset()

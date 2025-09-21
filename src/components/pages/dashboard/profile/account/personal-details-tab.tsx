@@ -23,6 +23,7 @@ import { User } from "@/types/user";
 import { toast } from "sonner";
 import ProfilePictureUploader from "@/components/elements/profilePhoto";
 import { useSession } from "next-auth/react";
+import authService from "@/helper/services/authService";
 
 interface PersonalDetailsTabProps {
   user: User;
@@ -53,7 +54,7 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
         ? new Date(user.dateOfBirth).toISOString().split("T")[0]
         : "",
       gender: user.gender || "",
-      profilePicture: user.profilePicture || "",
+     
     },
   });
 
@@ -77,8 +78,10 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Updated personal details:", data);
+      console.log(session);
+      
+    
+      await authService.updateProfile(data, session?.accessToken);
       toast.success("Personal details updated successfully!");
     } catch (error) {
       toast.error("Failed to update personal details. Please try again.");

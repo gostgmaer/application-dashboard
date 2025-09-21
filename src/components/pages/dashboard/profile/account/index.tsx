@@ -107,12 +107,12 @@ export default function AccountPage({user}:any) {
       icon: Users,
       component: SocialMediaTab
     },
-    {
-      id: 'interests',
-      label: 'Interests',
-      icon: Heart,
-      component: InterestsTab
-    },
+    // {
+    //   id: 'interests',
+    //   label: 'Interests',
+    //   icon: Heart,
+    //   component: InterestsTab
+    // },
     {
       id: 'addresses',
       label: 'Addresses',

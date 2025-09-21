@@ -11,16 +11,16 @@ const Page = async (url: any) => {
   const session = await getServerSession(authOptions);
   const { id } = await url.params;
   const data = await userServices.getSingle(id, session?.accessToken);
-  const role = await roleServices.getAll({}, session?.accessToken);
+  const roles = await roleServices.getAll({}, session?.accessToken);
 
-  console.log(data);
+  console.log(roles);
 
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
           <Breadcrumbs
-            heading={"Create New User"}
+            heading={"Update User"}
             btn={{ show: false }}
           ></Breadcrumbs>
 
@@ -28,7 +28,7 @@ const Page = async (url: any) => {
             <UserCreate
               data={data.data}
               id={id}
-              master={{ roles: role }}
+              master={{ roles: roles["results"] }}
             ></UserCreate>
           </div>
         </Suspense>

@@ -56,8 +56,6 @@ export default function AddressesTab({ user }: AddressesTabProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<string | null>(null);
-  console.log(user.address);
-
   const {
     register,
     handleSubmit,

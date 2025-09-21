@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { toast } from "@/hooks/useToast";
 import attachmentService from "@/helper/services/attachments";
+import authService from "@/helper/services/authService";
 
 // Define interfaces
 interface Attachment {
@@ -59,8 +60,8 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
   lastName = "",
 }) => {
   const [fileData, setFileData] = useState<Attachment | null>(initialFile);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    initialFile?.fileUrl || null
+  const [previewUrl, setPreviewUrl] = useState<string | string>(
+    initialFile?.fileUrl || ""
   );
   const [errors, setErrors] = useState<Errors>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,10 +107,19 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
 
     if (fileData?._id) {
       // Update existing file
-      await updateFile(file);
+      const img: any = await updateFile(file);
+      const data = {
+        url: img["fileUrl"],
+      };
+      await authService.updateProfilePicture(data, authToken);
     } else {
       // Upload new file
-      await uploadFile(file);
+
+      const img: any = await uploadFile(file);
+      const data = {
+        url: img["fileUrl"],
+      };
+      await authService.updateProfilePicture(data, authToken);
     }
   };
 
@@ -127,6 +137,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
         title: "Success",
         description: "Profile picture uploaded successfully",
       });
+      return response.data;
     } catch (error: any) {
       const message = error.response?.data?.error || "Failed to upload file";
       setErrors({ file: { message } });
@@ -152,6 +163,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
         title: "Success",
         description: "Profile picture updated successfully",
       });
+      return response.data;
     } catch (error: any) {
       const message = error.response?.data?.error || "Failed to update file";
       setErrors({ file: { message } });

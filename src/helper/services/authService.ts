@@ -118,17 +118,17 @@ const authService = {
   updateOTPSettings: (body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
     safeApiCall(() => requests.put("/auth/otp/settings", body, token, headers)),
 
-  updateProfile: (id: string, body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.put(`/auth/profile/${id}`, body, token, headers)),
+  updateProfile: (body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
+    safeApiCall(() => requests.patch(`/auth/profile`, body, token, headers)), 
 
-  updateProfilePicture: (id: string, body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.put(`/auth/profile-picture/${id}`, body, token, headers)),
+  updateProfilePicture: (body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
+    safeApiCall(() => requests.patch(`/auth/profile-picture`, body, token, headers)),
 
   updateEmail: (id: string, body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.put(`/auth/email/${id}`, body, token, headers)),
+    safeApiCall(() => requests.patch(`/auth/email/${id}`, body, token, headers)),
 
   updatePhoneNumber: (id: string, body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.put(`/auth/phone/${id}`, body, token, headers)),
+    safeApiCall(() => requests.patch(`/auth/phone/${id}`, body, token, headers)),
 
   linkSocialAccount: (id: string, body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
     safeApiCall(() => requests.post(`/auth/social/link/${id}`, body, token, headers)),

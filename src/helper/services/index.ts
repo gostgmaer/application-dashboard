@@ -104,6 +104,7 @@ export async function fetchData<T = any>(
 
 
     const defaultHeaders: Record<string, string> = {
+      ...(body instanceof FormData ? {} : { "Content-Type": "application/json" }),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 

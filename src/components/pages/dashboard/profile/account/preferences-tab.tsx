@@ -13,6 +13,9 @@ import { Loader2, Globe, Palette, Bell, Mail } from 'lucide-react'
 import { preferencesSchema, PreferencesFormData } from '@/lib/validation/account'
 import { User } from '@/types/user'
 import { toast } from 'sonner'
+import userServices from '@/helper/services/userService'
+import authService from '@/helper/services/authService'
+import { useSession } from 'next-auth/react'
 
 interface PreferencesTabProps {
   user: User
@@ -20,7 +23,7 @@ interface PreferencesTabProps {
 
 export default function PreferencesTab({ user }: PreferencesTabProps) {
   const [isLoading, setIsLoading] = useState(false)
-
+ const { data: session } = useSession();
   const {
     setValue,
     watch,
@@ -42,8 +45,8 @@ export default function PreferencesTab({ user }: PreferencesTabProps) {
   const onSubmit = async (data: PreferencesFormData) => {
     setIsLoading(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      console.log('Updated preferences:', data)
+      // await new Promise(resolve => setTimeout(resolve, 1000))
+      await authService.updateProfile(data, session?.accessToken)
       toast.success('Preferences updated successfully!')
     } catch (error) {
       toast.error('Failed to update preferences. Please try again.')

@@ -327,6 +327,8 @@ export default function Profile({
 
   const selectedUser = otherUsers.find((user) => user.id === selectedUserId);
 
+  console.log(userData);
+  
   return (
     <div className="w-full  space-y-4">
       <div className=" grid grid-cols-1  gap-8">
@@ -339,6 +341,8 @@ export default function Profile({
               {userData.profilePicture && (
                 <Image
                   src={userData.profilePicture}
+                  width={128}
+                  height={128}
                   alt="Profile"
                   className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded-full border-2 border-gray-300 dark:border-gray-600 transition-transform hover:scale-105"
                   loading="lazy"

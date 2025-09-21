@@ -160,8 +160,8 @@ const paymentMethodTypes = ["credit_card", "paypal", "bank_transfer"];
 const subscriptionTypes = ["free", "premium", "enterprise"];
 
 export default function UserCreate({ data, id, master }: any) {
-
   const { data: session } = useSession();
+console.log(master);
 
   const route = useRouter();
   const { toast } = useToast();
@@ -184,16 +184,13 @@ export default function UserCreate({ data, id, master }: any) {
     switch (s) {
       case "draft":
         {
-          res = await UserServices.createUser(
-            updatedUser,
-            session?.accessToken
-          );
+          res = await userServices.create(updatedUser, session?.accessToken);
         }
 
         break;
       case "update":
         {
-          res = await userServices.updateUserPatch(
+          res = await userServices.updatePatch(
             id,
             updatedUser,
             session?.accessToken
@@ -203,10 +200,7 @@ export default function UserCreate({ data, id, master }: any) {
 
       default:
         {
-          res = await UserServices.createUser(
-            updatedUser,
-            session?.accessToken
-          );
+          res = await UserServices.create(updatedUser, session?.accessToken);
         }
         break;
     }
