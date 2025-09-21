@@ -69,7 +69,7 @@ export default function Table({ props }: any) {
   };
 
   const deleteRequest = async (id: any) => {
-    return await roleServices.delete(id, session?.accessToken);
+    return await roleServices.remove(id, session?.accessToken);
   };
 
   const handleDelete = async (data: any) => {

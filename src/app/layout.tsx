@@ -10,8 +10,10 @@ import ModalManager from "@/components/layout/modals/modal-manager";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/authOptions";
-import SettingServices from "@/helper/services/SettingServices";
+import SettingServices from "@/helper/services/settngsServices";
 import { sitekey } from "@/config/setting";
+import settingServices from "@/helper/services/settngsServices";
+import { string } from "yup";
 // const inter = Inter({ subsets: ['latin'] });
 const roboto = Roboto({ subsets: ["latin"] });
 
@@ -28,9 +30,8 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
   const token: string = session?.accessToken || "";
-  const setting = await SettingServices.getOnlineStoreSetting(sitekey);
-  console.log(setting);
-  
+  const setting = await settingServices.getBySiteKey(sitekey);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${roboto.className} overflow-hidden`}>

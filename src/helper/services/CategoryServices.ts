@@ -1,53 +1,201 @@
+import requests from "./index";
+import { safeApiCall, ApiResponse } from "./apiUtils";
 
-import requests from "./httpServices";
-
-const CategoryServices = {
-  // Create a new category
-
-  
-
-
-  createCategory: async (body: any, headers: any) => {
-    return requests.post("/categories", body, headers);
+const categoryService = {
+  createCategory: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/category", body, token, headers));
   },
 
-  // Get all categories
-  getCategories: async (query: any, headers: any) => {
-    console.log(query, headers);
-    
-    return requests.get("/categories", query, {}, headers, 1);
+  getAllCategories: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get("/category", token, query, undefined, headers, 1)
+    );
   },
 
-  // Get a single category by ID
-  getSingleCategoryById: async (id: any, headers: any) => {
-    return requests.get(`/categories/${id}`, null, null, headers, 1);
+  getCategory: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get(`/category/${id}`, token, undefined, undefined, headers, 1)
+    );
   },
 
-  // Update a category by ID (complete update)
-  updateCategoryPut: async (id: any, body: any, headers: any) => {
-    return requests.put(`/categories/${id}`, body, headers);
+  updateCategory: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.put(`/category/${id}`, body, token, headers)
+    );
   },
 
-  // Update a category by ID (partial update)
-  updateCategoryPatch: async (id: any, body: any, headers: any) => {
-    return requests.patch(`/categories/${id}`, body, headers);
+  deleteCategory: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.delete(`/category/${id}`, token, undefined, headers)
+    );
   },
 
-  // Delete a category by ID
-  deleteCategory: async (id: any, headers: any) => {
-    return requests.delete(`/categories/${id}`,null, headers);
+  getActiveCategories: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get("/category/active", token, undefined, undefined, headers, 1)
+    );
   },
 
-  // Get the number of products per category
-  getItemsPerCategory: async (query: any, headers: any) => {
-    return requests.get("/categories/data/product-count", query, null, headers, 1);
+  getFeaturedCategories: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get(
+        "/category/featured",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 
-  // Get showing categories
-  getShowingCategory: async (query: any, headers: any) => {
-    return requests.get("/categories/data/show", query, null, headers, 1);
+  searchCategories: async (
+    query: { keyword: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get("/category/search", token, query, undefined, headers, 1)
+    );
+  },
+
+  getCategoryTree: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get("/category/tree", token, undefined, undefined, headers, 1)
+    );
+  },
+
+  getStats: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get("/category/stats", token, undefined, undefined, headers, 1)
+    );
+  },
+
+  getFeaturedStats: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get(
+        "/category/featured-stats",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
+  },
+
+  getAggregateStatus: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get(
+        "/category/aggregate-status",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
+  },
+
+  bulkUpdateStatus: async (
+    body: { ids: string[]; status: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.patch("/category/bulk-status", body, token, headers)
+    );
+  },
+
+  importBulk: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.post("/category/import-bulk", body, token, headers)
+    );
+  },
+
+  batchUpdateDisplayOrders: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.patch(
+        "/category/batch-update-display-orders",
+        body,
+        token,
+        headers
+      )
+    );
+  },
+
+  softDeleteMany: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.patch("/category/soft-delete-many", body, token, headers)
+    );
+  },
+
+  getRouteDocs: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.get(
+        "/category/docs/routes",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 };
 
-
-export default CategoryServices;
+export default categoryService;

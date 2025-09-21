@@ -40,8 +40,8 @@ import { useDebounce } from "use-debounce";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import authService from "@/helper/services/authServices";
-import addressServices from "@/helper/services/addressService";
+import authService from "@/helper/services/authService";
+import addressServices from "@/helper/services/address";
 import { toast } from "@/hooks/useToast";
 
 // Zod schema for Address

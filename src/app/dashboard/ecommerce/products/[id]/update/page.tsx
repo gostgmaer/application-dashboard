@@ -1,15 +1,12 @@
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
 import ProductCreate from "@/components/pages/dashboard/product/form";
-import ProductServices from "@/helper/services/ProductServices";
+import productService from "@/helper/services/ProductServices";
 import React, { Suspense } from "react";
 
 const Page = async (url: any) => {
   const params = await url.params;
-  const data = await ProductServices.getProductByIdOrSlug(params.id, {});
-
-  console.log(data);
-
+  const data = await productService.get(params.id);
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">

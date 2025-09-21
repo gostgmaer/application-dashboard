@@ -15,7 +15,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses", token, query, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get("/addresses", token, query, undefined, headers, 1)
+    );
   },
 
   getSingle: async (
@@ -23,14 +25,18 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/addresses/${id}`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(`/addresses/${id}`, token, undefined, undefined, headers, 1)
+    );
   },
 
-    getUser: async (
+  getUser: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/addresses/user`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(`/addresses/user`, token, undefined, undefined, headers, 1)
+    );
   },
 
   updatePut: async (
@@ -39,7 +45,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/addresses/${id}`, body, token, headers));
+    return safeApiCall(() =>
+      requests.put(`/addresses/${id}`, body, token, headers)
+    );
   },
 
   updatePatch: async (
@@ -48,7 +56,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/addresses/${id}`, body, token, headers));
+    return safeApiCall(() =>
+      requests.patch(`/addresses/${id}`, body, token, headers)
+    );
   },
 
   remove: async (
@@ -56,7 +66,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/addresses/${id}`, token, undefined, headers));
+    return safeApiCall(() =>
+      requests.delete(`/addresses/${id}`, token, undefined, headers)
+    );
   },
 
   setDefault: async (
@@ -64,14 +76,18 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/addresses/${id}/set-default`, {}, token, headers));
+    return safeApiCall(() =>
+      requests.patch(`/addresses/${id}/set-default`, {}, token, headers)
+    );
   },
 
   removeUserAddresses: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete("/addresses", token, undefined, headers));
+    return safeApiCall(() =>
+      requests.delete("/addresses", token, undefined, headers)
+    );
   },
 
   findNearby: async (
@@ -79,7 +95,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses/nearby", token, params, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get("/addresses/nearby", token, params, undefined, headers, 1)
+    );
   },
 
   search: async (
@@ -87,7 +105,16 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses/search", token, searchParams, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(
+        "/addresses/search",
+        token,
+        searchParams,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 
   batchCreate: async (
@@ -95,21 +122,41 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/addresses/batch", batchData, token, headers));
+    return safeApiCall(() =>
+      requests.post("/addresses/batch", batchData, token, headers)
+    );
   },
 
   findDuplicates: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses/duplicates", token, undefined, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(
+        "/addresses/duplicates",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 
   getStatusCount: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses/statuscount", token, undefined, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(
+        "/addresses/statuscount",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 
   bulkUpdateStatus: async (
@@ -117,7 +164,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch("/addresses/bulkstatus", bulkData, token, headers));
+    return safeApiCall(() =>
+      requests.patch("/addresses/bulkstatus", bulkData, token, headers)
+    );
   },
 
   addTag: async (
@@ -126,7 +175,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/addresses/${id}/add-tag`, { tag }, token, headers));
+    return safeApiCall(() =>
+      requests.patch(`/addresses/${id}/add-tag`, { tag }, token, headers)
+    );
   },
 
   removeTag: async (
@@ -135,7 +186,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/addresses/${id}/remove-tag`, { tag }, token, headers));
+    return safeApiCall(() =>
+      requests.patch(`/addresses/${id}/remove-tag`, { tag }, token, headers)
+    );
   },
 
   bulkAddTag: async (
@@ -143,7 +196,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch("/addresses/bulkadd-tag", data, token, headers));
+    return safeApiCall(() =>
+      requests.patch("/addresses/bulkadd-tag", data, token, headers)
+    );
   },
 
   merge: async (
@@ -153,7 +208,12 @@ const addressServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() =>
-      requests.patch(`/addresses/${targetId}/merge`, { sourceAddressId }, token, headers)
+      requests.patch(
+        `/addresses/${targetId}/merge`,
+        { sourceAddressId },
+        token,
+        headers
+      )
     );
   },
 
@@ -162,7 +222,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/addresses/${id}/archive`, {}, token, headers));
+    return safeApiCall(() =>
+      requests.patch(`/addresses/${id}/archive`, {}, token, headers)
+    );
   },
 
   restore: async (
@@ -170,7 +232,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/addresses/${id}/restore`, {}, token, headers));
+    return safeApiCall(() =>
+      requests.patch(`/addresses/${id}/restore`, {}, token, headers)
+    );
   },
 
   clone: async (
@@ -178,7 +242,9 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/addresses/${id}/clone`, {}, token, headers));
+    return safeApiCall(() =>
+      requests.post(`/addresses/${id}/clone`, {}, token, headers)
+    );
   },
 
   getHistory: async (
@@ -186,7 +252,16 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/addresses/${id}/history`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(
+        `/addresses/${id}/history`,
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 
   compare: async (
@@ -196,7 +271,14 @@ const addressServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() =>
-      requests.get(`/addresses/${addressId1}/compare/${addressId2}`, token, undefined, undefined, headers, 1)
+      requests.get(
+        `/addresses/${addressId1}/compare/${addressId2}`,
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
     );
   },
 
@@ -205,14 +287,32 @@ const addressServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses/export", token, { format }, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(
+        "/addresses/export",
+        token,
+        { format },
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 
   getRouteDocs: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/addresses/docs/routes", token, undefined, undefined, headers, 1));
+    return safeApiCall(() =>
+      requests.get(
+        "/addresses/docs/routes",
+        token,
+        undefined,
+        undefined,
+        headers,
+        1
+      )
+    );
   },
 };
 

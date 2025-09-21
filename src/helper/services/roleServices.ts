@@ -1,101 +1,253 @@
-import requests from "./httpServices";
+import requests from "./index";
+import { ApiResponse, handleApiError, safeApiCall } from "./apiUtils";
 
 const roleServices = {
-  // 🔍 Basic CRUD
-  create: (body: any, token: any) =>
-    requests.post("/roles", body, {},token),
+  create: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/roles", body, token, headers));
+  },
 
-  getAll: (query: any, t: any) =>
-    requests.get("/roles", query, null, {}, 1,t),
-  getStatistics: (query: any, token: any) =>
-    requests.get("/roles/statistics", query, null, {}, 1, token),
+  getAll: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles", token, query, undefined, headers, 1));
+  },
 
-  getById: (id: any, headers: any) =>
-    requests.get(`/roles/${id}`, null, null, headers, 1),
+  getSingle: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/roles/${id}`, token, undefined, undefined, headers, 1));
+  },
 
-  updatePut: (id: any, body: any, headers: any) =>
-    requests.put(`/roles/${id}`, body, headers),
+  updatePut: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/roles/${id}`, body, token, headers));
+  },
 
-  updatePatch: (id: any, body: any, token: any) =>
-    requests.patch(`/roles/${id}`, body, {}, {}, token),
+  updatePatch: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.patch(`/roles/${id}`, body, token, headers));
+  },
 
-  delete: (id: any, token:any) =>
-    requests.delete(`/roles/${id}`, {}, {},token),
+  remove: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.delete(`/roles/${id}`, token, undefined, headers));
+  },
 
-  // 🔐 Permission Management
-  addPermission: (id: any, body: any, headers: any) =>
-    requests.post(`/roles/${id}/permission`, body, headers),
+  getActive: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/active", token, query, undefined, headers, 1));
+  },
 
-  removePermission: (id: any, body: any, headers: any) =>
-    requests.delete(`/roles/${id}/permission`, body, headers),
+  setDefault: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/roles/default", { roleId: id }, token, headers));
+  },
 
-  hasPermission: (id: any, permissionName: string, headers: any) =>
-    requests.get(`/roles/${id}/permission/${permissionName}`, null, null, headers, 1),
+  getDefault: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/default", token, undefined, undefined, headers, 1));
+  },
 
-  getRoleWithPermissions: (id: any, headers: any) =>
-    requests.get(`/roles/${id}/permissions`, null, null, headers, 1),
+  getDefaultRoleId: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/default/id", token, undefined, undefined, headers, 1));
+  },
 
-  assignPermissions: (id: any, body: any, token: any) =>
-    requests.post(`/roles/${id}/permissions`, body, {},token),
+  ensurePredefinedRoles: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/roles/ensure-predefined", {}, token, headers));
+  },
 
-  removePermissions: (id: any, body: any, headers: any) =>
-    requests.delete(`/roles/${id}/permissions`, body, headers),
+  search: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/search", token, query, undefined, headers, 1));
+  },
 
-  syncPermissions: (id: any, body: any, headers: any) =>
-    requests.put(`/roles/${id}/sync-permissions`, body, headers),
+  getRoleStatistics: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/statistics", token, undefined, undefined, headers, 1));
+  },
 
-  // ⚙️ Lifecycle & Status
-  toggleActive: (id: any, headers: any) =>
-    requests.patch(`/roles/${id}/toggle-active`, {}, headers),
+  bulkDeactivate: async (
+    data: { roleIds: string[] },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.patch("/roles/bulk-deactivate", data, token, headers));
+  },
 
-  getActiveRoles: (token: any) =>
-    requests.get("/roles/active", null, null, {}, 3600,token),
+  bulkActivate: async (
+    data: { roleIds: string[] },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.patch("/roles/bulk-activate", data, token, headers));
+  },
 
-  bulkDeactivate: (body: any, headers: any) =>
-    requests.patch("/roles/bulk-deactivate", body, headers),
+  getAllWithCounts: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/all/counts", token, query, undefined, headers, 1));
+  },
 
-  bulkActivate: (body: any, headers: any) =>
-    requests.patch("/roles/bulk-activate", body, headers),
+  clone: async (
+    roleId: string,
+    newName: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/roles/clone", { roleId, newName }, token, headers));
+  },
 
-  // 🧠 Defaults & Predefined
-  setDefaultRole: (body: any, headers: any) =>
-    requests.post("/roles/default", body, headers),
+  addPermission: async (
+    id: string,
+    permission: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/roles/${id}/permission`, { permission }, token, headers));
+  },
 
-  getDefaultRole: (headers: any) =>
-    requests.get("/roles/default", null, null, headers, 1),
+  removePermission: async (
+    id: string,
+    permission: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.delete(`/roles/${id}/permission`, token, { permission }, headers));
+  },
 
-  getDefaultRoleId: (headers: any) =>
-    requests.get("/roles/default/id", null, null, headers, 1),
+  hasPermission: async (
+    id: string,
+    permissionName: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/roles/${id}/permission/${permissionName}`, token, undefined, undefined, headers, 1));
+  },
 
-  ensurePredefinedRoles: (body: any, headers: any) =>
-    requests.post("/roles/ensure-predefined", body, headers),
+  getRoleWithPermissions: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/roles/${id}/permissions`, token, undefined, undefined, headers, 1));
+  },
 
-  // 🔎 Search & Analytics
-  searchRoles: (query: any, headers: any) =>
-    requests.get("/roles/search", query, null, headers, 1),
+  assignPermissions: async (
+    id: string,
+    permissions: string[],
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/roles/${id}/permissions`, { permissions }, token, headers));
+  },
 
-  getAllWithCounts: (headers: any) =>
-    requests.get("/roles/all/counts", null, null, headers, 1),
+  removePermissions: async (
+    id: string,
+    permissions: string[],
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.delete(`/roles/${id}/permissions`, token, { permissions }, headers));
+  },
 
-  isRoleInUse: (id: any, headers: any) =>
-    requests.get(`/roles/${id}/in-use`, null, null, headers, 1),
+  syncPermissions: async (
+    id: string,
+    permissions: string[],
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/roles/${id}/sync-permissions`, { permissions }, token, headers));
+  },
 
-  getRoleAuditTrail: (id: any, headers: any) =>
-    requests.get(`/roles/${id}/audit-trail`, null, null, headers, 1),
+  bulkAssignPermissions: async (
+    data: { roleIds: string[], permissions: string[] },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/roles/bulk-assign-permissions", data, token, headers));
+  },
 
-  // 🧬 Bulk & Clone
-  bulkAssignPermissions: (body: any, headers: any) =>
-    requests.post("/roles/bulk-assign-permissions", body, headers),
+  getRoleAuditTrail: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/roles/${id}/audit-trail`, token, undefined, undefined, headers, 1));
+  },
 
-  cloneRole: (body: any, headers: any) =>
-    requests.post("/roles/clone", body, headers),
+  isRoleInUse: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/roles/${id}/in-use`, token, undefined, undefined, headers, 1));
+  },
 
-  // 📤 Import/Export
-  exportRoles: (query: any, headers: any) =>
-    requests.get("/roles/export", query, null, headers, 1),
+  export: async (
+    format: "csv" | "json",
+    fields?: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    const params: any = { format };
+    if (fields) params.fields = fields;
+    return safeApiCall(() => requests.get("/roles/export", token, params, undefined, headers, 1));
+  },
 
-  importRoles: (body: any, headers: any) =>
-    requests.post("/roles/import", body, headers),
+  import: async (
+    roles: any[],
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/roles/import", { roles }, token, headers));
+  },
+
+  getRouteDocs: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/docs/routes", token, undefined, undefined, headers, 1));
+  },
 };
 
 export default roleServices;

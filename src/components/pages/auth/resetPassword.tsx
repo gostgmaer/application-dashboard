@@ -36,7 +36,7 @@ import {
   type ResetPasswordFormData,
 } from "@/lib/validation-schemas";
 import { useRouter, useSearchParams } from "next/navigation";
-import authService from "@/helper/services/authServices";
+import authService from "@/helper/services/authService";
 export default function ResetPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);

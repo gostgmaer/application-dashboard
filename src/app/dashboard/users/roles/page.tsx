@@ -4,14 +4,13 @@ import roleServices from "@/helper/services/roleServices";
 import PrivateLayout from "@/components/layout/dashboard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
-import { headersToken } from "@/lib/utils/utils";
-import permissionServices from "@/helper/services/permissonServie";
+import permissionServices from "@/helper/services/permissionServices";
 
 export default async function Page(props: any) {
   const query = await props.searchParams;
-  const session = await getServerSession(authOptions);
-  const res = await roleServices.getStatistics(query, session?.accessToken);
-  const p = await permissionServices.getGropedPermissions(session?.accessToken);
+  const session:any = await getServerSession(authOptions);
+  const res = await roleServices.getRoleStatistics(query, session?.accessToken);
+  const p = await permissionServices.getPermissionsGrouped(session?.accessToken);
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">

@@ -30,7 +30,7 @@ import {
 import { forgotPasswordStart } from "@/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import authService from "@/helper/services/authServices";
+import authService from "@/helper/services/authService";
 // import authService from "@/lib/services/auth"
 export default function ForgotPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);

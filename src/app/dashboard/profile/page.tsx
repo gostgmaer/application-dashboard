@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import userServices from "@/helper/services/userService";
 import { authOptions } from "@/app/api/auth/authOptions";
 import PrivateLayout from "@/components/layout/dashboard";
-import addressServices from "@/helper/services/addressService";
+import addressServices from "@/helper/services/address";
 // Adjust path based on your project structure
 
 export default async function Page() {

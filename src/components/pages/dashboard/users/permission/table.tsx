@@ -19,7 +19,7 @@ import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PermissionForm from "./form";
-import permissionServices from "@/helper/services/permissonServie";
+import permissionServices from "@/helper/services/permissionServices";
 import { useSession } from "next-auth/react";
 import { toast } from "@/hooks/useToast";
 import { useModal } from "@/contexts/modal-context";

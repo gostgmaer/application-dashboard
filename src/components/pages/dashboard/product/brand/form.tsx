@@ -21,8 +21,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import BrandServices from "@/helper/services/BrandService";
+import BrandServices from "@/helper/services/brands";
 import { useDialog } from "@/hooks/use-dialog";
+import brandService from "@/helper/services/brands";
+import { useSession } from "next-auth/react";
 
 const statusArray = [
   "active",
@@ -102,6 +104,10 @@ interface BrandData {
 // type BrandFormValues = z.infer<typeof brandSchema>;
 
 export function BrandForm({ data, id }: any) {
+
+  const { data: session } = useSession();
+
+
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const {
     register,
@@ -162,19 +168,19 @@ export function BrandForm({ data, id }: any) {
     switch (status) {
       case "draft":
         {
-          const res = await BrandServices.createBrand({ ...updateData, status }, {});
+          const res = await BrandServices.create({ ...updateData, status },  session?.accessToken );
         }
 
         break;
       case "update":
         {
-          const res = await BrandServices.updateBrandPatch(id, updateData, {});
+          const res = await brandService.update(id, updateData, session?.accessToken);
         }
         break;
 
       default:
         {
-          const res = await BrandServices.createBrand(updateData, {});
+          const res = await BrandServices.create(updateData, session?.accessToken);
         }
         break;
     }

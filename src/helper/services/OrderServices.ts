@@ -1,75 +1,570 @@
-import requests from "./httpServices";
+import requests from "./index";
+import { ApiResponse, safeApiCall } from "./apiUtils";
 
-const OrderServices = {
-  // Create a new order
-  addOrder: async (body: any, headers: any) => {
-    return requests.post("/orders/create", body, headers);
-  },
-  
-  // Verify payment for an order
-  verifyOrder: async (body: any, headers: any) => {
-    return requests.post("/orders/verify-payment", body, headers);
-  },
-
-  // Get all orders (admin)
-  getOrders: async (query: any, token: any) => {
-    return requests.get("/orders", query, null, {}, 1,token);
+const orderServices = {
+  createOrder: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/order", body, token, headers));
   },
 
-  // Get a single order by ID
-  getOrderById: async (id: any, headers: any) => {
-    return requests.get(`/orders/${id}`, null, null, headers, 1);
+  getOrderById: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}`, token, undefined, undefined, headers, 1));
   },
 
-  // Update an order (replace entirely) by ID
-  updateOrderPut: async (id: any, body: any, headers: any) => {
-    return requests.put(`/orders/${id}`, body, headers);
+  getOrders: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order", token, query, undefined, headers, 1));
   },
 
-  // Update an order (partial update) by ID
-  updateOrderPatch: async (id: any, body: any, headers: any) => {
-    return requests.patch(`/orders/${id}`, body, headers);
+  updateOrder: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}`, body, token, headers));
   },
 
-  // Delete an order by ID
-  deleteOrder: async (id: any, headers: any) => {
-    return requests.delete(`/orders/${id}`, headers);
+  deleteOrder: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.delete(`/order/${id}`, token, undefined, headers));
   },
 
-  // Get all orders for a specific user
-  getOrdersByUser: async (userId: any, query: any, headers: any) => {
-    return requests.get(`/orders/user/${userId}`, query, null, headers, 1);
+  markAsPaid: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/pay`, {}, token, headers));
   },
 
-  // Get all customer orders
-  getCustomerOrders: async (query: any, headers: any) => {
-    return requests.get("/orders/customer/fetch", query, null, headers, 1);
+  refundOrder: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/refund`, {}, token, headers));
   },
 
-  // Get customer dashboard info
-  getCustomerDashboard: async (query: any, headers: any) => {
-    return requests.get("/orders/customer/dashboard", query, null, headers, 1);
+  bulkRefundOrders: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put("/order/bulk-refund", body, token, headers));
   },
 
-  // Get a specific order for a user
-  getOrderByUserAndOrderId: async (userId: any, orderId: any, headers: any) => {
-    return requests.get(`/orders/user/${userId}/${orderId}`, null, null, headers, 1);
+  redeemLoyaltyPoints: async (
+    id: string,
+    body: { points: number },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/redeem-points`, body, token, headers));
   },
 
-  // Update a specific order for a user (replace entirely)
-  updateOrderByUserAndOrderIdPut: async (userId: any, orderId: any, body: any, headers: any) => {
-    return requests.put(`/orders/user/${userId}/${orderId}`, body, headers);
+  updateOrderStatus: async (
+    id: string,
+    body: { status: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/status`, body, token, headers));
   },
 
-  // Update a specific order for a user (partial update)
-  updateOrderByUserAndOrderIdPatch: async (userId: any, orderId: any, body: any, headers: any) => {
-    return requests.patch(`/orders/user/${userId}/${orderId}`, body, headers);
+  bulkUpdateOrderStatus: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put("/order/bulk-status", body, token, headers));
   },
 
-  // Delete a specific order for a user
-  deleteOrderByUserAndOrderId: async (userId: any, orderId: any, headers: any) => {
-    return requests.delete(`/orders/user/${userId}/${orderId}`, headers);
+  splitOrder: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/split`, body, token, headers));
+  },
+
+  addTrackingInfo: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/tracking`, body, token, headers));
+  },
+
+  markOrderAsDelivered: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/mark-delivered`, {}, token, headers));
+  },
+
+  setPriorityLevel: async (
+    id: string,
+    body: { priority: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/priority`, body, token, headers));
+  },
+
+  updateItemQuantity: async (
+    id: string,
+    itemIndex: number,
+    body: { quantity: number },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/items/${itemIndex}/quantity`, body, token, headers));
+  },
+
+  addGiftMessage: async (
+    id: string,
+    body: { message?: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/gift-message`, body, token, headers));
+  },
+
+  applyCoupon: async (
+    id: string,
+    body: { couponCode: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/apply-coupon`, body, token, headers));
+  },
+
+  requestReturn: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/request-return`, body, token, headers));
+  },
+
+  resolveReturnRequest: async (
+    id: string,
+    body: { status: string; reason?: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/resolve-return`, body, token, headers));
+  },
+
+  getReturnRequests: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/return-requests", token, query, undefined, headers, 1));
+  },
+
+  getTopCustomers: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/top-customers", token, query, undefined, headers, 1));
+  },
+
+  getCustomerOrderHistory: async (
+    userId: string,
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/user/${userId}/history`, token, query, undefined, headers, 1));
+  },
+
+  getOrderStats: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/stats", token, query, undefined, headers, 1));
+  },
+
+  getOrderTrends: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/trends", token, query, undefined, headers, 1));
+  },
+
+  getRevenueBySource: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/revenue-by-source", token, query, undefined, headers, 1));
+  },
+
+  getProductPerformance: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/product-performance", token, query, undefined, headers, 1));
+  },
+
+  getOrderConversionFunnel: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/conversion-funnel", token, query, undefined, headers, 1));
+  },
+
+  getFeaturedOrders: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/featured", token, query, undefined, headers, 1));
+  },
+
+  getLowStockOrders: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/low-stock", token, query, undefined, headers, 1));
+  },
+
+  getAverageOrderValue: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/average-order-value", token, query, undefined, headers, 1));
+  },
+
+  searchOrdersByCustomerName: async (
+    query: { customerName: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/search-by-customer", token, query, undefined, headers, 1));
+  },
+
+  getOrdersByPaymentMethod: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/by-payment-method", token, query, undefined, headers, 1));
+  },
+
+  getDelayedOrders: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/delayed-orders", token, query, undefined, headers, 1));
+  },
+
+  getLoyaltyPointsSummary: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/analytics/loyalty-points-summary", token, query, undefined, headers, 1));
+  },
+
+  estimateDelivery: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/estimate-delivery`, token, undefined, undefined, headers, 1));
+  },
+
+  getOrderSummary: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/summary`, token, undefined, undefined, headers, 1));
+  },
+
+  reorder: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/reorder`, {}, token, headers));
+  },
+
+  getFraudulentOrders: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/fraudulent", token, query, undefined, headers, 1));
+  },
+
+  checkOrderCompliance: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/compliance-check`, token, undefined, undefined, headers, 1));
+  },
+
+  flagOrder: async (
+    id: string,
+    body: { reason: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/flag`, body, token, headers));
+  },
+
+  validateStockBulk: async (
+    body: { orderIds: string[] },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/order/validate-stock", body, token, headers));
+  },
+
+  updateStockBulk: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/order/update-stock", body, token, headers));
+  },
+
+  exportOrdersReport: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/export", token, query, undefined, headers, 1));
+  },
+
+  importOrdersBulk: async (
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/order/import", body, token, headers));
+  },
+
+  auditOrderChanges: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/audit`, token, undefined, undefined, headers, 1));
+  },
+
+  pushStatusNotification: async (
+    body: { orderId: string; status: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/order/status-notification", body, token, headers));
+  },
+
+  logOrderEvent: async (
+    id: string,
+    body: { eventType: string; data?: any },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/log-event`, body, token, headers));
+  },
+
+  restoreCanceledOrder: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/restore`, {}, token, headers));
+  },
+
+  archiveCompletedOrders: async (
+    body: { beforeDate: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post("/order/archive-completed", body, token, headers));
+  },
+
+  sendOrderInvoice: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/send-invoice`, {}, token, headers));
+  },
+
+  getHistoricalOrderData: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/historical-data", token, query, undefined, headers, 1));
+  },
+
+  getOrderGrowthStats: async (
+    query?: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/growth-stats", token, query, undefined, headers, 1));
+  },
+
+  rateOrderItems: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/rate-items`, body, token, headers));
+  },
+
+  reviewOrderExperience: async (
+    id: string,
+    body: any,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/review`, body, token, headers));
+  },
+
+  getOrderEventsTimeline: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/events-timeline`, token, undefined, undefined, headers, 1));
+  },
+
+  assignOrderToAgent: async (
+    id: string,
+    body: { agentId: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/assign-agent`, body, token, headers));
+  },
+
+  trackOrderRoute: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/track-route`, token, undefined, undefined, headers, 1));
+  },
+
+  calculateOrderProfit: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/calculate-profit`, token, undefined, undefined, headers, 1));
+  },
+
+  checkOrderPaymentReconciliation: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/order/${id}/payment-reconciliation`, token, undefined, undefined, headers, 1));
+  },
+
+  flagSuspectedReturnAbuse: async (
+    id: string,
+    body: { reason: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/flag-return-abuse`, body, token, headers));
+  },
+
+  handleOrderEscalation: async (
+    id: string,
+    body: { reason: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/escalate`, body, token, headers));
+  },
+
+  syncOrderWithERP: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/sync-erp`, {}, token, headers));
+  },
+
+  integrateOrderWithCRM: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.post(`/order/${id}/integrate-crm`, {}, token, headers));
+  },
+
+  lockOrderForAudit: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/lock-audit`, {}, token, headers));
+  },
+
+  releaseOrderLock: async (
+    id: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/release-lock`, {}, token, headers));
+  },
+
+  cancelOrderByAdmin: async (
+    id: string,
+    body: { reason: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.put(`/order/${id}/cancel-admin`, body, token, headers));
+  },
+
+  getRouteDocs: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/order/docs/routes", token, undefined, undefined, headers, 1));
   },
 };
 
-export default OrderServices;
+export default orderServices;

@@ -3,14 +3,14 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
 import UserCreate from "@/components/pages/dashboard/users/form";
 import roleServices from "@/helper/services/roleServices";
-import UserServices from "@/helper/services/userService";
+import userServices from "@/helper/services/userService";
 import { getServerSession } from "next-auth";
 import React, { Suspense } from "react";
 
 const Page = async (url: any) => {
   const session = await getServerSession(authOptions);
   const { id } = await url.params;
-  const data = await UserServices.getSingleUser(id, session?.accessToken);
+  const data = await userServices.getSingle(id, session?.accessToken);
   const role = await roleServices.getAll({}, session?.accessToken);
 
   console.log(data);
@@ -28,7 +28,7 @@ const Page = async (url: any) => {
             <UserCreate
               data={data.data}
               id={id}
-              master={{ roles: role["results"] }}
+              master={{ roles: role }}
             ></UserCreate>
           </div>
         </Suspense>

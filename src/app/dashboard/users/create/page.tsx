@@ -3,7 +3,6 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
 import UserCreate from "@/components/pages/dashboard/users/form";
 import roleServices from "@/helper/services/roleServices";
-import authService from "@/lib/services/auth";
 import { getServerSession } from "next-auth";
 import React, { Suspense } from "react";
 
@@ -21,7 +20,7 @@ const Page = async () => {
           ></Breadcrumbs>
 
           <div className="rounded-md  shadow-sm overflow-auto ">
-            <UserCreate master={{roles:role["results"]}}></UserCreate>
+            <UserCreate master={{roles:role}}></UserCreate>
           </div>
         </Suspense>
       </div>

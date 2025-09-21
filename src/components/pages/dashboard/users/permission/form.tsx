@@ -21,7 +21,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useToast } from "@/hooks/useToast";
 import { useDialog } from "@/hooks/use-dialog";
-import permissionServices from "@/helper/services/permissonServie";
+import permissionServices from "@/helper/services/permissionServices";
 import { useSession } from "next-auth/react";
 
 const permissionCategory = [
