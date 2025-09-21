@@ -3,11 +3,12 @@ import { ApiResponse, safeApiCall } from "./apiUtils";
 
 const attachmentService = {
   uploadFile: async (
-    body: any,
+    FormData: FormData,
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/attachment", body, token, headers));
+
+    return safeApiCall(() => requests.post("/files", FormData, token, headers));
   },
 
   viewFile: async (
@@ -15,16 +16,16 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/attachment/${id}`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/files/${id}`, token, undefined, undefined, headers, 1));
   },
 
   updateFile: async (
     id: string,
-    body: any,
+    FormData: FormData,
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/attachment/${id}`, body, token, headers));
+    return safeApiCall(() => requests.put(`/files/${id}`, FormData, token, headers));
   },
 
   renameFile: async (
@@ -33,7 +34,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch(`/attachment/${id}/rename`, body, token, headers));
+    return safeApiCall(() => requests.patch(`/files/${id}/rename`, body, token, headers));
   },
 
   removeFile: async (
@@ -41,7 +42,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/attachment/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/files/${id}`, token, undefined, headers));
   },
 
   listByTag: async (
@@ -49,7 +50,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/attachment/tag/${tag}`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/files/tag/${tag}`, token, undefined, undefined, headers, 1));
   },
 
   listByCategory: async (
@@ -57,14 +58,14 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/attachment/category/${category}`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/files/category/${category}`, token, undefined, undefined, headers, 1));
   },
 
   listPublic: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/public", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/public", token, undefined, undefined, headers, 1));
   },
 
   searchFiles: async (
@@ -72,7 +73,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/search", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/search", token, query, undefined, headers, 1));
   },
 
   listByUploadedBy: async (
@@ -80,35 +81,35 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/attachment/uploaded-by/${userId}`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/files/uploaded-by/${userId}`, token, undefined, undefined, headers, 1));
   },
 
   getLargestFiles: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/largest", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/largest", token, undefined, undefined, headers, 1));
   },
 
   getRecentUploads: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/recent", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/recent", token, undefined, undefined, headers, 1));
   },
 
   getOldestFiles: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/oldest", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/oldest", token, undefined, undefined, headers, 1));
   },
 
   getUntaggedFiles: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/untagged", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/untagged", token, undefined, undefined, headers, 1));
   },
 
   bulkUpdateTags: async (
@@ -116,7 +117,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.patch("/attachment/bulk-tags", body, token, headers));
+    return safeApiCall(() => requests.patch("/files/bulk-tags", body, token, headers));
   },
 
   bulkDeleteByTenant: async (
@@ -124,14 +125,14 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/attachment/tenant/${tenantId}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/files/tenant/${tenantId}`, token, undefined, headers));
   },
 
   getStats: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/attachment/stats", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/files/stats", token, undefined, undefined, headers, 1));
   },
 };
 

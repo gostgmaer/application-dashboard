@@ -73,7 +73,7 @@ async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
       accessToken,
       accessTokenExpires: Date.parse(expiresAt),
       refreshToken: refreshToken ?? token.refreshToken,
-      error: undefined, // Clear any previous error
+      error: undefined,
     };
   } catch (error) {
     console.error("Refresh token error:", error);

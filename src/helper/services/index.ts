@@ -4,7 +4,7 @@ import { baseurl } from "@/config/setting";
 // Types for fetchData options and response
 export interface FetchOptions {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  body?: any;
+  body?: any | FormData;
   token?: string;
   params?: Record<string, any>;
   query?: Record<string, any> | string;
@@ -101,18 +101,22 @@ export async function fetchData<T = any>(
       url += `?${decoded}`;
     }
 
-    // Merge headers with default
+
+
     const defaultHeaders: Record<string, string> = {
-      "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
+
+
     const mergedHeaders = { ...defaultHeaders, ...headers };
 
     // Configure fetch options
     const fetchOptions: RequestInit = {
       method,
       headers: mergedHeaders,
-      ...(method === "GET" ? {} : { body: JSON.stringify(body) }),
+      ...(method === "GET" || !body
+        ? {}
+        : { body: body instanceof FormData ? body : JSON.stringify(body) }), // Handle FormData or JSON
       ...(typeof window === "undefined" ? { next: { revalidate: cacheTime } } : {}), // Next.js ISR cache control
     };
 
@@ -234,7 +238,7 @@ const requests = {
 
   post: async <T = any>(
     endpoint: string,
-    body?: any,
+    body?: any | FormData,
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> =>
@@ -242,7 +246,7 @@ const requests = {
 
   put: async <T = any>(
     endpoint: string,
-    body?: any,
+    body?: any | FormData,
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> =>
@@ -250,7 +254,7 @@ const requests = {
 
   patch: async <T = any>(
     endpoint: string,
-    body?: any,
+    body?: any | FormData,
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> =>
