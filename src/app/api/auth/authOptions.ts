@@ -63,15 +63,17 @@ interface CustomUser extends User {
 
 // Custom error for 2FA requirement
 export class TwoFactorRequiredError extends Error {
-  constructor(public tempUserId: string, public email: string) {
-    super("Two-factor authentication required");
+  constructor(public tempUserId: string, public email: string, public requiresTwoFactor: boolean = true, public otpType: string = "totp") {
+    super(JSON.stringify({ tempUserId, email, requiresTwoFactor, otpType }));
     this.name = "TwoFactorRequiredError";
   }
 }
 
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
   try {
-    const response = await authService.refreshToken({ refreshToken: token.refreshToken });
+    const response = await authService.refreshToken({
+      refreshToken: token.refreshToken,
+    });
     if (!response.success) {
       throw new Error(response?.message || "Failed to refresh token");
     }
@@ -113,22 +115,18 @@ export const authOptions: AuthOptions = {
         };
 
         const res = await authService.login(payload);
-        
-        if (!res || !res.success) {
-          // Check if the user exists but has 2FA enabled and no OTP provided
-          if (res?.data?.requiresTwoFactor && !credentials?.otp) {
-            // User has 2FA enabled - throw custom error to trigger 2FA flow
-            throw new TwoFactorRequiredError(
-              res.data.tempUserId || res.data.userId, 
-              credentials?.email || ""
-            );
-          }
-          
-          // Regular login failure (invalid credentials, wrong OTP, etc.)
-          throw new Error(res?.message || "Invalid credentials");
+        if (!res) {
+          throw new Error("No response from login service");
         }
-
-        // Successful login (either no 2FA required or 2FA completed)
+        if (!res.success) {
+          throw new Error(res.message || "Invalid credentials");
+        }
+        if (res.data?.requiresTwoFactor === true) {
+          throw new TwoFactorRequiredError(
+            res.data.tempUserId || res.data.userId,
+            credentials?.email || "", res.data?.requiresTwoFactor, res.data?.otpType
+          );
+        }
         const { user, tokens } = res.data;
         return {
           id: user.id,
@@ -188,15 +186,29 @@ export const authOptions: AuthOptions = {
   },
 
   callbacks: {
-    async signIn({ user, account, profile }: { user: CustomUser; account: Account | null; profile?: Profile }) {
-      if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter" || account?.provider === "google") && profile?.email) {
+    async signIn({
+      user,
+      account,
+      profile,
+    }: {
+      user: CustomUser;
+      account: Account | null;
+      profile?: Profile;
+    }) {
+      if (
+        (account?.provider === "github" ||
+          account?.provider === "linkedin" ||
+          account?.provider === "twitter" ||
+          account?.provider === "google") &&
+        profile?.email
+      ) {
         try {
           const data = await authService.socialLogin({
-            identifier: profile.email, 
+            identifier: profile.email,
             profileData: {
               ...profile,
-              ...account
-            }
+              ...account,
+            },
           });
 
           user.accessToken = data.data.accessToken;
@@ -229,9 +241,11 @@ export const authOptions: AuthOptions = {
         customToken.role = customUser.role;
         customToken.sub = customUser.id;
         customToken.twoFactorEnabled = customUser.twoFactorEnabled;
-        
+
         try {
-          const response = await authService.getUserPermissions(customToken.accessToken);
+          const response = await authService.getUserPermissions(
+            customToken.accessToken
+          );
           console.log(response);
 
           if (response.data) {
@@ -245,14 +259,23 @@ export const authOptions: AuthOptions = {
       }
 
       // Check if token is expired and refresh if necessary
-      if (customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires) {
+      if (
+        customToken.accessTokenExpires &&
+        Date.now() > customToken.accessTokenExpires
+      ) {
         return await refreshAccessToken(customToken);
       }
 
       return customToken;
     },
 
-    async session({ session, token }: { session: Session; token: CustomToken }) {
+    async session({
+      session,
+      token,
+    }: {
+      session: Session;
+      token: CustomToken;
+    }) {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.id_token = token.id_token;
@@ -270,7 +293,9 @@ export const authOptions: AuthOptions = {
     },
 
     async redirect({ url, baseUrl }: { url: string; baseUrl: string }) {
-      return url.startsWith("/") || new URL(url).origin === baseUrl ? url : baseUrl;
+      return url.startsWith("/") || new URL(url).origin === baseUrl
+        ? url
+        : baseUrl;
     },
   },
 

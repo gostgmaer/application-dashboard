@@ -69,10 +69,12 @@ export default function LoginForm() {
         email: data.email,
         password: data.password,
       });
-
       if (!res?.ok) {
         // If the backend sent a JSON error indicating 2FA
-        if (res.error?.startsWith("{") && res.error.includes("requiresTwoFactor")) {
+        if (
+          res.error?.startsWith("{") &&
+          res.error.includes("requiresTwoFactor")
+        ) {
           const err = JSON.parse(res.error);
           setTwoFAData({
             tempUserId: err.tempUserId,
@@ -90,7 +92,9 @@ export default function LoginForm() {
       if (res.url) {
         const parsedUrl = new URL(res.url);
         const callbackUrlParam = parsedUrl.searchParams.get("callbackUrl");
-        router.push(callbackUrlParam ? decodeURIComponent(callbackUrlParam) : "/");
+        router.push(
+          callbackUrlParam ? decodeURIComponent(callbackUrlParam) : "/"
+        );
       }
 
       setIsSubmitted(true);
@@ -106,7 +110,8 @@ export default function LoginForm() {
     } catch (error: any) {
       toast({
         title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
+        description:
+          error.message || "Please check your credentials and try again.",
         variant: "destructive",
         duration: 5000,
       });
