@@ -8,14 +8,21 @@ import permissionServices from "@/helper/services/permissionServices";
 
 export default async function Page(props: any) {
   const query = await props.searchParams;
-  const session:any = await getServerSession(authOptions);
-  const res = await roleServices.getRoleStatistics(query, session?.accessToken);
-  const p = await permissionServices.getPermissionsGrouped(session?.accessToken);
+  const session: any = await getServerSession(authOptions);
+  const roles = await roleServices.getRoleStatistics(
+    session?.accessToken,
+    query
+  );
+  const p = await permissionServices.getPermissionsGrouped(
+    query,
+    session?.accessToken
+  );
+
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <Table props={{ ...res.data, permissions: p.data.permissions }} />
+          <Table props={{ ...roles.data, permissions: p.data }} />
         </Suspense>
       </div>
     </PrivateLayout>

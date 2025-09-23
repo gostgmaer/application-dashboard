@@ -5,14 +5,21 @@ import { sitekey } from "@/config/setting";
 import settingServices from "@/helper/services/settngsServices";
 import React, { Suspense } from "react";
 
-
 const Page = async () => {
-  const setting = await settingServices.getBySiteKey(sitekey);
+  const setting = await settingServices.getBySiteKey(sitekey as string);
+  console.log(setting);
+
   return (
     <PrivateLayout>
       <div className="mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <Breadcrumbs heading={"Settings"} desc={"Configure your site settings, including basic, contact, and security settings"} btn={{ show: false }} />
+          <Breadcrumbs
+            heading={"Settings"}
+            desc={
+              "Configure your site settings, including basic, contact, and security settings"
+            }
+            btn={{ show: false }}
+          />
           <div className="rounded-md shadow-sm overflow-auto">
             <SettingsPage settings={setting.data} />
           </div>
@@ -23,4 +30,3 @@ const Page = async () => {
 };
 
 export default Page;
-

@@ -99,9 +99,9 @@ const roleServices = {
 
   getRoleStatistics: async (
     token?: string,
-    headers?: Record<string, any>
+    query?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/roles/statistics", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/roles/statistics", token, query, undefined, undefined, 1));
   },
 
   bulkDeactivate: async (

@@ -65,10 +65,10 @@ export default function LoginForm() {
         email: data.email,
         password: data.password,
       });
-
+    console.log(res);
       if (res && !res.ok) {
         // const errorData = await res
-        console.log(res);
+    
         dispatch(loginFailure("An error occurred during sign in."));
         throw new Error(res.error || "Login failed")
       }

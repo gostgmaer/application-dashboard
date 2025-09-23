@@ -13,19 +13,19 @@ interface MainLayoutProps {
 export function PublicLayout({ children }: MainLayoutProps) {
   const { data: session, status } = useSession();
 
-  useEffect(() => {
-    if (session) {
-      const setSessionCookies = async () => {
-        try {
-          await fetch("/api/auth/set-cookies");
-        } catch (error) {
-          console.error("Failed to set session cookies:", error);
-        }
-      };
+  // useEffect(() => {
+  //   if (session) {
+  //     const setSessionCookies = async () => {
+  //       try {
+  //         await fetch("/api/auth/cookies");
+  //       } catch (error) {
+  //         console.error("Failed to set session cookies:", error);
+  //       }
+  //     };
 
-      setSessionCookies();
-    }
-  }, [session]);
+  //     setSessionCookies();
+  //   }
+  // }, [session]);
 
   return (
     <div className="flex flex-col bg-white dark:bg-gray-900 min-h-screen">

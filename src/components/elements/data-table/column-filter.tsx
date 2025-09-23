@@ -24,7 +24,7 @@ export function ColumnFilter({ column, title }: ColumnFilterProps) {
   const filterValue = column.getFilterValue() as string;
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover >
       <PopoverTrigger asChild>
         <Button
           variant="ghost"

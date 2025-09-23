@@ -3,8 +3,8 @@ import { TableState } from "@/types/table";
 export function getTableStateFromSearchParams(searchParams: URLSearchParams): Partial<TableState> {
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
-  const sortBy = searchParams.get('sortBy');
-  const sortDesc = searchParams.get('sortDesc') === 'true';
+  const sort = searchParams.get('sort');
+  const order = searchParams.get('order') === 'true';
   const search = searchParams.get('search') || '';
   
   const filters: Array<{ id: string; value: unknown }> = [];
@@ -22,7 +22,7 @@ export function getTableStateFromSearchParams(searchParams: URLSearchParams): Pa
       pageIndex: page - 1, // TanStack uses 0-based indexing
       pageSize: limit,
     },
-    sorting: sortBy ? [{ id: sortBy, desc: sortDesc }] : [],
+    sorting: sort ? [{ id: sort, desc: order }] : [],
     columnFilters: filters,
     globalFilter: search,
   };
@@ -33,8 +33,8 @@ export function updateSearchParams(
   updates: Partial<{
     page: number;
     limit: number;
-    sortBy: string;
-    sortDesc: boolean;
+    sort: string;
+    order: boolean;
     search: string;
     filters: Record<string, string>;
   }>
@@ -57,13 +57,13 @@ export function updateSearchParams(
     }
   }
   
-  if (updates.sortBy !== undefined) {
-    if (updates.sortBy) {
-      newParams.set('sortBy', updates.sortBy);
-      newParams.set('sortDesc', (updates.sortDesc || false).toString());
+  if (updates.sort !== undefined) {
+    if (updates.sort) {
+      newParams.set('sort', updates.sort);
+      newParams.set('order', (updates.order || false).toString());
     } else {
-      newParams.delete('sortBy');
-      newParams.delete('sortDesc');
+      newParams.delete('sort');
+      newParams.delete('order');
     }
   }
   

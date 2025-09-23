@@ -31,6 +31,8 @@ interface User {
 }
 
 export default function UsersTable({ props }: any) {
+  console.log(props);
+  
 
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 
@@ -156,26 +158,7 @@ export default function UsersTable({ props }: any) {
         );
       },
     },
-    {
-      accessorKey: "rolename",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Role
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Role" />
-        </div>
-      ),
-      cell: ({ row }) => {
-        const rolename = row.getValue("rolename") as string;
-        return <div className="text-muted-foreground">{rolename}</div>;
-      },
-    },
+  
     {
       accessorKey: "lastLoginAttempt",
       header: ({ column }) => (
@@ -191,6 +174,26 @@ export default function UsersTable({ props }: any) {
       cell: ({ row }) => {
         const lastLoginAttempt = row.getValue("lastLoginAttempt") as string;
         return <div className="text-muted-foreground">{lastLoginAttempt}</div>;
+      },
+    },
+      {
+      accessorKey: "rolename",
+      header: ({ column }) => (
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+          >
+            Role
+            {/* <ArrowUpDown className="ml-2 h-4 w-4" /> */}
+          </Button>
+          {/* <ColumnFilter column={column} title="Role" /> */}
+        </div>
+      ),
+      cell: ({ row }) => {
+        const rolename = row.getValue("rolename") as string;
+        return <div className="text-muted-foreground">{rolename}</div>;
       },
     },
     {

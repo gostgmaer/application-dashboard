@@ -38,21 +38,21 @@ export async function GET() {
     });
 
 
-     (cookieStore).set(`accessToken`, session.accessToken || "", {
-            httpOnly: true,
-            secure: true,
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
-        });
+    //  (cookieStore).set(`accessToken`, session.accessToken || "", {
+    //         httpOnly: true,
+    //         secure: true,
+    //         sameSite: "lax",
+    //         path: "/",
+    //         maxAge: 60 * 60 * 24 * 7,
+    //     });
 
-         (cookieStore).set(`refreshToken`, session.refreshToken || "", {
-            httpOnly: true,
-            secure: true,
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
-        });
+    //      (cookieStore).set(`refreshToken`, session.refreshToken || "", {
+    //         httpOnly: true,
+    //         secure: true,
+    //         sameSite: "lax",
+    //         path: "/",
+    //         maxAge: 60 * 60 * 24 * 7,
+    //     });
 
     // const sdata: any = session;
     // const keys = Object.keys(sdata);

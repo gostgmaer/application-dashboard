@@ -80,6 +80,8 @@ interface RoleData {
 }
 
 export default function RoleForm({ initialData, id, permissionData }: any) {
+  console.log(permissionData);
+  
   const { data: session } = useSession();
   const { toast } = useToast();
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();

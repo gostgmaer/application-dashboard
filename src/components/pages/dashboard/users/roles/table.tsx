@@ -35,6 +35,9 @@ interface Roles {
 }
 
 export default function Table({ props }: any) {
+
+  console.log(props);
+  
   const { data: session } = useSession();
 
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
@@ -250,7 +253,7 @@ export default function Table({ props }: any) {
             className="-ml-3 h-8 data-[state=open]:bg-accent"
           >
             User Assigned
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {/* <ArrowUpDown className="ml-2 h-4 w-4" /> */}
           </Button>
         </div>
       ),
@@ -271,7 +274,7 @@ export default function Table({ props }: any) {
             className="-ml-3 h-8 data-[state=open]:bg-accent"
           >
             Total Permission?
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {/* <ArrowUpDown className="ml-2 h-4 w-4" /> */}
           </Button>
         </div>
       ),
@@ -308,7 +311,7 @@ export default function Table({ props }: any) {
               <DropdownMenuItem onClick={() => handlePermissionUI(role)}>
                 Check Permissions
               </DropdownMenuItem>
-              ,
+              
               <DropdownMenuItem onClick={() => handleDelete(role)}>
                 Remove
               </DropdownMenuItem>

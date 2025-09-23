@@ -15,12 +15,16 @@ import { Loader2, Facebook, Twitter, Instagram, Linkedin, Chrome, Pin, Github, C
 import { socialMediaSchema, connectedAccountsSchema, SocialMediaFormData, ConnectedAccountsFormData } from '@/lib/validation/account'
 import { User } from '@/types/user'
 import { toast } from 'sonner'
+import authService from '@/helper/services/authService'
+import { useSession } from 'next-auth/react'
 
 interface SocialMediaTabProps {
   user: User
 }
 
 export default function SocialMediaTab({ user }: SocialMediaTabProps) {
+
+  const {data:session} = useSession()
   const [isLoadingSocial, setIsLoadingSocial] = useState(false)
   const [isLoadingConnected, setIsLoadingConnected] = useState(false)
   const [connectedAccounts, setConnectedAccounts] = useState(user.socialAccounts || [])
@@ -51,7 +55,8 @@ export default function SocialMediaTab({ user }: SocialMediaTabProps) {
   const onSocialMediaSubmit = async (data: SocialMediaFormData) => {
     setIsLoadingSocial(true)
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // await new Promise(resolve => setTimeout(resolve, 1000))
+      await authService.updateProfile(data, session?.accessToken)
       console.log('Updated social media:', data)
       toast.success('Social media links updated successfully!')
     } catch (error) {

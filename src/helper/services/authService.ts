@@ -30,7 +30,7 @@ const authService = {
   logout: (token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
     safeApiCall(() => requests.post("/auth/logout", null, token, headers)),
 
-  getUserPermissions: (query?: Record<string, any>, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
+  getUserPermissions: (token?: string, query?: Record<string, any>, headers?: Record<string, string>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get("/auth/permissions", token, query, undefined, headers)),
 
   logoutAll: (body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
@@ -119,7 +119,7 @@ const authService = {
     safeApiCall(() => requests.put("/auth/otp/settings", body, token, headers)),
 
   updateProfile: (body: any, token?: string, headers?: Record<string, string>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.patch(`/auth/profile`, body, token, headers)), 
+    safeApiCall(() => requests.patch(`/auth/profile`, body, token, headers)),
 
   updateProfilePicture: (body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.patch(`/auth/profile-picture`, body, token, headers)),

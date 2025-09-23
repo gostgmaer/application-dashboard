@@ -36,8 +36,9 @@ import {
   twitterSecret,
   secret,
 } from "@/config/setting";
+import authService from "@/helper/services/authService";
 
-import authService from "@/lib/services/auth";
+// import authService from "@/lib/services/auth";
 
 interface CustomToken extends JWT {
   accessToken?: string;
@@ -98,7 +99,7 @@ export const authOptions: AuthOptions = {
           identifier: credentials?.email,
           password: credentials?.password,
         };
-        const res = await authService.userLogin(payload);
+        const res = await authService.login(payload);
         if (!res || !res.success) {
           throw new Error(res?.message || "Invalid credentials");
         }
@@ -165,7 +166,7 @@ export const authOptions: AuthOptions = {
     async signIn({ user, account, profile }: { user: CustomUser; account: Account | null; profile?: Profile }) {
       if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter" || account?.provider === "google") && profile?.email) {
         try {
-          const data = await authService.socialAuth({
+          const data = await authService.socialLogin({
             identifier: profile.email, profileData: {
               ...profile,
               ...account
@@ -202,27 +203,40 @@ export const authOptions: AuthOptions = {
         customToken.accessTokenExpires = customUser.accessTokenExpires;
         customToken.role = customUser.role;
         customToken.sub = customUser.id;
+        try {
+          const response = await authService.getUserPermissions(customToken.accessToken);
+          console.log(response);
 
-        if (customToken.role !== "super_admin") {
-          try {
-            const response = await fetch(`${baseurl}/user/auth/permissions`, {
-              headers: {
-                Authorization: `Bearer ${customToken.accessToken}`,
-              },
-            });
-            if (response.ok) {
-              customToken.permissions = await response.json();
-            } else {
-              customToken.permissions = {};
-            }
-          } catch {
+          if (response.data) {
+            customToken.permissions = response.data.permissions;
+          } else {
             customToken.permissions = {};
           }
-        } else {
-          customToken.permissions = { "*": ["read", "write", "modify", "delete", "manage"] };
+        } catch {
+          customToken.permissions = {};
         }
+        // if (customToken.role !== "super_admin") {
+        //   try {
+        //     const response = await fetch(`${baseurl}/user/auth/permissions`, {
+        //       headers: {
+        //         Authorization: `Bearer ${customToken.accessToken}`,
+        //       },
+        //     });
+        //     console.log(response);
+
+        //     if (response.ok) {
+        //       customToken.permissions = await response.json();
+        //     } else {
+        //       customToken.permissions = {};
+        //     }
+        //   } catch {
+        //     customToken.permissions = {};
+        //   }
+        // } else {
+        //   customToken.permissions = { "*": ["read", "write", "modify", "delete", "manage"] };
+        // }
       }
-  
+
       // Check if token is expired and refresh if necessary
       if (customToken.accessTokenExpires && Date.now() > customToken.accessTokenExpires) {
         return await refreshAccessToken(customToken);

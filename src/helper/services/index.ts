@@ -39,7 +39,7 @@ export async function fetchData<T = any>(
       params = {},
       query = {},
       headers = {},
-      cacheTime = 60,
+      cacheTime = 0,
     } = options;
 
     // Validate endpoint
@@ -243,7 +243,7 @@ const requests = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> =>
-    await fetchData<T>(endpoint, { method: "POST", body, headers, token }),
+    await fetchData<T>(endpoint, { method: "POST", body, headers, token, }),
 
   put: async <T = any>(
     endpoint: string,

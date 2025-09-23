@@ -8,7 +8,7 @@ import React, { Suspense } from "react";
 
 const Page = async () => {
   const session = await getServerSession(authOptions);
-  const role = await roleServices.getAll({},session?.accessToken);
+  const role = await roleServices.getAll({}, session?.accessToken);
 
   return (
     <PrivateLayout>
@@ -20,7 +20,7 @@ const Page = async () => {
           ></Breadcrumbs>
 
           <div className="rounded-md  shadow-sm overflow-auto ">
-            <UserCreate master={{roles:role}}></UserCreate>
+            <UserCreate master={{ roles: role.data }}></UserCreate>
           </div>
         </Suspense>
       </div>

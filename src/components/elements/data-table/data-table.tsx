@@ -80,14 +80,13 @@ export function DataTable<T>({
     if (newState.pagination) {
       updates.page = newState.pagination.pageIndex + 1; // Convert to 1-based
       updates.limit = newState.pagination.pageSize;
-    }
-    
+    }    
     if (newState.sorting !== undefined) {
       if (newState.sorting.length > 0) {
-        updates.sortBy = newState.sorting[0].id;
-        updates.sortDesc = newState.sorting[0].desc;
+        updates.sort = newState.sorting[0].id;
+        updates.order = newState.sorting[0].desc?"desc":"asc";
       } else {
-        updates.sortBy = '';
+        updates.sort = '';
       }
     }
     
