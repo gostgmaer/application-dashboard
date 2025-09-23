@@ -1,39 +1,48 @@
-// components/auth/TwoFactorModal.tsx
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { signIn } from 'next-auth/react';
-import { X, Shield, RefreshCw } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { signIn } from "next-auth/react";
+import { Loader2, X, Shield, RefreshCw } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
 interface TwoFactorModalProps {
   isOpen: boolean;
   onClose: () => void;
   email: string;
   tempUserId: string;
-  onSuccess: () => void;
+  otpType: "email" | "sms" | "authenticator";
+  onSuccess: () => void | Promise<void>;
 }
 
-export default function TwoFactorModal({ 
-  isOpen, 
-  onClose, 
-  email, 
-  tempUserId, 
-  onSuccess 
+export default function TwoFactorModal({
+  isOpen,
+  onClose,
+  email,
+  tempUserId,
+  otpType,
+  onSuccess,
 }: TwoFactorModalProps) {
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
-  // Focus management for OTP inputs
+  // Focus first input when modal opens
   useEffect(() => {
-    if (isOpen && inputRefs.current[0]) {
-      inputRefs.current[0].focus();
-    }
+    if (isOpen) inputsRef.current[0]?.focus();
   }, [isOpen]);
 
-  // Countdown timer for resend OTP
+  // Countdown timer for resend
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -41,184 +50,163 @@ export default function TwoFactorModal({
     }
   }, [countdown]);
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return; // Prevent multiple characters
-    
+  const handleChange = (idx: number, value: string) => {
+    if (value.length > 1) return;
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[idx] = value;
     setOtp(newOtp);
-    setError('');
-
-    // Auto-focus next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+    setError("");
+    if (value && idx < 5) {
+      inputsRef.current[idx + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'Enter') {
-      handleVerifyOtp();
+  const handleKey = (idx: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[idx] && idx > 0) {
+      inputsRef.current[idx - 1]?.focus();
+    }
+    if (e.key === "Enter") {
+      verifyOtp();
     }
   };
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    const newOtp = pastedData.split('').concat(Array(6 - pastedData.length).fill(''));
-    setOtp(newOtp.slice(0, 6));
-    
-    // Focus the last filled input or first empty one
-    const lastFilledIndex = Math.min(pastedData.length, 5);
-    inputRefs.current[lastFilledIndex]?.focus();
+    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const arr = text.split("").concat(Array(6 - text.length).fill(""));
+    setOtp(arr.slice(0, 6));
+    const focusIndex = text.length >= 6 ? 5 : text.length;
+    inputsRef.current[focusIndex]?.focus();
   };
 
-  const handleVerifyOtp = async () => {
-    const otpString = otp.join('');
-    if (otpString.length !== 6) {
-      setError('Please enter the complete 6-digit OTP');
+  const verifyOtp = async () => {
+    const code = otp.join("");
+    if (code.length < 6) {
+      setError("Please enter the 6-digit code.");
       return;
     }
-
-    setIsLoading(true);
-    setError('');
-
+    setIsSubmitting(true);
+    setError("");
     try {
-      const result = await signIn('credentials', {
-        email,
-        otp: otpString,
-        tempUserId,
+      const res = await signIn("credentials", {
         redirect: false,
+        email,
+        tempUserId,
+        otp: code,
       });
-
-      if (result?.error) {
-        setError('Invalid OTP. Please try again.');
-        setOtp(['', '', '', '', '', '']);
-        inputRefs.current[0]?.focus();
-      } else if (result?.ok) {
-        onSuccess();
+      if (res?.error) {
+        setError("Invalid code. Please try again.");
+        setOtp(["", "", "", "", "", ""]);
+        inputsRef.current[0]?.focus();
+      } else {
+        await onSuccess();
         onClose();
       }
-    } catch (error) {
-      setError('Verification failed. Please try again.');
+    } catch {
+      setError("Verification failed. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const handleResendOtp = async () => {
+  const resendOtp = async () => {
     if (countdown > 0) return;
-    
-    setIsLoading(true);
+    setIsSubmitting(true);
+    setError("");
     try {
-      // Call your API to resend OTP
-      await fetch('/api/auth/resend-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, tempUserId }),
+      const res = await fetch("/api/auth/resend-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempUserId, otpType }),
       });
-      
-      setCountdown(60); // 60 second cooldown
-      setError('');
-      setOtp(['', '', '', '', '', '']);
-    } catch (error) {
-      setError('Failed to resend OTP. Please try again.');
+      if (res.ok) {
+        setCountdown(60);
+        setOtp(["", "", "", "", "", ""]);
+        inputsRef.current[0]?.focus();
+      } else {
+        setError("Failed to resend code. Please try again.");
+      }
+    } catch {
+      setError("Failed to resend code. Please try again.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-full">
-              <Shield className="w-5 h-5 text-blue-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900">
-              Two-Factor Authentication
-            </h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+      <Card className="max-w-md w-full shadow-xl">
+        <CardHeader className="flex justify-between items-center pb-4">
+          <div className="flex items-center gap-2">
+            <Shield className="text-blue-600 w-5 h-5" />
+            <CardTitle>Two-Factor Authentication</CardTitle>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-            disabled={isLoading}
-          >
-            <X className="w-5 h-5 text-gray-500" />
+          <button onClick={onClose} disabled={isSubmitting}>
+            <X className="w-5 h-5 text-gray-500 hover:text-gray-700" />
           </button>
-        </div>
+        </CardHeader>
 
-        {/* Content */}
-        <div className="text-center mb-8">
-          <p className="text-gray-600 mb-2">
-            We&apos;ve sent a 6-digit verification code to
+        <CardContent className="space-y-4">
+          <p className="text-gray-600">
+            {otpType === "authenticator"
+              ? "Enter the 6-digit code from your authenticator app."
+              : `We sent a 6-digit code to ${
+                  otpType === "email" ? email : "your phone number"
+                }.`}
           </p>
-          <p className="font-medium text-gray-900">{email}</p>
-        </div>
 
-        {/* OTP Input */}
-        <div className="flex gap-3 justify-center mb-6">
-          {otp.map((digit, index) => (
-            <input
-              key={index}
-              ref={(el) => { inputRefs.current[index] = el; }}
-              type="text"
-              inputMode="numeric"
-              maxLength={1}
-              value={digit}
-              onChange={(e) => handleOtpChange(index, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(index, e)}
-              onPaste={index === 0 ? handlePaste : undefined}
-              className={`w-12 h-12 text-center text-xl font-semibold border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                error ? 'border-red-300' : 'border-gray-300'
-              }`}
-              disabled={isLoading}
-            />
-          ))}
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="text-red-600 text-sm text-center mb-4 p-2 bg-red-50 rounded-lg">
-            {error}
+          <div className="flex justify-center gap-2">
+            {otp.map((digit, idx) => (
+              <Input
+                key={idx}
+                ref={(el: HTMLInputElement | null): void => {
+                  inputsRef.current[idx] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleChange(idx, e.target.value)}
+                onKeyDown={(e) => handleKey(idx, e)}
+                onPaste={idx === 0 ? handlePaste : undefined}
+                disabled={isSubmitting}
+                className="w-12 h-12 text-center text-xl font-medium"
+              />
+            ))}
           </div>
-        )}
 
-        {/* Verify Button */}
-        <button
-          onClick={handleVerifyOtp}
-          disabled={isLoading || otp.join('').length !== 6}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Verifying...
-            </>
-          ) : (
-            'Verify & Sign In'
+          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
+
+          <Button
+            onClick={verifyOtp}
+            disabled={isSubmitting || otp.join("").length < 6}
+            className="w-full h-12 flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              "Verify"
+            )}
+          </Button>
+
+          {otpType !== "authenticator" && (
+            <div className="text-center">
+              <button
+                onClick={resendOtp}
+                disabled={isSubmitting || countdown > 0}
+                className="text-sm text-blue-600 hover:text-blue-700"
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : "Resend Code"}
+              </button>
+            </div>
           )}
-        </button>
-
-        {/* Resend OTP */}
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Didn&apos;t receive the code?{' '}
-            <button
-              onClick={handleResendOtp}
-              disabled={countdown > 0 || isLoading}
-              className="text-blue-600 hover:text-blue-700 disabled:text-gray-400 disabled:cursor-not-allowed font-medium"
-            >
-              {countdown > 0 ? `Resend in ${countdown}s` : 'Resend OTP'}
-            </button>
-          </p>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -33,89 +33,91 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/useToast";
 import { loginFormSchema, type LoginFormData } from "@/lib/validation-schemas";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { loginFailure, loginStart } from "@/store/slices/authSlice";
+import TwoFactorModal from "./TwoFactorModal";
 
 export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [twoFAData, setTwoFAData] = useState<{
+    tempUserId: string;
+    otpType: "email" | "sms" | "authenticator";
+    email: string;
+  } | null>(null);
+
   const { toast } = useToast();
   const router = useRouter();
   const dispatch = useAppDispatch();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      rememberMe: false,
-    },
+    defaultValues: { email: "", password: "", rememberMe: false },
     mode: "onChange",
   });
 
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     dispatch(loginStart());
+
     try {
       const res: any = await signIn("credentials", {
         redirect: false,
         email: data.email,
         password: data.password,
       });
-      console.log(res);
-      if (res && !res.ok) {
-        // const errorData = await res
+
+      if (!res?.ok) {
+        // If the backend sent a JSON error indicating 2FA
+        if (res.error?.startsWith("{") && res.error.includes("requiresTwoFactor")) {
+          const err = JSON.parse(res.error);
+          setTwoFAData({
+            tempUserId: err.tempUserId,
+            otpType: err.otpType,
+            email: data.email,
+          });
+          return;
+        }
 
         dispatch(loginFailure("An error occurred during sign in."));
         throw new Error(res.error || "Login failed");
       }
 
+      // Successful login without 2FA
       if (res.url) {
         const parsedUrl = new URL(res.url);
         const callbackUrlParam = parsedUrl.searchParams.get("callbackUrl");
-        console.log(callbackUrlParam);
-
-        if (callbackUrlParam) {
-          const decodedCallbackUrl = callbackUrlParam
-            ? decodeURIComponent(callbackUrlParam)
-            : "/";
-
-          router.push(decodedCallbackUrl);
-        } else {
-          router.push("/");
-        }
+        router.push(callbackUrlParam ? decodeURIComponent(callbackUrlParam) : "/");
       }
 
       setIsSubmitted(true);
-
       toast({
         title: "Login successful!",
         description: "Welcome back! Redirecting to dashboard...",
         duration: 3000,
       });
 
-      // Simulate redirect after success
       setTimeout(() => {
-        // In a real app, you'd redirect to dashboard or use router.push()
-        console.log("Redirecting to dashboard...");
         setIsSubmitted(false);
       }, 2000);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Login failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please check your credentials and try again.",
+        description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
         duration: 5000,
       });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleTwoFASuccess = async () => {
+    await getSession();
+    router.push("/");
   };
 
   const isFormValid =
@@ -288,6 +290,17 @@ export default function LoginForm() {
           </CardContent>
         </Card>
       </div>
+
+      {twoFAData && (
+        <TwoFactorModal
+          isOpen={true}
+          onClose={() => setTwoFAData(null)}
+          email={twoFAData.email}
+          tempUserId={twoFAData.tempUserId}
+          otpType={twoFAData.otpType}
+          onSuccess={handleTwoFASuccess}
+        />
+      )}
     </div>
   );
 }
