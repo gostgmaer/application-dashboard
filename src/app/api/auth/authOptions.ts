@@ -1,4 +1,3 @@
-
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
@@ -18,9 +17,10 @@ declare module "next-auth" {
     user: {
       role?: string;
       permissions?: Record<string, string[]>;
+      twoFactorEnabled?: boolean;
       [key: string]: any;
     };
-    error?: string; // Add error to session for refresh failures
+    error?: string;
   }
 }
 
@@ -38,8 +38,6 @@ import {
 } from "@/config/setting";
 import authService from "@/helper/services/authService";
 
-// import authService from "@/lib/services/auth";
-
 interface CustomToken extends JWT {
   accessToken?: string;
   refreshToken?: string;
@@ -50,6 +48,7 @@ interface CustomToken extends JWT {
   error?: string;
   role?: string;
   permissions?: Record<string, string[]>;
+  twoFactorEnabled?: boolean;
 }
 
 interface CustomUser extends User {
@@ -59,6 +58,15 @@ interface CustomUser extends User {
   token_type?: string;
   accessTokenExpires?: number;
   role?: string;
+  twoFactorEnabled?: boolean;
+}
+
+// Custom error for 2FA requirement
+export class TwoFactorRequiredError extends Error {
+  constructor(public tempUserId: string, public email: string) {
+    super("Two-factor authentication required");
+    this.name = "TwoFactorRequiredError";
+  }
 }
 
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
@@ -93,17 +101,34 @@ export const authOptions: AuthOptions = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        otp: { label: "OTP", type: "text", placeholder: "Enter 6-digit OTP" },
+        tempUserId: { label: "Temp User ID", type: "hidden" },
       },
       async authorize(credentials) {
         const payload = {
           identifier: credentials?.email,
           password: credentials?.password,
+          otp: credentials?.otp,
+          tempUserId: credentials?.tempUserId,
         };
+
         const res = await authService.login(payload);
+        
         if (!res || !res.success) {
+          // Check if the user exists but has 2FA enabled and no OTP provided
+          if (res?.data?.requiresTwoFactor && !credentials?.otp) {
+            // User has 2FA enabled - throw custom error to trigger 2FA flow
+            throw new TwoFactorRequiredError(
+              res.data.tempUserId || res.data.userId, 
+              credentials?.email || ""
+            );
+          }
+          
+          // Regular login failure (invalid credentials, wrong OTP, etc.)
           throw new Error(res?.message || "Invalid credentials");
         }
 
+        // Successful login (either no 2FA required or 2FA completed)
         const { user, tokens } = res.data;
         return {
           id: user.id,
@@ -114,8 +139,8 @@ export const authOptions: AuthOptions = {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
           token_type: "access",
-          // id_token: tokens.idToken,
           accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt),
+          twoFactorEnabled: user.twoFactorEnabled || false,
         };
       },
     }),
@@ -167,12 +192,11 @@ export const authOptions: AuthOptions = {
       if ((account?.provider === "github" || account?.provider === "linkedin" || account?.provider === "twitter" || account?.provider === "google") && profile?.email) {
         try {
           const data = await authService.socialLogin({
-            identifier: profile.email, profileData: {
+            identifier: profile.email, 
+            profileData: {
               ...profile,
               ...account
-
             }
-
           });
 
           user.accessToken = data.data.accessToken;
@@ -181,6 +205,7 @@ export const authOptions: AuthOptions = {
           user.token_type = data.data.token_type;
           user.role = data.data.role || "";
           user.accessTokenExpires = Date.parse(data.data.expiresAt);
+          user.twoFactorEnabled = data.data.twoFactorEnabled || false;
 
           return true;
         } catch (error) {
@@ -203,6 +228,8 @@ export const authOptions: AuthOptions = {
         customToken.accessTokenExpires = customUser.accessTokenExpires;
         customToken.role = customUser.role;
         customToken.sub = customUser.id;
+        customToken.twoFactorEnabled = customUser.twoFactorEnabled;
+        
         try {
           const response = await authService.getUserPermissions(customToken.accessToken);
           console.log(response);
@@ -215,26 +242,6 @@ export const authOptions: AuthOptions = {
         } catch {
           customToken.permissions = {};
         }
-        // if (customToken.role !== "super_admin") {
-        //   try {
-        //     const response = await fetch(`${baseurl}/user/auth/permissions`, {
-        //       headers: {
-        //         Authorization: `Bearer ${customToken.accessToken}`,
-        //       },
-        //     });
-        //     console.log(response);
-
-        //     if (response.ok) {
-        //       customToken.permissions = await response.json();
-        //     } else {
-        //       customToken.permissions = {};
-        //     }
-        //   } catch {
-        //     customToken.permissions = {};
-        //   }
-        // } else {
-        //   customToken.permissions = { "*": ["read", "write", "modify", "delete", "manage"] };
-        // }
       }
 
       // Check if token is expired and refresh if necessary
@@ -255,8 +262,9 @@ export const authOptions: AuthOptions = {
         ...session.user,
         role: token.role,
         permissions: token.permissions,
+        twoFactorEnabled: token.twoFactorEnabled,
       };
-      session.error = token.error; // Include error in session for debugging
+      session.error = token.error;
 
       return session;
     },

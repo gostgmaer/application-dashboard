@@ -65,12 +65,12 @@ export default function LoginForm() {
         email: data.email,
         password: data.password,
       });
-    console.log(res);
+      console.log(res);
       if (res && !res.ok) {
         // const errorData = await res
-    
+
         dispatch(loginFailure("An error occurred during sign in."));
-        throw new Error(res.error || "Login failed")
+        throw new Error(res.error || "Login failed");
       }
 
       if (res.url) {
@@ -122,13 +122,13 @@ export default function LoginForm() {
     form.formState.isValid && Object.keys(form.formState.errors).length === 0;
 
   return (
-   <div className="min-h-screen  flex items-center justify-center py-12 px-4 transition-colors">
-      <div className="absolute top-4 right-4">
-        {/* <ThemeToggle /> */}
-      </div>
+    <div className="min-h-screen  flex items-center justify-center py-12 px-4 transition-colors">
+      <div className="absolute top-4 right-4">{/* <ThemeToggle /> */}</div>
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Welcome Back</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Welcome Back
+          </h1>
           <p className="text-gray-600 dark:text-gray-300">
             Sign in to your account to continue
           </p>
@@ -136,15 +136,20 @@ export default function LoginForm() {
 
         <Card className="shadow-xl border-0 bg-gray-100/90 dark:bg-gray-800/50 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
-            <CardTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-200">Sign In</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
+              Sign In
+            </CardTitle>
             <CardDescription className="text-gray-600 dark:text-gray-400">
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -155,10 +160,10 @@ export default function LoginForm() {
                         Email Address
                       </FormLabel>
                       <FormControl>
-                        <Input 
-                          type="email" 
-                          placeholder="Enter your email address" 
-                          {...field} 
+                        <Input
+                          type="email"
+                          placeholder="Enter your email address"
+                          {...field}
                           className="h-11 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                         />
                       </FormControl>
@@ -166,7 +171,7 @@ export default function LoginForm() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -178,10 +183,10 @@ export default function LoginForm() {
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <Input 
+                          <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password" 
-                            {...field} 
+                            placeholder="Enter your password"
+                            {...field}
                             className="h-11 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                           />
                           <button
@@ -223,9 +228,9 @@ export default function LoginForm() {
                       </FormItem>
                     )}
                   />
-                  
-                  <Link 
-                    href="/auth/forgot-password" 
+
+                  <Link
+                    href="/auth/forgot-password"
                     className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
                   >
                     Forgot password?
@@ -237,8 +242,8 @@ export default function LoginForm() {
                     type="submit"
                     disabled={!isFormValid || isSubmitting}
                     className={`w-full h-12 text-base font-medium transition-all duration-200 ${
-                      isFormValid 
-                        ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 shadow-lg hover:shadow-xl text-white" 
+                      isFormValid
+                        ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 shadow-lg hover:shadow-xl text-white"
                         : "bg-gray-300 dark:bg-gray-600 cursor-not-allowed text-gray-500 dark:text-gray-400"
                     }`}
                   >
@@ -259,7 +264,7 @@ export default function LoginForm() {
                       </>
                     )}
                   </Button>
-                  
+
                   {!isFormValid && (
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
                       Please fill in all fields correctly to enable sign in.
@@ -272,7 +277,10 @@ export default function LoginForm() {
             <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Want to Connact?{" "}
-                <Link href="/contact" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
+                <Link
+                  href="/contact"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+                >
                   Contact here
                 </Link>
               </p>
@@ -283,5 +291,3 @@ export default function LoginForm() {
     </div>
   );
 }
-
-
