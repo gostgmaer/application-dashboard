@@ -25,7 +25,7 @@ export const changePasswordSchema = z.object({
 })
 
 export const twoFactorSchema = z.object({
-  totpToken: z.string().length(6, 'TOTP token must be 6 digits').regex(/^\d+$/, 'TOTP token must contain only numbers')
+  token: z.string().length(6, 'TOTP token must be 6 digits').regex(/^\d+$/, 'TOTP token must contain only numbers')
 })
 
 // Preferences Schema
