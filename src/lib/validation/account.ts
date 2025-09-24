@@ -95,6 +95,34 @@ export const interestsSchema = z.object({
   interests: z.array(z.string()).max(20, 'Maximum 20 interests allowed')
 })
 
+
+export const emailSendSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+});
+
+export const emailVerificationSchema = z.object({
+  emailCode: z.string().min(6, "Verification code must be 6 digits").max(6, "Verification code must be 6 digits"),
+});
+
+export const phoneSendSchema = z.object({
+  phoneNumber: z
+    .string()
+    .regex(/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"),
+});
+
+export const phoneVerificationSchema = z.object({
+  phoneCode: z
+    .string()
+    .min(6, "Verification code must be 6 digits")
+    .max(6, "Verification code must be 6 digits"),
+});
+
+export type PhoneSendFormData = z.infer<typeof phoneSendSchema>;
+export type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
+
+export type EmailSendFormData = z.infer<typeof emailSendSchema>;
+export type EmailVerificationFormData = z.infer<typeof emailVerificationSchema>;
+
 export type PersonalDetailsFormData = z.infer<typeof personalDetailsSchema>
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 export type TwoFactorFormData = z.infer<typeof twoFactorSchema>

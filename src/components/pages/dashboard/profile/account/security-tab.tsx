@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,21 @@ import {
   Phone,
   Mail,
   QrCode,
+  Clock,
 } from "lucide-react";
 import {
   changePasswordSchema,
   twoFactorSchema,
   ChangePasswordFormData,
   TwoFactorFormData,
+  EmailSendFormData,
+  emailSendSchema,
+  EmailVerificationFormData,
+  emailVerificationSchema,
+  PhoneSendFormData,
+  phoneSendSchema,
+  PhoneVerificationFormData,
+  phoneVerificationSchema,
 } from "@/lib/validation/account";
 import { User } from "@/types/user";
 // import { toast } from "sonner";
@@ -55,10 +64,18 @@ interface MfaSetupData {
 export default function SecurityTab({ user }: SecurityTabProps) {
   const { toast } = useToast();
   const { data: session } = useSession();
-  const [disableStep, setDisableStep] = useState<"confirm" | "sent" | "verify">(
-    "confirm"
-  );
+  console.log(user);
+
+  // Disable 2FA states
+  const [disableStep, setDisableStep] = useState<
+    "idle" | "input" | "verifying"
+  >("idle");
+  const [disableMethod, setDisableMethod] = useState<
+    "totp" | "email" | "sms" | null
+  >(null);
   const [disableCodeSent, setDisableCodeSent] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+  const [resendAvailable, setResendAvailable] = useState(false);
 
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
   const [isTwoFactorLoading, setIsTwoFactorLoading] = useState(false);
@@ -69,7 +86,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [mfaSetUp, setMfaSetUp] = useState<MfaSetupData | undefined>(undefined);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(
-    user.twoFactorEnabled
+    user.otpSettings.enabled
   );
   const [phoneVerified, setPhoneVerified] = useState(
     user.phoneVerified || false
@@ -86,6 +103,25 @@ export default function SecurityTab({ user }: SecurityTabProps) {
     "totp" | "email" | "sms" | null
   >(null);
   const [twoFactorCodeSent, setTwoFactorCodeSent] = useState(false);
+
+  // Timer effect for resend functionality
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => {
+          if (prev <= 1) {
+            setResendAvailable(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
 
   const passwordForm = useForm<ChangePasswordFormData>({
     resolver: zodResolver(changePasswordSchema),
@@ -127,112 +163,39 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       totpToken: "",
     },
   });
-  const phoneSendForm = useForm<{ phoneNumber: string }>({
-    resolver: zodResolver(twoFactorSchema), // Simplified for demo
+  const phoneSendForm = useForm<PhoneSendFormData>({
+    resolver: zodResolver(phoneSendSchema),
     defaultValues: {
       phoneNumber: user.phoneNumber || "",
     },
   });
 
-  const phoneVerificationForm = useForm<{ phoneCode: string }>({
-    resolver: zodResolver(twoFactorSchema),
+  const phoneVerificationForm = useForm<PhoneVerificationFormData>({
+    resolver: zodResolver(phoneVerificationSchema),
     defaultValues: {
       phoneCode: "",
     },
   });
 
-  const emailSendForm = useForm<{ email: string }>({
-    resolver: zodResolver(twoFactorSchema), // Simplified for demo
+  const emailSendForm = useForm<EmailSendFormData>({
+    resolver: zodResolver(emailSendSchema),
     defaultValues: {
       email: user.email || "",
     },
   });
 
-  const emailVerificationForm = useForm<{ emailCode: string }>({
-    resolver: zodResolver(twoFactorSchema),
+  const emailVerificationForm = useForm<EmailVerificationFormData>({
+    resolver: zodResolver(emailVerificationSchema),
     defaultValues: {
       emailCode: "",
     },
   });
-  // const handleSendCodeAndVerify = async (tokenInput?: string) => {
-  //   if (!twoFactorMethod) {
-  //     //toast.error('Select a two-factor authentication method first.');
-  //     return;
-  //   }
 
-  //   setIsTwoFactorLoading(true);
-
-  //   try {
-  //     // For email or SMS, send the OTP code first if we have not sent it yet
-  //     if ((twoFactorMethod === 'email' || twoFactorMethod === 'sms') && ) {
-  //       // Send OTP code API
-  //       const sendResponse = await fetch('/api/otp/send', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //           'Authorization': `Bearer ${session?.accessToken}`,
-  //         },
-  //         body: JSON.stringify({
-  //           purpose: 'setup',
-  //           method: twoFactorMethod,
-  //         }),
-  //       });
-
-  //       const sendResult = await sendResponse.json();
-
-  //       if (!sendResult.success) {
-  //         throw new Error(sendResult.message || 'Failed to send verification code.');
-  //       }
-
-  //       //toast.success(`Verification code sent to your ${twoFactorMethod === 'email' ? 'email' : 'sms'}.`);
-  //       setCodeSent(true);
-  //       return;  // Return here to wait user entering code before verifying
-  //     }
-
-  //     // Prepare code for verification
-  //     const codeToVerify = tokenInput || otpForm.getValues('token');
-  //     if (!codeToVerify) {
-  //       //toast.error('Enter the verification code.');
-  //       setIsTwoFactorLoading(false);
-  //       return;
-  //     }
-
-  //     // Verify OTP API
-  //     const verifyResponse = await fetch('/api/otp/verify', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': `Bearer ${session?.accessToken}`,
-  //       },
-  //       body: JSON.stringify({
-  //         code: codeToVerify,
-  //         purpose: 'setup',
-  //       }),
-  //     });
-
-  //     const verifyResult = await verifyResponse.json();
-
-  //     if (verifyResult.success) {
-  //       //toast.success('Two-factor authentication enabled successfully!');
-  //       setTwoFactorEnabled(true);
-  //       setTwoFactorMethod(null);
-  //       setCodeSent(false);
-  //       setOtpSetupData(null);
-  //       otpForm.reset();
-
-  //       if (verifyResult.data?.backupCodes) {
-  //         //toast.success(`Backup codes generated: ${verifyResult.data.backupCodes.length} codes saved`);
-  //       }
-  //     } else {
-  //       throw new Error(verifyResult.message || 'Invalid verification code.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Send/Verify OTP error:', error);
-  //     //toast.error(error.message || 'Failed to send or verify OTP. Please try again.');
-  //   } finally {
-  //     setIsTwoFactorLoading(false);
-  //   }
-  // };
+  // Disable 2FA form
+  const disableOtpForm = useForm<{ token: string }>({
+    resolver: zodResolver(twoFactorSchema),
+    defaultValues: { token: "" },
+  });
 
   const onPasswordSubmit = async (data: ChangePasswordFormData) => {
     setIsPasswordLoading(true);
@@ -258,24 +221,17 @@ export default function SecurityTab({ user }: SecurityTabProps) {
         session?.accessToken
       );
       setMfaSetUp(res.data);
-      // console.log("2FA app setup:", res);
-      // setTwoFactorEnabled(true);
-      // setTwoFactorMethod(null);
-      // setTwoFactorCodeSent(false);
-      // //toast.success(res.message);
       toast({
         title: res.message,
         duration: 3000,
       });
-      // twoFactorAppForm.reset();
     } catch (error) {
-      // //toast.error(
-      //   "Failed to setup two-factor authentication. Please try again."
-      // );
+      // Handle error
     } finally {
       setIsTwoFactorLoading(false);
     }
   };
+
   const onTwoFactorAppVerifySubmit = async (data: TwoFactorFormData) => {
     setIsTwoFactorLoading(true);
     try {
@@ -290,26 +246,22 @@ export default function SecurityTab({ user }: SecurityTabProps) {
           duration: 3000,
         });
       }
-
-      // //toast.success("Two-factor authentication enabled via app!");
       twoFactorAppForm.reset();
     } catch (error) {
-      // //toast.error(
-      //   "Failed to setup two-factor authentication. Please try again."
-      // );
+      // Handle error
     } finally {
       setIsTwoFactorLoading(false);
     }
   };
+
   const onTwoFactorEmailSendSubmit = async (data: { email: string }) => {
     setIsTwoFactorLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("2FA email code sent to:", data.email);
       setTwoFactorCodeSent(true);
-      //toast.success("Verification code sent to your email!");
     } catch (error) {
-      //toast.error("Failed to send verification code. Please try again.");
+      // Handle error
     } finally {
       setIsTwoFactorLoading(false);
     }
@@ -326,10 +278,9 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       setTwoFactorEnabled(true);
       setTwoFactorMethod(null);
       setTwoFactorCodeSent(false);
-      //toast.success("Two-factor authentication enabled via email!");
       twoFactorEmailForm.reset();
     } catch (error) {
-      //toast.error("Failed to verify 2FA email code. Please try again.");
+      // Handle error
     } finally {
       setIsTwoFactorLoading(false);
     }
@@ -341,9 +292,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("2FA phone code sent to:", data.phoneNumber);
       setTwoFactorCodeSent(true);
-      //toast.success("Verification code sent to your phone!");
     } catch (error) {
-      //toast.error("Failed to send verification code. Please try again.");
+      // Handle error
     } finally {
       setIsTwoFactorLoading(false);
     }
@@ -360,46 +310,144 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       setTwoFactorEnabled(true);
       setTwoFactorMethod(null);
       setTwoFactorCodeSent(false);
-      //toast.success("Two-factor authentication enabled via phone!");
       twoFactorPhoneForm.reset();
     } catch (error) {
-      //toast.error("Failed to verify 2FA phone code. Please try again.");
+      // Handle error
     } finally {
       setIsTwoFactorLoading(false);
     }
   };
 
-  const handleDisableTwoFactor = async () => {
+  // Enhanced disable 2FA functionality
+  const handleInitiateDisable2FA = () => {
+    // Reset all disable states
+    setDisableStep("input");
+    setDisableMethod(null);
+    setDisableCodeSent(false);
+    setResendTimer(0);
+    setResendAvailable(false);
+    disableOtpForm.reset();
+  };
+
+  const handleSelectDisableMethod = async (
+    method: "totp" | "email" | "sms"
+  ) => {
+    setDisableMethod(method);
+
+    // For email/SMS, automatically send code
+    if (method === "email" || method === "sms") {
+      await sendDisableVerificationCode(method);
+    }
+  };
+
+  const sendDisableVerificationCode = async (method: "email" | "sms") => {
     setIsTwoFactorLoading(true);
     try {
-      const res = await authService.disableMFA(session?.accessToken);
-      if (res.success) {
-        setTwoFactorEnabled(false);
-        setTwoFactorMethod(null);
-        setTwoFactorCodeSent(false);
-        toast({
-          title: res.message,
-          duration: 3000,
-        });
-      }
+      // Mock API call to send verification code
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      //toast.success("Two-factor authentication disabled");
+      // Simulate sending code
+      console.log(`Disable 2FA verification code sent via ${method}`);
+
+      setDisableCodeSent(true);
+      setResendTimer(60); // 1 minute timer
+      setResendAvailable(false);
+
+      toast({
+        title: `Verification code sent via ${method}`,
+        description: `Check your ${
+          method === "email" ? "email" : "SMS"
+        } for the code`,
+        duration: 3000,
+      });
     } catch (error) {
-      //toast.error("Failed to disable two-factor authentication");
+      toast({
+        title: "Error",
+        description: `Failed to send verification code via ${method}`,
+        duration: 3000,
+      });
     } finally {
       setIsTwoFactorLoading(false);
     }
+  };
+
+  const handleResendDisableCode = async () => {
+    if (
+      disableMethod &&
+      (disableMethod === "email" || disableMethod === "sms")
+    ) {
+      await sendDisableVerificationCode(disableMethod);
+    }
+  };
+
+  const handleDisable2FASubmit = async (data: { token: string }) => {
+    if (!data.token || data.token.length < 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid 6-digit verification code",
+        duration: 3000,
+      });
+      return;
+    }
+
+    setDisableStep("verifying");
+    setIsTwoFactorLoading(true);
+
+    try {
+      // Mock API call to verify and disable 2FA
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Simulate successful verification and disable
+      console.log(
+        `Disabling 2FA with code: ${data.token} using method: ${disableMethod}`
+      );
+
+      // Reset all states
+      setTwoFactorEnabled(false);
+      setDisableStep("idle");
+      setDisableMethod(null);
+      setDisableCodeSent(false);
+      setResendTimer(0);
+      setResendAvailable(false);
+      disableOtpForm.reset();
+
+      toast({
+        title: "Success",
+        description: "Two-factor authentication has been disabled",
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          "Failed to disable 2FA. Please check your code and try again.",
+        duration: 3000,
+      });
+      setDisableStep("input");
+    } finally {
+      setIsTwoFactorLoading(false);
+    }
+  };
+
+  const handleCancelDisable = () => {
+    setDisableStep("idle");
+    setDisableMethod(null);
+    setDisableCodeSent(false);
+    setResendTimer(0);
+    setResendAvailable(false);
+    disableOtpForm.reset();
   };
 
   const onPhoneSendSubmit = async (data: { phoneNumber: string }) => {
+    console.log(data);
+
     setIsPhoneLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("Phone code sent to:", data.phoneNumber);
       setPhoneCodeSent(true);
-      //toast.success("Verification code sent to your phone!");
     } catch (error) {
-      //toast.error("Failed to send verification code. Please try again.");
+      // Handle error
     } finally {
       setIsPhoneLoading(false);
     }
@@ -412,10 +460,9 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       console.log("Phone verification:", data);
       setPhoneVerified(true);
       setPhoneCodeSent(false);
-      //toast.success("Phone number verified successfully!");
       phoneVerificationForm.reset();
     } catch (error) {
-      //toast.error("Failed to verify phone number. Please try again.");
+      // Handle error
     } finally {
       setIsPhoneLoading(false);
     }
@@ -427,9 +474,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setPhoneVerified(false);
       setPhoneCodeSent(false);
-      //toast.success("Phone verification disabled");
     } catch (error) {
-      //toast.error("Failed to disable phone verification");
+      // Handle error
     } finally {
       setIsPhoneLoading(false);
     }
@@ -438,7 +484,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   const onEmailSendSubmit = async (data: { email: string }) => {
     setIsEmailLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+   const res =  authService.sendEmailVerification(session?.accessToken)
       console.log(
         `${
           emailVerificationMethod === "link"
@@ -448,19 +494,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
         data.email
       );
       setEmailCodeSent(true);
-      // //toast.success(
-      //   `${
-      //     emailVerificationMethod === "link"
-      //       ? "Verification link"
-      //       : "Verification code"
-      //   } sent to your email!`
-      // );
     } catch (error) {
-      // //toast.error(
-      //   `Failed to send ${
-      //     emailVerificationMethod === "link" ? "verification link" : "code"
-      //   }. Please try again.`
-      // );
+      // Handle error
     } finally {
       setIsEmailLoading(false);
     }
@@ -474,10 +509,9 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       setEmailVerified(true);
       setEmailCodeSent(false);
       setEmailVerificationMethod(null);
-      //toast.success("Email verified successfully!");
       emailVerificationForm.reset();
     } catch (error) {
-      //toast.error("Failed to verify email. Please try again.");
+      // Handle error
     } finally {
       setIsEmailLoading(false);
     }
@@ -490,13 +524,13 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       setEmailVerified(false);
       setEmailCodeSent(false);
       setEmailVerificationMethod(null);
-      //toast.success("Email verification disabled");
     } catch (error) {
-      //toast.error("Failed to disable email verification");
+      // Handle error
     } finally {
       setIsEmailLoading(false);
     }
   };
+
   const mockLoginHistory = [
     {
       device: "Chrome on Windows",
@@ -517,76 +551,6 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       status: "failed",
     },
   ];
-
-  // const handleDisable2FA = async (token?: string) => {
-  //   setIsTwoFactorLoading(true);
-  //   try {
-  //     // If email/SMS and we haven’t sent code yet
-  //     if (
-  //       (twoFactorMethod === "email" || twoFactorMethod === "sms") &&
-  //       !disableCodeSent
-  //     ) {
-  //       const sendRes = await fetch("/api/otp/send", {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${session?.accessToken}`,
-  //         },
-  //         body: JSON.stringify({
-  //           purpose: "disable_otp",
-  //           method: twoFactorMethod,
-  //         }),
-  //       });
-  //       const sendResult = await sendRes.json();
-  //       if (!sendResult.success) throw new Error(sendResult.message);
-  //       toast.success(`Confirmation code sent via ${twoFactorMethod}`);
-  //       setDisableCodeSent(true);
-  //       return;
-  //     }
-
-  //     // Verify token
-  //     const code = token || otpForm.getValues("token");
-  //     if (!code) {
-  //       toast.error("Enter the confirmation code");
-  //       return;
-  //     }
-
-  //     const verifyRes = await fetch("/api/otp/verify", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${session?.accessToken}`,
-  //       },
-  //       body: JSON.stringify({ code, purpose: "disable_otp" }),
-  //     });
-  //     const verifyResult = await verifyRes.json();
-  //     if (!verifyResult.success) throw new Error(verifyResult.message);
-
-  //     // Finally disable via dedicated API
-  //     const disableRes = await fetch("/api/otp/disable", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${session?.accessToken}`,
-  //       },
-  //       body: JSON.stringify({ confirmationCode: code }),
-  //     });
-  //     const disableResult = await disableRes.json();
-  //     if (!disableResult.success) throw new Error(disableResult.message);
-
-  //     // Success
-  //     setTwoFactorEnabled(false);
-  //     // toast.success("Two-factor authentication disabled");
-  //     // Reset disable flow state
-  //     setDisableStep("confirm");
-  //     setDisableCodeSent(false);
-  //     otpForm.reset();
-  //   } catch (err: any) {
-  //     toast.error(err.message || "Failed to disable 2FA");
-  //   } finally {
-  //     setIsTwoFactorLoading(false);
-  //   }
-  // };
 
   return (
     <div className="space-y-6">
@@ -713,6 +677,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
           </form>
         </CardContent>
       </Card>
+
       {/* Two-Factor Authentication */}
       <Card>
         <CardHeader>
@@ -748,22 +713,199 @@ export default function SecurityTab({ user }: SecurityTabProps) {
                   </p>
                 </div>
               </div>
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={handleDisableTwoFactor}
-                  disabled={isTwoFactorLoading}
-                >
-                  {isTwoFactorLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Disabling...
-                    </>
+
+              {/* Disable 2FA Flow */}
+              {disableStep === "idle" ? (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={handleInitiateDisable2FA}
+                    disabled={isTwoFactorLoading}
+                  >
+                    Disable 2FA
+                  </Button>
+                </div>
+              ) : disableStep === "input" ? (
+                <div className="space-y-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800">
+                        Disable Two-Factor Authentication
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Choose your authentication method to verify and disable
+                        2FA
+                      </p>
+                    </div>
+                  </div>
+
+                  {!disableMethod ? (
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium">
+                        Select verification method:
+                      </p>
+                      <div className="flex gap-3 flex-wrap">
+                        <Button
+                          variant="outline"
+                          onClick={() => handleSelectDisableMethod("totp")}
+                          disabled={isTwoFactorLoading}
+                          className="flex items-center gap-2"
+                        >
+                          <QrCode className="h-4 w-4" />
+                          Authenticator App
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleSelectDisableMethod("email")}
+                          disabled={isTwoFactorLoading}
+                          className="flex items-center gap-2"
+                        >
+                          <Mail className="h-4 w-4" />
+                          Email OTP
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleSelectDisableMethod("sms")}
+                          disabled={isTwoFactorLoading}
+                          className="flex items-center gap-2"
+                        >
+                          <Phone className="h-4 w-4" />
+                          SMS OTP
+                        </Button>
+                      </div>
+                    </div>
                   ) : (
-                    "Disable 2FA"
+                    <form
+                      onSubmit={disableOtpForm.handleSubmit(
+                        handleDisable2FASubmit
+                      )}
+                      className="space-y-4"
+                    >
+                      <div className="space-y-2">
+                        <Label htmlFor="disableToken">
+                          {disableMethod === "totp"
+                            ? "Authenticator Code"
+                            : disableMethod === "email"
+                            ? "Email Verification Code"
+                            : "SMS Verification Code"}
+                        </Label>
+                        <Input
+                          id="disableToken"
+                          {...disableOtpForm.register("token")}
+                          placeholder="Enter 6-digit code"
+                          maxLength={6}
+                          className="text-center text-lg font-mono tracking-widest"
+                        />
+                        {disableOtpForm.formState.errors.token && (
+                          <p className="text-sm text-destructive">
+                            {disableOtpForm.formState.errors.token.message}
+                          </p>
+                        )}
+
+                        {/* Status messages for email/SMS */}
+                        {disableMethod !== "totp" && (
+                          <div className="text-sm text-muted-foreground">
+                            {disableCodeSent ? (
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                                Code sent to your{" "}
+                                {disableMethod === "email" ? "email" : "phone"}
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                                Sending verification code...
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Resend button for email/SMS only */}
+                      {disableMethod !== "totp" && disableCodeSent && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleResendDisableCode}
+                            disabled={!resendAvailable || isTwoFactorLoading}
+                            className="text-xs"
+                          >
+                            {resendTimer > 0 ? (
+                              <div className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                Resend in {resendTimer}s
+                              </div>
+                            ) : (
+                              "Resend Code"
+                            )}
+                          </Button>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleCancelDisable}
+                          disabled={isTwoFactorLoading}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          variant="destructive"
+                          disabled={
+                            isTwoFactorLoading ||
+                            !disableOtpForm.watch("token") ||
+                            disableOtpForm.watch("token").length < 6
+                          }
+                        >
+                          {isTwoFactorLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Disabling...
+                            </>
+                          ) : (
+                            "Disable 2FA"
+                          )}
+                        </Button>
+                      </div>
+                    </form>
                   )}
-                </Button>
-              </div>
+
+                  {disableMethod && (
+                    <div className="flex justify-start">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDisableMethod(null)}
+                        disabled={isTwoFactorLoading}
+                        className="text-xs"
+                      >
+                        ← Choose different method
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                    <div>
+                      <h4 className="font-medium text-blue-800">
+                        Verifying and Disabling 2FA...
+                      </h4>
+                      <p className="text-sm text-blue-700 mt-1">
+                        Please wait while we verify your code and disable
+                        two-factor authentication
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <>
@@ -1121,6 +1263,208 @@ export default function SecurityTab({ user }: SecurityTabProps) {
           )}
         </CardContent>
       </Card>
+ {/* Email Verification */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Email Verification
+            {emailVerified ? (
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-800"
+              >
+                Verified
+              </Badge>
+            ) : (
+              <Badge variant="outline">Not Verified</Badge>
+            )}
+          </CardTitle>
+          <CardDescription>
+            Verify your email address to secure your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {emailVerified ? (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <Mail className="h-5 w-5 text-green-600 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-green-800">
+                    Email Address Verified
+                  </h4>
+                  <p className="text-sm text-green-700 mt-1">
+                    Your email address is verified for enhanced security
+                  </p>
+                </div>
+              </div>
+              {/* <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={handleDisableEmailVerification}
+                  disabled={isEmailLoading}
+                >
+                  {isEmailLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Disabling...
+                    </>
+                  ) : (
+                    "Disable Email Verification"
+                  )}
+                </Button>
+              </div> */}
+            </div>
+          ) : (
+            <>
+              {!emailCodeSent ? (
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800">
+                        Send Email Verification
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        Choose to receive a verification link or code to your
+                        email
+                      </p>
+                    </div>
+                  </div>
+
+                  <form
+                    onSubmit={emailSendForm.handleSubmit(onEmailSendSubmit)}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email Address</Label>
+                      <Input
+                        id="email"
+                        {...emailSendForm.register("email")}
+                        placeholder="Enter your email address"
+                      />
+                      {emailSendForm.formState.errors.email && (
+                        <p className="text-sm text-destructive">
+                          {emailSendForm.formState.errors.email.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-4">
+                      <Button
+                        type="button"
+                        variant={
+                          emailVerificationMethod === "link"
+                            ? "default"
+                            : "outline"
+                        }
+                        onClick={() => setEmailVerificationMethod("link")}
+                        disabled={isEmailLoading}
+                      >
+                        Send Verification Link
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={
+                          emailVerificationMethod === "otp"
+                            ? "default"
+                            : "outline"
+                        }
+                        onClick={() => setEmailVerificationMethod("otp")}
+                        disabled={isEmailLoading}
+                      >
+                        Send Verification Code
+                      </Button>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Button
+                        type="submit"
+                        disabled={isEmailLoading || !emailVerificationMethod}
+                      >
+                        {isEmailLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          "Send"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              ) : (
+                <form
+                  onSubmit={emailVerificationForm.handleSubmit(
+                    onEmailVerificationSubmit
+                  )}
+                  className="space-y-4"
+                >
+                  <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-yellow-800">
+                        Verify Your Email Address
+                      </h4>
+                      <p className="text-sm text-yellow-700 mt-1">
+                        {emailVerificationMethod === "link"
+                          ? "Click the verification link sent to your email"
+                          : "Enter the 6-digit code sent to your email address"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {emailVerificationMethod === "otp" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="emailCode">Verification Code</Label>
+                      <Input
+                        id="emailCode"
+                        {...emailVerificationForm.register("emailCode")}
+                        placeholder="Enter 6-digit code"
+                        maxLength={6}
+                      />
+                      {emailVerificationForm.formState.errors.emailCode && (
+                        <p className="text-sm text-destructive">
+                          {
+                            emailVerificationForm.formState.errors.emailCode
+                              .message
+                          }
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEmailCodeSent(false);
+                        setEmailVerificationMethod(null);
+                      }}
+                      disabled={isEmailLoading}
+                    >
+                      Back
+                    </Button>
+                    {emailVerificationMethod === "otp" && (
+                      <Button type="submit" disabled={isEmailLoading}>
+                        {isEmailLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Verifying...
+                          </>
+                        ) : (
+                          "Verify Email"
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </form>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Phone Verification */}
       <Card>
@@ -1282,208 +1626,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
           )}
         </CardContent>
       </Card>
-      {/* Email Verification */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Email Verification
-            {emailVerified ? (
-              <Badge
-                variant="secondary"
-                className="bg-green-100 text-green-800"
-              >
-                Verified
-              </Badge>
-            ) : (
-              <Badge variant="outline">Not Verified</Badge>
-            )}
-          </CardTitle>
-          <CardDescription>
-            Verify your email address to secure your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {emailVerified ? (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <Mail className="h-5 w-5 text-green-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-green-800">
-                    Email Address Verified
-                  </h4>
-                  <p className="text-sm text-green-700 mt-1">
-                    Your email address is verified for enhanced security
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={handleDisableEmailVerification}
-                  disabled={isEmailLoading}
-                >
-                  {isEmailLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Disabling...
-                    </>
-                  ) : (
-                    "Disable Email Verification"
-                  )}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              {!emailCodeSent ? (
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-yellow-800">
-                        Send Email Verification
-                      </h4>
-                      <p className="text-sm text-yellow-700 mt-1">
-                        Choose to receive a verification link or code to your
-                        email
-                      </p>
-                    </div>
-                  </div>
 
-                  <form
-                    onSubmit={emailSendForm.handleSubmit(onEmailSendSubmit)}
-                    className="space-y-4"
-                  >
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        {...emailSendForm.register("email")}
-                        placeholder="Enter your email address"
-                      />
-                      {emailSendForm.formState.errors.email && (
-                        <p className="text-sm text-destructive">
-                          {emailSendForm.formState.errors.email.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex gap-4">
-                      <Button
-                        type="button"
-                        variant={
-                          emailVerificationMethod === "link"
-                            ? "default"
-                            : "outline"
-                        }
-                        onClick={() => setEmailVerificationMethod("link")}
-                        disabled={isEmailLoading}
-                      >
-                        Send Verification Link
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={
-                          emailVerificationMethod === "otp"
-                            ? "default"
-                            : "outline"
-                        }
-                        onClick={() => setEmailVerificationMethod("otp")}
-                        disabled={isEmailLoading}
-                      >
-                        Send Verification Code
-                      </Button>
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button
-                        type="submit"
-                        disabled={isEmailLoading || !emailVerificationMethod}
-                      >
-                        {isEmailLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          "Send"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              ) : (
-                <form
-                  onSubmit={emailVerificationForm.handleSubmit(
-                    onEmailVerificationSubmit
-                  )}
-                  className="space-y-4"
-                >
-                  <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
-                    <div>
-                      <h4 className="font-medium text-yellow-800">
-                        Verify Your Email Address
-                      </h4>
-                      <p className="text-sm text-yellow-700 mt-1">
-                        {emailVerificationMethod === "link"
-                          ? "Click the verification link sent to your email"
-                          : "Enter the 6-digit code sent to your email address"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {emailVerificationMethod === "otp" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="emailCode">Verification Code</Label>
-                      <Input
-                        id="emailCode"
-                        {...emailVerificationForm.register("emailCode")}
-                        placeholder="Enter 6-digit code"
-                        maxLength={6}
-                      />
-                      {emailVerificationForm.formState.errors.emailCode && (
-                        <p className="text-sm text-destructive">
-                          {
-                            emailVerificationForm.formState.errors.emailCode
-                              .message
-                          }
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEmailCodeSent(false);
-                        setEmailVerificationMethod(null);
-                      }}
-                      disabled={isEmailLoading}
-                    >
-                      Back
-                    </Button>
-                    {emailVerificationMethod === "otp" && (
-                      <Button type="submit" disabled={isEmailLoading}>
-                        {isEmailLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Verifying...
-                          </>
-                        ) : (
-                          "Verify Email"
-                        )}
-                      </Button>
-                    )}
-                  </div>
-                </form>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+     
       {/* Login History */}
       <Card>
         <CardHeader>

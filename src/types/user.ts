@@ -47,6 +47,41 @@ export interface User {
   knownDevices: Device[]
   loginHistory: LoginHistory[]
   securityEvents: SecurityEvent[]
+  /** OTP Settings */
+  otpSettings: {
+    enabled: boolean
+    preferredMethod: 'totp' | 'email' | 'sms'
+    allowFallback: boolean
+    requireForLogin: boolean
+    requireForSensitiveOps: boolean
+  }
+
+  /** Current OTP Session */
+  currentOTP: {
+    code: string | null
+    hashedCode: string | null
+    type: 'email' | 'sms' | 'backup' | null
+    purpose: 'login' | 'reset' | 'verification' | 'sensitive_op' | null
+    expiresAt: string | null
+    attempts: number
+    maxAttempts: number
+    lastSent: string | null
+    verified: boolean
+  }
+
+  /** TOTP / 2FA Configuration */
+  twoFactorAuth: {
+    enabled: boolean
+    secret: string | null
+    backupCodes: {
+      code: string
+      used: boolean
+      usedAt: string | null
+      createdAt: string
+    }[]
+    setupCompleted: boolean
+    lastUsed: string | null
+  }
 }
 
 export interface Address {
