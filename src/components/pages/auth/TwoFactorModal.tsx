@@ -1,212 +1,271 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { Loader2, X, Shield, RefreshCw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  Shield,
+  RefreshCw,
+  Smartphone,
+  Mail,
+  Clock,
+} from "lucide-react";
 
-interface TwoFactorModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface OtpVerificationModalProps {
   email: string;
-  tempUserId: string;
-  otpType: "email" | "sms" | "authenticator";
-  onSuccess: () => void | Promise<void>;
+  otpType: string;
+  sessionToken: string;
+  onSuccess: () => void;
 }
 
-export default function TwoFactorModal({
-  isOpen,
-  onClose,
+export function OtpVerificationModal({
   email,
-  tempUserId,
   otpType,
+  sessionToken,
   onSuccess,
-}: TwoFactorModalProps) {
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+}: OtpVerificationModalProps) {
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [error, setError] = useState("");
-  const [countdown, setCountdown] = useState(0);
-  const inputsRef = useRef<Array<HTMLInputElement | null>>([]);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Focus first input when modal opens
   useEffect(() => {
-    if (isOpen) inputsRef.current[0]?.focus();
-  }, [isOpen]);
-
-  // Countdown timer for resend
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    if (resendCooldown > 0) {
+      const timer = setTimeout(
+        () => setResendCooldown(resendCooldown - 1),
+        1000
+      );
       return () => clearTimeout(timer);
     }
-  }, [countdown]);
+  }, [resendCooldown]);
 
-  const handleChange = (idx: number, value: string) => {
-    if (value.length > 1) return;
-    const newOtp = [...otp];
-    newOtp[idx] = value;
-    setOtp(newOtp);
-    setError("");
-    if (value && idx < 5) {
-      inputsRef.current[idx + 1]?.focus();
+  const handleOtpChange = (value: string, index: number) => {
+    const newOtp = otp.split("");
+    newOtp[index] = value;
+    const updatedOtp = newOtp.join("").slice(0, 6);
+    setOtp(updatedOtp);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleKey = (idx: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otp[idx] && idx > 0) {
-      inputsRef.current[idx - 1]?.focus();
-    }
-    if (e.key === "Enter") {
-      verifyOtp();
+  const handleKeyDown = (e: React.KeyboardEvent, index: number) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    const arr = text.split("").concat(Array(6 - text.length).fill(""));
-    setOtp(arr.slice(0, 6));
-    const focusIndex = text.length >= 6 ? 5 : text.length;
-    inputsRef.current[focusIndex]?.focus();
-  };
+    if (otp.length !== 6) return;
 
-  const verifyOtp = async () => {
-    const code = otp.join("");
-    if (code.length < 6) {
-      setError("Please enter the 6-digit code.");
-      return;
-    }
-    setIsSubmitting(true);
+    setIsVerifying(true);
     setError("");
+
     try {
-      const res = await signIn("credentials", {
-        redirect: false,
+      const result = await signIn("credentials", {
         email,
-        tempUserId,
-        otp: code,
+        otp,
+        step: "verify-otp",
+        sessionToken,
+        redirect: false,
       });
-      if (res?.error) {
-        setError("Invalid code. Please try again.");
-        setOtp(["", "", "", "", "", ""]);
-        inputsRef.current[0]?.focus();
-      } else {
-        await onSuccess();
-        onClose();
+
+      if (result?.error) {
+        setError(result.error);
+        setOtp("");
+        inputRefs.current[0]?.focus();
+      } else if (result?.ok) {
+        onSuccess();
       }
-    } catch {
-      setError("Verification failed. Please try again.");
+    } catch (error: any) {
+      setError(error.message || "OTP verification failed");
+      setOtp("");
+      inputRefs.current[0]?.focus();
     } finally {
-      setIsSubmitting(false);
+      setIsVerifying(false);
     }
   };
 
-  const resendOtp = async () => {
-    if (countdown > 0) return;
-    setIsSubmitting(true);
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || otpType === "totp") return;
+
+    setIsResending(true);
     setError("");
+
     try {
-      const res = await fetch("/api/auth/resend-otp", {
+      const response = await fetch("/api/auth/resend-otp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tempUserId, otpType }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          sessionToken,
+        }),
       });
-      if (res.ok) {
-        setCountdown(60);
-        setOtp(["", "", "", "", "", ""]);
-        inputsRef.current[0]?.focus();
-      } else {
-        setError("Failed to resend code. Please try again.");
+
+      if (!response.ok) {
+        throw new Error("Failed to resend OTP");
       }
-    } catch {
-      setError("Failed to resend code. Please try again.");
+
+      setResendCooldown(30);
+    } catch (error: any) {
+      setError(error.message || "Failed to resend OTP");
     } finally {
-      setIsSubmitting(false);
+      setIsResending(false);
     }
   };
 
-  if (!isOpen) return null;
+  const getOtpTypeInfo = () => {
+    switch (otpType) {
+      case "sms":
+        return {
+          icon: <Smartphone className="w-4 h-4" />,
+          label: "SMS",
+          description: "Check your phone for the verification code",
+          color: "bg-green-100 text-green-800 border-green-200",
+        };
+      case "email":
+        return {
+          icon: <Mail className="w-4 h-4" />,
+          label: "Email",
+          description: "Check your email for the verification code",
+          color: "bg-blue-100 text-blue-800 border-blue-200",
+        };
+      case "totp":
+        return {
+          icon: <Clock className="w-4 h-4" />,
+          label: "Authenticator App",
+          description: "Enter the code from your authenticator app",
+          color: "bg-purple-100 text-purple-800 border-purple-200",
+        };
+      default:
+        return {
+          icon: <Shield className="w-4 h-4" />,
+          label: "OTP",
+          description: "Enter the verification code",
+          color: "bg-gray-100 text-gray-800 border-gray-200",
+        };
+    }
+  };
+
+  const otpInfo = getOtpTypeInfo();
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <Card className="max-w-md w-full shadow-xl">
-        <CardHeader className="flex justify-between items-center pb-4">
-          <div className="flex items-center gap-2">
-            <Shield className="text-blue-600 w-5 h-5" />
-            <CardTitle>Two-Factor Authentication</CardTitle>
-          </div>
-          <button onClick={onClose} disabled={isSubmitting}>
-            <X className="w-5 h-5 text-gray-500 hover:text-gray-700" />
-          </button>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <p className="text-gray-600">
-            {otpType === "authenticator"
-              ? "Enter the 6-digit code from your authenticator app."
-              : `We sent a 6-digit code to ${
-                  otpType === "email" ? email : "your phone number"
-                }.`}
-          </p>
-
-          <div className="flex justify-center gap-2">
-            {otp.map((digit, idx) => (
-              <Input
-                key={idx}
-                ref={(el: HTMLInputElement | null): void => {
-                  inputsRef.current[idx] = el;
-                }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(idx, e.target.value)}
-                onKeyDown={(e) => handleKey(idx, e)}
-                onPaste={idx === 0 ? handlePaste : undefined}
-                disabled={isSubmitting}
-                className="w-12 h-12 text-center text-xl font-medium"
-              />
-            ))}
-          </div>
-
-          {error && <p className="text-sm text-red-600 text-center">{error}</p>}
-
-          <Button
-            onClick={verifyOtp}
-            disabled={isSubmitting || otp.join("").length < 6}
-            className="w-full h-12 flex items-center justify-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Verifying...
-              </>
-            ) : (
-              "Verify"
-            )}
-          </Button>
-
-          {otpType !== "authenticator" && (
-            <div className="text-center">
-              <button
-                onClick={resendOtp}
-                disabled={isSubmitting || countdown > 0}
-                className="text-sm text-blue-600 hover:text-blue-700"
-              >
-                {countdown > 0 ? `Resend in ${countdown}s` : "Resend Code"}
-              </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="w-full max-w-md">
+        <Card className="bg-white shadow-2xl border-0 animate-in zoom-in duration-200">
+          <CardHeader className="text-center pb-6">
+            <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-6 h-6 text-white" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <CardTitle className="text-xl font-bold text-gray-900">
+              Two-Factor Authentication
+            </CardTitle>
+            <CardDescription className="text-gray-600">
+              Enter the verification code to complete your login
+            </CardDescription>
+            <div className="flex items-center justify-center gap-2 mt-4">
+              <Badge className={otpInfo.color}>
+                {otpInfo.icon}
+                <span className="ml-1">{otpInfo.label}</span>
+              </Badge>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">{otpInfo.description}</p>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <Alert className="border-red-200 bg-red-50 text-red-800">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex justify-center gap-2">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <Input
+                      key={index}
+                      ref={(el: HTMLInputElement | null): void => {
+                        inputRefs.current[index] = el;
+                      }}
+                      type="text"
+                      maxLength={1}
+                      value={otp[index] || ""}
+                      onChange={(e) => handleOtpChange(e.target.value, index)}
+                      onKeyDown={(e) => handleKeyDown(e, index)}
+                      className="w-12 h-12 text-center text-lg font-bold border-2 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg"
+                      disabled={isVerifying}
+                      autoFocus={index === 0}
+                    />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-500 text-center">
+                  Enter the 6-digit verification code
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg transition-all duration-200"
+                disabled={isVerifying || otp.length !== 6}
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify Code"
+                )}
+              </Button>
+
+              {otpType !== "totp" && (
+                <div className="text-center">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleResendOtp}
+                    disabled={isResending || resendCooldown > 0}
+                    className="text-indigo-600 hover:text-indigo-700 font-medium"
+                  >
+                    {isResending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Resending...
+                      </>
+                    ) : resendCooldown > 0 ? (
+                      `Resend code in ${resendCooldown}s`
+                    ) : (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Resend Code
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

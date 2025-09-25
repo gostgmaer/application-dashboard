@@ -37,16 +37,18 @@ import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { loginFailure, loginStart } from "@/store/slices/authSlice";
-import TwoFactorModal from "./TwoFactorModal";
+import { OtpVerificationModal } from "./TwoFactorModal";
 
 export default function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+    const [showOtpModal, setShowOtpModal] = useState(false)
   const [twoFAData, setTwoFAData] = useState<{
     tempUserId: string;
     otpType: "email" | "sms" | "authenticator";
     email: string;
+    tempToken : string;
   } | null>(null);
 
   const { toast } = useToast();
@@ -73,10 +75,12 @@ export default function LoginForm() {
         // If the backend sent a JSON error indicating 2FA
         if (
           res.error?.startsWith("{") &&
-          res.error.includes("requiresTwoFactor")
+          res.error.includes("requiresMFA")
         ) {
+
           const err = JSON.parse(res.error);
           setTwoFAData({
+            tempToken: err.tempToken,
             tempUserId: err.tempUserId,
             otpType: err.otpType,
             email: data.email,
@@ -88,6 +92,15 @@ export default function LoginForm() {
         throw new Error(res.error || "Login failed");
       }
 
+    //     const response = await fetch('/api/auth/session')
+    //   const session = await response.json()
+    // if (session?.mfaRequired) {
+    //     setOtpType(session.otpType)
+    //     setSessionToken(session.sessionToken)
+    //     setShowOtpModal(true)
+    //   } else if (result?.ok) {
+    //     router.push('/dashboard')
+    //   }
       // Successful login without 2FA
       if (res.url) {
         const parsedUrl = new URL(res.url);
@@ -124,6 +137,11 @@ export default function LoginForm() {
     await getSession();
     router.push("/");
   };
+
+    const handleOtpSuccess = () => {
+    setShowOtpModal(false)
+    router.push('/dashboard')
+  }
 
   const isFormValid =
     form.formState.isValid && Object.keys(form.formState.errors).length === 0;
@@ -296,16 +314,14 @@ export default function LoginForm() {
         </Card>
       </div>
 
-      {twoFAData && (
-        <TwoFactorModal
-          isOpen={true}
-          onClose={() => setTwoFAData(null)}
-          email={twoFAData.email}
-          tempUserId={twoFAData.tempUserId}
+     {/* {showOtpModal && (
+        <OtpVerificationModal
+          email={twoFAData.email||null}
           otpType={twoFAData.otpType}
-          onSuccess={handleTwoFASuccess}
+          sessionToken={twoFAData.sessionToken}
+          onSuccess={.twoFADatahandleOtpSuccess}
         />
-      )}
+      )} */}
     </div>
   );
 }

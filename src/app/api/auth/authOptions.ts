@@ -63,8 +63,8 @@ interface CustomUser extends User {
 
 // Custom error for 2FA requirement
 export class TwoFactorRequiredError extends Error {
-  constructor(public tempUserId: string, public email: string, public requiresTwoFactor: boolean = true, public otpType: string = "totp") {
-    super(JSON.stringify({ tempUserId, email, requiresTwoFactor, otpType }));
+  constructor(public tempUserId: string, public email: string, public requiresMFA: boolean = true, public tempToken: string = "", public otpType: string = "totp") {
+    super(JSON.stringify({ tempUserId, email, requiresMFA,tempToken, otpType }));
     this.name = "TwoFactorRequiredError";
   }
 }
@@ -121,10 +121,10 @@ export const authOptions: AuthOptions = {
         if (!res.success) {
           throw new Error(res.message || "Invalid credentials");
         }
-        if (res.data?.requiresTwoFactor === true) {
+        if (res.data?.requiresMFA === true) {
           throw new TwoFactorRequiredError(
             res.data.tempUserId || res.data.userId,
-            credentials?.email || "", res.data?.requiresTwoFactor, res.data?.otpType
+            credentials?.email || "", res.data?.requiresMFA, res.data.tempToken, res.data?.otpType
           );
         }
         const { user, tokens } = res.data;

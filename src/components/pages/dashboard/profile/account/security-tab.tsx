@@ -67,13 +67,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   console.log(user);
 
   // Disable 2FA states
-  const [disableStep, setDisableStep] = useState<
-    "idle" | "input" | "verifying"
-  >("idle");
-  const [disableMethod, setDisableMethod] = useState<
-    "totp" | "email" | "sms" | null
-  >(null);
-  const [disableCodeSent, setDisableCodeSent] = useState(false);
+  const [isDisabling2FA, setIsDisabling2FA] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
   const [resendAvailable, setResendAvailable] = useState(false);
 
@@ -103,6 +97,33 @@ export default function SecurityTab({ user }: SecurityTabProps) {
     "totp" | "email" | "sms" | null
   >(null);
   const [twoFactorCodeSent, setTwoFactorCodeSent] = useState(false);
+
+  // Get user's current 2FA method (assuming this info is available in user object)
+  // You may need to adjust this based on your actual user data structure
+  const getCurrentTwoFactorMethod = (): "totp" | "email" | "sms" => {
+    // This should come from user data - adjust according to your user object structure
+    return user.otpSettings?.method || "totp";
+  };
+
+  // Utility functions for masking
+  const maskEmail = (email: string): string => {
+    if (!email || email.length < 8) return email;
+    const [localPart, domain] = email.split("@");
+    if (localPart.length <= 7) return email;
+    
+    const masked = localPart.slice(0, 3) + "*".repeat(localPart.length - 7) + localPart.slice(-4);
+    return `${masked}@${domain}`;
+  };
+
+  const maskPhone = (phone: string): string => {
+    if (!phone || phone.length < 8) return phone;
+    // Remove any formatting and keep only digits
+    const digitsOnly = phone.replace(/\D/g, "");
+    if (digitsOnly.length <= 7) return phone;
+    
+    const masked = digitsOnly.slice(0, 3) + "*".repeat(digitsOnly.length - 7) + digitsOnly.slice(-4);
+    return masked;
+  };
 
   // Timer effect for resend functionality
   useEffect(() => {
@@ -319,24 +340,17 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   };
 
   // Enhanced disable 2FA functionality
-  const handleInitiateDisable2FA = () => {
-    // Reset all disable states
-    setDisableStep("input");
-    setDisableMethod(null);
-    setDisableCodeSent(false);
+  const handleInitiateDisable2FA = async () => {
+    setIsDisabling2FA(true);
     setResendTimer(0);
     setResendAvailable(false);
     disableOtpForm.reset();
-  };
 
-  const handleSelectDisableMethod = async (
-    method: "totp" | "email" | "sms"
-  ) => {
-    setDisableMethod(method);
-
-    // For email/SMS, automatically send code
-    if (method === "email" || method === "sms") {
-      await sendDisableVerificationCode(method);
+    const currentMethod = getCurrentTwoFactorMethod();
+    
+    // If method is email or SMS, automatically send verification code
+    if (currentMethod === "email" || currentMethod === "sms") {
+      await sendDisableVerificationCode(currentMethod);
     }
   };
 
@@ -349,15 +363,16 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       // Simulate sending code
       console.log(`Disable 2FA verification code sent via ${method}`);
 
-      setDisableCodeSent(true);
       setResendTimer(60); // 1 minute timer
       setResendAvailable(false);
 
+      const targetInfo = method === "email" 
+        ? maskEmail(user.email || "") 
+        : maskPhone(user.phoneNumber || "");
+
       toast({
-        title: `Verification code sent via ${method}`,
-        description: `Check your ${
-          method === "email" ? "email" : "SMS"
-        } for the code`,
+        title: `Verification code sent`,
+        description: `Code sent to your ${method === "email" ? "email" : "phone"}: ${targetInfo}`,
         duration: 3000,
       });
     } catch (error) {
@@ -372,11 +387,9 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   };
 
   const handleResendDisableCode = async () => {
-    if (
-      disableMethod &&
-      (disableMethod === "email" || disableMethod === "sms")
-    ) {
-      await sendDisableVerificationCode(disableMethod);
+    const currentMethod = getCurrentTwoFactorMethod();
+    if (currentMethod === "email" || currentMethod === "sms") {
+      await sendDisableVerificationCode(currentMethod);
     }
   };
 
@@ -390,23 +403,18 @@ export default function SecurityTab({ user }: SecurityTabProps) {
       return;
     }
 
-    setDisableStep("verifying");
     setIsTwoFactorLoading(true);
 
     try {
       // Mock API call to verify and disable 2FA
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Simulate successful verification and disable
-      console.log(
-        `Disabling 2FA with code: ${data.token} using method: ${disableMethod}`
-      );
+      const currentMethod = getCurrentTwoFactorMethod();
+      console.log(`Disabling 2FA with code: ${data.token} using method: ${currentMethod}`);
 
       // Reset all states
       setTwoFactorEnabled(false);
-      setDisableStep("idle");
-      setDisableMethod(null);
-      setDisableCodeSent(false);
+      setIsDisabling2FA(false);
       setResendTimer(0);
       setResendAvailable(false);
       disableOtpForm.reset();
@@ -419,23 +427,34 @@ export default function SecurityTab({ user }: SecurityTabProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description:
-          "Failed to disable 2FA. Please check your code and try again.",
+        description: "Failed to disable 2FA. Please check your code and try again.",
         duration: 3000,
       });
-      setDisableStep("input");
     } finally {
       setIsTwoFactorLoading(false);
     }
   };
 
   const handleCancelDisable = () => {
-    setDisableStep("idle");
-    setDisableMethod(null);
-    setDisableCodeSent(false);
+    setIsDisabling2FA(false);
     setResendTimer(0);
     setResendAvailable(false);
     disableOtpForm.reset();
+  };
+
+  const getDisableLabelText = () => {
+    const currentMethod = getCurrentTwoFactorMethod();
+    
+    switch (currentMethod) {
+      case "totp":
+        return "Enter the 6-digit code from your authenticator app";
+      case "email":
+        return `Enter the 6-digit code sent to ${maskEmail(user.email || "")}`;
+      case "sms":
+        return `Enter the 6-digit code sent to ${maskPhone(user.phoneNumber || "")}`;
+      default:
+        return "Enter 6-digit verification code";
+    }
   };
 
   const onPhoneSendSubmit = async (data: { phoneNumber: string }) => {
@@ -484,7 +503,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
   const onEmailSendSubmit = async (data: { email: string }) => {
     setIsEmailLoading(true);
     try {
-   const res =  authService.sendEmailVerification(session?.accessToken)
+      const res = authService.sendEmailVerification(session?.accessToken);
       console.log(
         `${
           emailVerificationMethod === "link"
@@ -714,8 +733,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
                 </div>
               </div>
 
-              {/* Disable 2FA Flow */}
-              {disableStep === "idle" ? (
+              {/* Enhanced Disable 2FA Flow */}
+              {!isDisabling2FA ? (
                 <div className="flex justify-end">
                   <Button
                     variant="outline"
@@ -725,7 +744,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
                     Disable 2FA
                   </Button>
                 </div>
-              ) : disableStep === "input" ? (
+              ) : (
                 <div className="space-y-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
@@ -734,176 +753,96 @@ export default function SecurityTab({ user }: SecurityTabProps) {
                         Disable Two-Factor Authentication
                       </h4>
                       <p className="text-sm text-yellow-700 mt-1">
-                        Choose your authentication method to verify and disable
-                        2FA
+                        Enter your verification code to disable 2FA
                       </p>
                     </div>
                   </div>
 
-                  {!disableMethod ? (
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium">
-                        Select verification method:
+                  <form
+                    onSubmit={disableOtpForm.handleSubmit(handleDisable2FASubmit)}
+                    className="space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="disableToken">Verification Code</Label>
+                      <p className="text-sm text-muted-foreground">
+                        {getDisableLabelText()}
                       </p>
-                      <div className="flex gap-3 flex-wrap">
-                        <Button
-                          variant="outline"
-                          onClick={() => handleSelectDisableMethod("totp")}
-                          disabled={isTwoFactorLoading}
-                          className="flex items-center gap-2"
-                        >
-                          <QrCode className="h-4 w-4" />
-                          Authenticator App
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleSelectDisableMethod("email")}
-                          disabled={isTwoFactorLoading}
-                          className="flex items-center gap-2"
-                        >
-                          <Mail className="h-4 w-4" />
-                          Email OTP
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleSelectDisableMethod("sms")}
-                          disabled={isTwoFactorLoading}
-                          className="flex items-center gap-2"
-                        >
-                          <Phone className="h-4 w-4" />
-                          SMS OTP
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <form
-                      onSubmit={disableOtpForm.handleSubmit(
-                        handleDisable2FASubmit
+                      <Input
+                        id="disableToken"
+                        {...disableOtpForm.register("token")}
+                        placeholder="Enter 6-digit code"
+                        maxLength={6}
+                        className="text-center text-lg font-mono tracking-widest"
+                      />
+                      {disableOtpForm.formState.errors.token && (
+                        <p className="text-sm text-destructive">
+                          {disableOtpForm.formState.errors.token.message}
+                        </p>
                       )}
-                      className="space-y-4"
-                    >
-                      <div className="space-y-2">
-                        <Label htmlFor="disableToken">
-                          {disableMethod === "totp"
-                            ? "Authenticator Code"
-                            : disableMethod === "email"
-                            ? "Email Verification Code"
-                            : "SMS Verification Code"}
-                        </Label>
-                        <Input
-                          id="disableToken"
-                          {...disableOtpForm.register("token")}
-                          placeholder="Enter 6-digit code"
-                          maxLength={6}
-                          className="text-center text-lg font-mono tracking-widest"
-                        />
-                        {disableOtpForm.formState.errors.token && (
-                          <p className="text-sm text-destructive">
-                            {disableOtpForm.formState.errors.token.message}
-                          </p>
-                        )}
 
-                        {/* Status messages for email/SMS */}
-                        {disableMethod !== "totp" && (
-                          <div className="text-sm text-muted-foreground">
-                            {disableCodeSent ? (
-                              <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                                Code sent to your{" "}
-                                {disableMethod === "email" ? "email" : "phone"}
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <Loader2 className="h-3 w-3 animate-spin" />
-                                Sending verification code...
-                              </div>
-                            )}
+                      {/* Status message for email/SMS codes */}
+                      {getCurrentTwoFactorMethod() !== "totp" && resendTimer === 0 && (
+                        <div className="text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                            Verification code sent
                           </div>
-                        )}
-                      </div>
-
-                      {/* Resend button for email/SMS only */}
-                      {disableMethod !== "totp" && disableCodeSent && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleResendDisableCode}
-                            disabled={!resendAvailable || isTwoFactorLoading}
-                            className="text-xs"
-                          >
-                            {resendTimer > 0 ? (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                Resend in {resendTimer}s
-                              </div>
-                            ) : (
-                              "Resend Code"
-                            )}
-                          </Button>
                         </div>
                       )}
+                    </div>
 
-                      <div className="flex gap-2 pt-2">
+                    {/* Resend button for email/SMS only */}
+                    {getCurrentTwoFactorMethod() !== "totp" && (
+                      <div className="flex items-center gap-2">
                         <Button
                           type="button"
-                          variant="outline"
-                          onClick={handleCancelDisable}
-                          disabled={isTwoFactorLoading}
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleResendDisableCode}
+                          disabled={!resendAvailable || isTwoFactorLoading}
+                          className="text-xs"
                         >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          variant="destructive"
-                          disabled={
-                            isTwoFactorLoading ||
-                            !disableOtpForm.watch("token") ||
-                            disableOtpForm.watch("token").length < 6
-                          }
-                        >
-                          {isTwoFactorLoading ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Disabling...
-                            </>
+                          {resendTimer > 0 ? (
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              Resend in {resendTimer}s
+                            </div>
                           ) : (
-                            "Disable 2FA"
+                            "Resend Code"
                           )}
                         </Button>
                       </div>
-                    </form>
-                  )}
+                    )}
 
-                  {disableMethod && (
-                    <div className="flex justify-start">
+                    <div className="flex gap-2 pt-2">
                       <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDisableMethod(null)}
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancelDisable}
                         disabled={isTwoFactorLoading}
-                        className="text-xs"
                       >
-                        ← Choose different method
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="destructive"
+                        disabled={
+                          isTwoFactorLoading ||
+                          !disableOtpForm.watch("token") ||
+                          disableOtpForm.watch("token").length < 6
+                        }
+                      >
+                        {isTwoFactorLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Disabling...
+                          </>
+                        ) : (
+                          "Disable 2FA"
+                        )}
                       </Button>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
-                    <div>
-                      <h4 className="font-medium text-blue-800">
-                        Verifying and Disabling 2FA...
-                      </h4>
-                      <p className="text-sm text-blue-700 mt-1">
-                        Please wait while we verify your code and disable
-                        two-factor authentication
-                      </p>
-                    </div>
-                  </div>
+                  </form>
                 </div>
               )}
             </div>
@@ -1263,7 +1202,8 @@ export default function SecurityTab({ user }: SecurityTabProps) {
           )}
         </CardContent>
       </Card>
- {/* Email Verification */}
+
+      {/* Email Verification */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1298,22 +1238,6 @@ export default function SecurityTab({ user }: SecurityTabProps) {
                   </p>
                 </div>
               </div>
-              {/* <div className="flex justify-end">
-                <Button
-                  variant="outline"
-                  onClick={handleDisableEmailVerification}
-                  disabled={isEmailLoading}
-                >
-                  {isEmailLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Disabling...
-                    </>
-                  ) : (
-                    "Disable Email Verification"
-                  )}
-                </Button>
-              </div> */}
             </div>
           ) : (
             <>
@@ -1627,7 +1551,6 @@ export default function SecurityTab({ user }: SecurityTabProps) {
         </CardContent>
       </Card>
 
-     
       {/* Login History */}
       <Card>
         <CardHeader>
