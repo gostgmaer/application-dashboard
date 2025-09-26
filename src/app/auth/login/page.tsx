@@ -108,6 +108,7 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+      console.log(data);
 
       if (!data.success) {
         // Handle specific error cases
@@ -161,20 +162,31 @@ export default function LoginPage() {
         return;
       }
 
-      // Update the session with 2FA verified status
-      await fetch("/api/auth/session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          "2fa_verified": true,
-          ...(data.tokens && {
-            access_token: data.tokens.access_token,
-            refresh_token: data.tokens.refresh_token,
-          }),
-        }),
+      await signIn("credentials", {
+        redirect: false,
+        otp: "", // optional depending on your backend needs
+        tempUserId: "", // your stored temp token if needed
+        accessToken: data.tokens.tokens.accessToken,
+        refreshToken: data.tokens.tokens.refreshToken,
+        accessTokenExpires: Date.parse(
+          data.tokens.tokens?.accessTokenExpiresAt
+        ),
+        "2fa_verified": true,
       });
+      // // Update the session with 2FA verified status
+      // await fetch("/api/auth/session", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     "2fa_verified": true,
+      //     ...(data.tokens && {
+      //       access_token: data.tokens.access_token,
+      //       refresh_token: data.tokens.refresh_token,
+      //     }),
+      //   }),
+      // });
 
       // Close modal and redirect
       setShowOTPModal(false);

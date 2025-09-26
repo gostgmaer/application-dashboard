@@ -53,21 +53,29 @@ interface CustomToken extends JWT {
 
 interface CustomUser extends User {
   accessToken?: string;
-  tempToken?: string,
+  tempToken?: string;
   refreshToken?: string;
   id_token?: string;
   token_type?: string;
   accessTokenExpires?: number;
   role?: string;
-  otp_method?: string,
+  otp_method?: string;
   "2fa_required"?: boolean;
   "2fa_verified"?: boolean;
 }
 
 // Custom error for 2FA requirement
 export class TwoFactorRequiredError extends Error {
-  constructor(public tempUserId: string, public email: string, public requiresMFA: boolean = true, public tempToken: string = "", public otpType: string = "totp") {
-    super(JSON.stringify({ tempUserId, email, requiresMFA, tempToken, otpType }));
+  constructor(
+    public tempUserId: string,
+    public email: string,
+    public requiresMFA: boolean = true,
+    public tempToken: string = "",
+    public otpType: string = "totp"
+  ) {
+    super(
+      JSON.stringify({ tempUserId, email, requiresMFA, tempToken, otpType })
+    );
     this.name = "TwoFactorRequiredError";
   }
 }
@@ -110,42 +118,50 @@ export const authOptions: AuthOptions = {
         tempUserId: { label: "Temp User ID", type: "hidden" },
       },
       async authorize(credentials) {
-        const payload = {
-          identifier: credentials?.email,
-          password: credentials?.password,
-          otp: credentials?.otp,
-          tempUserId: credentials?.tempUserId,
-        };
+        try {
+          const payload = {
+            identifier: credentials?.email,
+            password: credentials?.password,
+            otp: credentials?.otp,
+            tempUserId: credentials?.tempUserId,
+          };
 
-        const res = await authService.login(payload);
-        if (!res) {
-          throw new Error("No response from login service");
+          const res = await authService.login(payload);
+          if (!res) {
+            throw new Error("No response from login service");
+          }
+          if (!res.success) {
+            throw new Error(res.message || "Invalid credentials");
+          }
+          // if (res.data?.requiresMFA === true) {
+          //   throw new TwoFactorRequiredError(
+          //     res.data.tempUserId || res.data.userId,
+          //     credentials?.email || "", res.data?.requiresMFA, res.data.tempToken, res.data?.otpType
+          //   );
+          // }
+          const { user, tokens } = res.data;
+          const { data } = res;
+          return {
+            id: user.id,
+            name: user.fullName ?? user.username,
+            email: user.email,
+            otp_method: data.otp_method,
+            tempToken: data.tempToken,
+            image: user.image,
+            role: user?.role,
+            accessToken: tokens?.accessToken,
+            refreshToken: tokens?.refreshToken,
+            token_type: "access",
+            accessTokenExpires: Date.parse(tokens?.accessTokenExpiresAt),
+            "2fa_required": data?.["2fa_required"],
+            "2fa_verified": data?.["2fa_verified"],
+          };
+        } catch (error) {
+          console.error("Authorize error:", error);
+          // Optionally throw here or just return null to reject sign-in
+          throw error;
+          // or return null;
         }
-        if (!res.success) {
-          throw new Error(res.message || "Invalid credentials");
-        }
-        // if (res.data?.requiresMFA === true) {
-        //   throw new TwoFactorRequiredError(
-        //     res.data.tempUserId || res.data.userId,
-        //     credentials?.email || "", res.data?.requiresMFA, res.data.tempToken, res.data?.otpType
-        //   );
-        // }
-        const { user, tokens } = res.data;
-        return {
-          id: user.id,
-          name: user.fullName ?? user.username,
-          email: user.email,
-          otp_method: user.otp_method,
-          tempToken: user.tempToken,
-          image: user.image,
-          role: user.role,
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          token_type: "access",
-          accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt),
-          "2fa_required": user.requiresMFA,
-          "2fa_verified": user["2fa_verified"],
-        };
       },
     }),
     GitHubProvider({
@@ -237,24 +253,24 @@ export const authOptions: AuthOptions = {
 
     async jwt({ token, user, account, profile, trigger, session }) {
       const customToken = token as CustomToken;
+
       if (user) {
         const customUser = user as CustomUser;
         customToken.accessToken = customUser.accessToken;
         customToken.refreshToken = customUser.refreshToken;
-        customToken.id_token = customUser.id_token;
         customToken.token_type = customUser.token_type;
         customToken.accessTokenExpires = customUser.accessTokenExpires;
         customToken.role = customUser.role;
         customToken.sub = customUser.id;
-        //  tempToken: user.tempToken,
         customToken["tempToken"] = customUser["tempToken"];
         customToken["2fa_required"] = customUser["2fa_required"];
         customToken["otp_method"] = customUser["otp_method"];
-        customToken['2fa_verified'] = customToken['2fa_verified'];
-
+        customToken["2fa_verified"] = customToken["2fa_verified"];
         // Update session trigger (used after OTP verification)
-        if (trigger === 'update' && session) {
-          token['2fa_verified'] = session['2fa_verified'];
+        if (trigger === "update" && session) {
+          console.log(trigger, session, token);
+
+          token["2fa_verified"] = session["2fa_verified"];
           if (session.access_token) {
             token.accessToken = session.access_token;
           }
@@ -263,12 +279,11 @@ export const authOptions: AuthOptions = {
           }
         }
 
-
         try {
           const response = await authService.getUserPermissions(
             customToken.accessToken
           );
-          console.log(response);
+          // console.log(response);
 
           if (response.data) {
             customToken.permissions = response.data.permissions;
@@ -298,9 +313,9 @@ export const authOptions: AuthOptions = {
       session: Session;
       token: CustomToken;
     }) {
+      // console.log(session,token);
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
-      session.id_token = token.id_token;
       session.token_type = token.token_type;
       session.role = token.role;
       session.user = {
@@ -330,5 +345,5 @@ export const authOptions: AuthOptions = {
     logo: "/vercel.svg",
   },
 
-  debug: process.env.NODE_ENV === "development",
+  debug: true,
 };

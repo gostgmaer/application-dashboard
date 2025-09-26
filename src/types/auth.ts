@@ -1,3 +1,4 @@
+
 export interface LoginResponse {
   success: boolean;
   message: string;
@@ -26,6 +27,8 @@ export interface OTPVerifyResponse {
     access_token: string;
     refresh_token: string;
   };
+  "2fa_verified": boolean;
+  "2fa_required": boolean;
   error_code?: 'INVALID_OTP' | 'EXPIRED_OTP' | 'MAX_ATTEMPTS_EXCEEDED' | 'RATE_LIMITED' | 'SESSION_EXPIRED';
   remaining_attempts?: number;
   lockout_until?: string;

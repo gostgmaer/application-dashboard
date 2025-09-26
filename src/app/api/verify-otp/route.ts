@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
                 {
                     success: true,
                     message: 'OTP verified successfully',
-                    tokens: data.tokens,
+                    tokens: data,
                 }
             );
 

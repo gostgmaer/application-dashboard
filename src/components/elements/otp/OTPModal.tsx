@@ -48,6 +48,23 @@ export function OTPModal({
   lockoutUntil,
   sessionExpiry,
 }: OTPModalProps) {
+
+
+
+  // console.log(isOpen,
+  // onClose,
+  // onVerify,
+  // onResend,
+  // method,
+  // email,
+  // phone,
+  // isLoading = false,
+  // error,
+  // remainingAttempts,
+  // maxAttempts = 5,
+  // lockoutUntil,
+  // sessionExpiry,);
+  
   const [otpValue, setOtpValue] = useState<string[]>(Array(6).fill(''));
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -84,6 +101,7 @@ export function OTPModal({
 
   // Session expiry timer
   const sessionTimer = useOTPTimer({
+    initialSeconds: 900, // 5 minutes
     onExpire: () => {
       setSessionExpired(true);
       setInternalError('Your session has expired. Please log in again.');
@@ -396,7 +414,7 @@ export function OTPModal({
                 )}
                 
                 {/* Session Expiry Warning */}
-                {sessionTimer.seconds > 0 && sessionTimer.seconds < 300 && (
+                {sessionTimer.seconds > 0 && sessionTimer.seconds < 900 && (
                   <div className="flex items-center justify-center gap-2 mt-2 text-sm text-orange-500 dark:text-orange-400">
                     <AlertCircle className="w-4 h-4" />
                     <span>Session expires in {sessionTimer.formattedTime}</span>
