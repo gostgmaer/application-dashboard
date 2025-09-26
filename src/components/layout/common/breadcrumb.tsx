@@ -5,7 +5,7 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
 
-export default function Breadcrumbs({ btn, heading, desc }: any) {
+export default function Breadcrumbs({ btn, heading, desc,btnComp }: any) {
   const pathname = usePathname();
 
   const segments = pathname
@@ -49,7 +49,7 @@ export default function Breadcrumbs({ btn, heading, desc }: any) {
                 onClick={btn.event}
                 className="px-4 py-2 rounded border border-white text-white bg-black hover:bg-white hover:text-black transition dark:border-black dark:text-black dark:bg-white dark:hover:bg-black dark:hover:text-white"
               >
-                Add
+                {btn.label||"Add"}
               </Button>
             ) : (
               <Link
@@ -62,6 +62,7 @@ export default function Breadcrumbs({ btn, heading, desc }: any) {
           </>
         )}
       </>
+      <>{btnComp}</>
     </div>
   );
 }

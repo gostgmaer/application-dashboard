@@ -16,7 +16,7 @@ export const personalDetailsSchema = z.object({
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
   newPassword: z.string().min(8, 'Password must be at least 8 characters')
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       'Password must contain uppercase, lowercase, number and special character'),
   confirmPassword: z.string().min(1, 'Please confirm your password')
 }).refine((data) => data.newPassword === data.confirmPassword, {
@@ -28,6 +28,10 @@ export const twoFactorSchema = z.object({
   token: z.string().length(6, 'TOTP token must be 6 digits').regex(/^\d+$/, 'TOTP token must contain only numbers')
 })
 
+
+export const twoFactorEmailSchema = z.object({
+  email: z.string().email("Invalid email address")
+});
 // Preferences Schema
 export const preferencesSchema = z.object({
   language: z.string().min(1, 'Language is required'),
@@ -119,13 +123,12 @@ export const phoneVerificationSchema = z.object({
 
 export type PhoneSendFormData = z.infer<typeof phoneSendSchema>;
 export type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
-
 export type EmailSendFormData = z.infer<typeof emailSendSchema>;
 export type EmailVerificationFormData = z.infer<typeof emailVerificationSchema>;
-
 export type PersonalDetailsFormData = z.infer<typeof personalDetailsSchema>
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>
 export type TwoFactorFormData = z.infer<typeof twoFactorSchema>
+export type TwoFactorFormEmailData = z.infer<typeof twoFactorEmailSchema>
 export type PreferencesFormData = z.infer<typeof preferencesSchema>
 export type SocialMediaFormData = z.infer<typeof socialMediaSchema>
 export type ConnectedAccountsFormData = z.infer<typeof connectedAccountsSchema>

@@ -28,12 +28,12 @@ const authService = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
-    safeApiCall(() => requests.post("/auth/resend-otp", body, token, headers)),
+    safeApiCall(() => requests.post("/auth/mfa/resend", body, token, headers)),
 
   socialLogin: (
     body: any,
     token?: string,
-    headers?: Record<string, string>
+    headers?: Record<string, string>    
   ): Promise<ApiResponse> =>
     safeApiCall(() => requests.post("/auth/social-auth", body, token, headers)),
 
