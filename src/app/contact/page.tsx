@@ -1,19 +1,20 @@
+// import LoginPage from "@/app/c";
+import { PublicLayout } from "@/components/layout/main-layout";
+import ContactForm from "@/components/pages/auth/contact";
 
-import ContactForm from '@/components/pages/auth/contact';
-// import LoginForm from '@/components/pages/auth/login-form';
-import { Metadata } from 'next';
+// export const metadata: Metadata = {
+//   title: "Reset Password | NextAuth",
+//   description: "Reset your password",
+// };
 
-export const metadata: Metadata = {
-  title: 'Login | NextAuth',
-  description: 'Sign in to your account'
-};
-
-export default function LoginPage() {
+export default function ForgotPasswordPage() {
   return (
-    <div className="container mx-auto ">
-      <div className="mx-auto  rounded-lg shadow-md">
-        <ContactForm />
+    <PublicLayout>
+      <div className="container mx-auto ">
+        <div className="mx-auto  rounded-lg shadow-md">
+        <ContactForm></ContactForm>
+        </div>
       </div>
-    </div>
+    </PublicLayout>
   );
 }

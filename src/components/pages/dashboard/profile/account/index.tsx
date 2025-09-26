@@ -17,70 +17,11 @@ import ProfileHeader from './profile-header'
 
 
 export default function AccountPage({user}:any) {
+console.log(user);
 
   const [activeTab, setActiveTab] = useState('personal')
 
-  // Mock user data - in real app, this would come from your API/context
-    // const user = {
-    //     id: '1',
-    //     firstName: 'John',
-    //     lastName: 'Doe',
-    //     email: 'john.doe@example.com',
-    //     username: 'johndoe',
-    //     phoneNumber: '1234567890',
-    //     profilePicture: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-    //     isVerified: true,
-    //     loyaltyPoints: 1250,
-    //     preferences: {
-    //     language: 'en',
-    //     currency: 'USD',
-    //     theme: 'light' as const,
-    //     newsletter: true,
-    //     notifications: true
-    //     },
-    //     socialMedia: {
-    //     facebook: 'https://facebook.com/johndoe',
-    //     twitter: 'https://twitter.com/johndoe',
-    //     instagram: '',
-    //     linkedin: 'https://linkedin.com/in/johndoe',
-    //     google: '',
-    //     pinterest: ''
-    //     },
-    //     interests: ['Technology', 'Travel', 'Photography', 'Cooking'],
-    //     address: [
-    //     {
-    //         id: '1',
-    //         type: 'home' as const,
-    //         street: '123 Main St',
-    //         city: 'New York',
-    //         state: 'NY',
-    //         zipCode: '10001',
-    //         country: 'USA',
-    //         isDefault: true
-    //     }
-    //     ],
-    //     paymentMethods: [
-    //     {
-    //         id: '1',
-    //         method: 'credit_card' as const,
-    //         holderName: 'John Doe',
-    //         cardNumber: '**** **** **** 1234',
-    //         expiryDate: '12/25',
-    //         isDefault: true
-    //     }
-    //     ],
-    //     shippingPreferences: {
-    //     deliveryMethod: 'standard' as const,
-    //     deliveryInstructions: 'Leave at front door',
-    //     preferredTime: 'Morning (9AM-12PM)'
-    //     },
-    //     subscriptionStatus: 'active' as const,
-    //     subscriptionType: 'premium' as const,
-    //     twoFactorEnabled: false,
-    //     knownDevices: [],
-    //     loginHistory: [],
-    //     securityEvents: []
-    // }
+  
 
   const tabs = [
     {

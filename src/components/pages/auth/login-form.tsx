@@ -1,305 +1,393 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
+import { signIn, getSession, useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { motion } from "framer-motion";
 import {
-  Loader2,
-  Mail,
-  Lock,
   Eye,
   EyeOff,
-  LogIn,
-  CheckCircle2,
+  Mail,
+  Lock,
+  CircleAlert as AlertCircle,
 } from "lucide-react";
+import { cn } from "@/lib/utils/utils";
+import { OTPModal } from "@/components/elements/otp/OTPModal";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/useToast";
-import { loginFormSchema, type LoginFormData } from "@/lib/validation-schemas";
-import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { loginFailure, loginStart } from "@/store/slices/authSlice";
-import { OtpVerificationModal } from "./TwoFactorModal";
 
-export default function LoginForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-    const [showOtpModal, setShowOtpModal] = useState(false)
-  const [twoFAData, setTwoFAData] = useState<{
-    tempUserId: string;
-    otpType: "email" | "sms" | "authenticator";
-    email: string;
-    tempToken : string;
-  } | null>(null);
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
 
-  const { toast } = useToast();
+type LoginForm = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const { data: session } = useSession();
+   const searchParams = useSearchParams();
+  const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginFormSchema),
-    defaultValues: { email: "", password: "", rememberMe: false },
-    mode: "onChange",
+  // OTP Modal state
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [otpMethod, setOtpMethod] = useState<"totp" | "sms" | "email">("totp");
+  const [otpError, setOtpError] = useState("");
+  const [isOTPLoading, setIsOTPLoading] = useState(false);
+  const [remainingAttempts, setRemainingAttempts] = useState<number>();
+  const [lockoutUntil, setLockoutUntil] = useState<string>();
+  const [sessionExpiry, setSessionExpiry] = useState<string>();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (data: LoginFormData) => {
-    setIsSubmitting(true);
-    dispatch(loginStart());
+  const onSubmit = async (data: LoginForm) => {
+    setIsLoading(true);
+    setError("");
+
 
     try {
-      const res: any = await signIn("credentials", {
-        redirect: false,
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
+        redirect: false,
       });
-      if (!res?.ok) {
-        // If the backend sent a JSON error indicating 2FA
-        if (
-          res.error?.startsWith("{") &&
-          res.error.includes("requiresMFA")
-        ) {
 
-          const err = JSON.parse(res.error);
-          setTwoFAData({
-            tempToken: err.tempToken,
-            tempUserId: err.tempUserId,
-            otpType: err.otpType,
-            email: data.email,
-          });
-          return;
+      if (result?.error) {
+        setError("Invalid email or password. Please try again.");
+        return;
+      }
+
+      if (result?.ok) {
+        // Get the updated session to check 2FA requirement
+        const session = await getSession();
+
+        if (session?.user?.["2fa_required"]) {
+          // Show OTP modal
+          setOtpMethod(
+            (session.user.otp_method as "totp" | "sms" | "email") || "totp"
+          );
+
+          // Set session expiry (typically 15 minutes for 2FA)
+          const expiryTime = new Date(
+            Date.now() + 15 * 60 * 1000
+          ).toISOString();
+          setSessionExpiry(expiryTime);
+
+          setShowOTPModal(true);
+        } else {
+          // Redirect to dashboard
+          router.push(callbackUrl);
         }
-
-        dispatch(loginFailure("An error occurred during sign in."));
-        throw new Error(res.error || "Login failed");
       }
-
-    //     const response = await fetch('/api/auth/session')
-    //   const session = await response.json()
-    // if (session?.mfaRequired) {
-    //     setOtpType(session.otpType)
-    //     setSessionToken(session.sessionToken)
-    //     setShowOtpModal(true)
-    //   } else if (result?.ok) {
-    //     router.push('/dashboard')
-    //   }
-      // Successful login without 2FA
-      if (res.url) {
-        const parsedUrl = new URL(res.url);
-        const callbackUrlParam = parsedUrl.searchParams.get("callbackUrl");
-        router.push(
-          callbackUrlParam ? decodeURIComponent(callbackUrlParam) : "/"
-        );
-      }
-
-      setIsSubmitted(true);
-      toast({
-        title: "Login successful!",
-        description: "Welcome back! Redirecting to dashboard...",
-        duration: 3000,
-      });
-
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 2000);
-    } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description:
-          error.message || "Please check your credentials and try again.",
-        variant: "destructive",
-        duration: 5000,
-      });
+    } catch (error) {
+      console.error("Login error:", error);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      setIsLoading(false);
     }
   };
 
-  const handleTwoFASuccess = async () => {
-    await getSession();
-    router.push("/");
+  const handleOTPVerify = async (otp: string) => {
+    setIsOTPLoading(true);
+    setOtpError("");
+
+    try {
+      const response = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ otp }),
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (!data.success) {
+        // Handle specific error cases
+        switch (data.error_code) {
+          case "INVALID_OTP":
+            setOtpError(
+              "Invalid verification code. Please check and try again."
+            );
+            break;
+          case "EXPIRED_OTP":
+            setOtpError(
+              "Verification code has expired. Please request a new one."
+            );
+            break;
+          case "MAX_ATTEMPTS_EXCEEDED":
+            setOtpError(
+              "Too many failed attempts. Account temporarily locked."
+            );
+            setLockoutUntil(data.lockout_until);
+            break;
+          case "RATE_LIMITED":
+            setOtpError(
+              "Too many verification attempts. Please wait before trying again."
+            );
+            break;
+          case "SESSION_EXPIRED":
+            setOtpError(
+              "Your session has expired. Please close this dialog and log in again."
+            );
+            break;
+          case "NETWORK_ERROR":
+            setOtpError(
+              "Network error. Please check your connection and try again."
+            );
+            break;
+          default:
+            setOtpError(
+              data.message || "Verification failed. Please try again."
+            );
+        }
+
+        // Update remaining attempts if provided
+        if (data.remaining_attempts !== undefined) {
+          setRemainingAttempts(data.remaining_attempts);
+        }
+
+        // Update lockout time if provided
+        if (data.lockout_until) {
+          setLockoutUntil(data.lockout_until);
+        }
+        return;
+      }
+
+      await signIn("credentials", {
+        redirect: false,
+        otp: "", // optional depending on your backend needs
+        tempUserId: "", // your stored temp token if needed
+        accessToken: data.tokens.tokens.accessToken,
+        refreshToken: data.tokens.tokens.refreshToken,
+        accessTokenExpires: Date.parse(
+          data.tokens.tokens?.accessTokenExpiresAt
+        ),
+        "2fa_verified": true,
+      });
+      // // Update the session with 2FA verified status
+      // await fetch("/api/auth/session", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     "2fa_verified": true,
+      //     ...(data.tokens && {
+      //       access_token: data.tokens.access_token,
+      //       refresh_token: data.tokens.refresh_token,
+      //     }),
+      //   }),
+      // });
+
+      // Close modal and redirect
+      setShowOTPModal(false);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      setOtpError("Verification failed. Please try again.");
+    } finally {
+      setIsOTPLoading(false);
+    }
   };
 
-    const handleOtpSuccess = () => {
-    setShowOtpModal(false)
-    router.push('/dashboard')
-  }
+  const handleOTPResend = async () => {
+    try {
+      const response = await fetch("/api/resend-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ method: otpMethod }),
+      });
 
-  const isFormValid =
-    form.formState.isValid && Object.keys(form.formState.errors).length === 0;
+      const data = await response.json();
+
+      if (!data.success) {
+        // Handle specific resend error cases
+        switch (data.error_code) {
+          case "RATE_LIMITED":
+            const waitTime = data.wait_seconds || 60;
+            setOtpError(
+              `Please wait ${waitTime} seconds before requesting another code.`
+            );
+            break;
+          case "MAX_DAILY_LIMIT":
+            setOtpError(
+              "Daily resend limit reached. Please try again tomorrow."
+            );
+            break;
+          case "SESSION_EXPIRED":
+            setOtpError(
+              "Your session has expired. Please close this dialog and log in again."
+            );
+            break;
+          case "NETWORK_ERROR":
+            setOtpError(
+              "Network error. Please check your connection and try again."
+            );
+            break;
+          default:
+            setOtpError(
+              data.message || "Failed to resend code. Please try again."
+            );
+        }
+        return;
+      }
+
+      setOtpError("");
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      setOtpError("Failed to resend OTP. Please try again.");
+    }
+  };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center py-12 px-4 transition-colors">
-      <div className="absolute top-4 right-4">{/* <ThemeToggle /> */}</div>
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Welcome Back
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Sign in to your account to continue
-          </p>
-        </div>
+    <div className="min-h-screen  flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
+      >
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-gray-800">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-black dark:text-white mb-2">
+              Welcome back
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Sign in to your account to continue
+            </p>
+          </div>
 
-        <Card className="shadow-xl border-0 bg-gray-100/90 dark:bg-gray-800/50 backdrop-blur-sm">
-          <CardHeader className="text-center pb-6">
-            <CardTitle className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-              Sign In
-            </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-center gap-2 text-red-500 dark:text-red-400 text-sm mb-6 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800"
+            >
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </motion.div>
+          )}
 
-          <CardContent className="space-y-6">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
+          {/* Login Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {/* Email Field */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
               >
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        Email Address
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Enter your email address"
-                          {...field}
-                          className="h-11 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                        />
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                        <Lock className="h-4 w-4" />
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
-                            {...field}
-                            className="h-11 border-gray-200 dark:border-gray-700 focus:border-blue-500 focus:ring-blue-500/20 pr-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-xs" />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex items-center justify-between">
-                  <FormField
-                    control={form.control}
-                    name="rememberMe"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                            className="mt-0.5"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
-                            Remember me
-                          </FormLabel>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-
-                  <Link
-                    href="/auth/forgot-password"
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
+                Email address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
-
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    disabled={!isFormValid || isSubmitting}
-                    className={`w-full h-12 text-base font-medium transition-all duration-200 ${
-                      isFormValid
-                        ? "bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 shadow-lg hover:shadow-xl text-white"
-                        : "bg-gray-300 dark:bg-gray-600 cursor-not-allowed text-gray-500 dark:text-gray-400"
-                    }`}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                        Signing In...
-                      </>
-                    ) : isSubmitted ? (
-                      <>
-                        <CheckCircle2 className="h-5 w-5 mr-2 text-green-500" />
-                        Success!
-                      </>
-                    ) : (
-                      <>
-                        <LogIn className="h-5 w-5 mr-2" />
-                        Sign In
-                      </>
-                    )}
-                  </Button>
-
-                  {!isFormValid && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                      Please fill in all fields correctly to enable sign in.
-                    </p>
+                <input
+                  {...register("email")}
+                  type="email"
+                  autoComplete="email"
+                  className={cn(
+                    "block w-full pl-10 pr-3 py-3 rounded-xl transition-all duration-200",
+                    "bg-white dark:bg-gray-800 text-black dark:text-white",
+                    "border-2 border-gray-300 dark:border-gray-600",
+                    "focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent",
+                    "hover:border-gray-400 dark:hover:border-gray-500",
+                    errors.email &&
+                      "border-red-500 dark:border-red-400 focus:ring-red-500 dark:focus:ring-red-400"
                   )}
-                </div>
-              </form>
-            </Form>
+                  placeholder="Enter your email"
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-2 text-sm text-red-500 dark:text-red-400">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
 
-            <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
+            {/* Password Field */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+                </div>
+                <input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className={cn(
+                    "block w-full pl-10 pr-12 py-3 rounded-xl transition-all duration-200",
+                    "bg-white dark:bg-gray-800 text-black dark:text-white",
+                    "border-2 border-gray-300 dark:border-gray-600",
+                    "focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent",
+                    "hover:border-gray-400 dark:hover:border-gray-500",
+                    errors.password &&
+                      "border-red-500 dark:border-red-400 focus:ring-red-500 dark:focus:ring-red-400"
+                  )}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-500 dark:text-red-400">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting || isLoading}
+              className={cn(
+                "w-full flex justify-center items-center gap-2 py-3 px-4 rounded-xl font-medium transition-all duration-200",
+                "bg-black dark:bg-white text-white dark:text-black",
+                "hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:ring-offset-2 dark:focus:ring-offset-gray-900",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:opacity-50"
+              )}
+            >
+              {isLoading && (
+                <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              )}
+              {isLoading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+
+          {/* Footer */}
+           <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Want to Connact?{" "}
                 <Link
@@ -310,18 +398,24 @@ export default function LoginForm() {
                 </Link>
               </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+        </div>
+      </motion.div>
 
-     {/* {showOtpModal && (
-        <OtpVerificationModal
-          email={twoFAData.email||null}
-          otpType={twoFAData.otpType}
-          sessionToken={twoFAData.sessionToken}
-          onSuccess={.twoFADatahandleOtpSuccess}
-        />
-      )} */}
+      {/* OTP Modal */}
+      <OTPModal
+        isOpen={showOTPModal}
+        onClose={() => setShowOTPModal(false)}
+        onVerify={handleOTPVerify}
+        onResend={otpMethod !== "totp" ? handleOTPResend : undefined}
+        method={otpMethod}
+        isLoading={isOTPLoading}
+        error={otpError}
+        remainingAttempts={remainingAttempts}
+        lockoutUntil={lockoutUntil}
+        sessionExpiry={sessionExpiry}
+        email={session?.user?.email}
+        phone={undefined} // Add phone number if available in session
+      />
     </div>
   );
 }

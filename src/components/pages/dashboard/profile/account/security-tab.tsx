@@ -47,6 +47,7 @@ import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/useToast";
 import Image from "next/image";
 import z from "zod";
+import { formatDistanceToNow } from "date-fns";
 
 interface SecurityTabProps {
   user: User;
@@ -97,7 +98,7 @@ export default function SecurityTab({ user }: SecurityTabProps) {
 
   // Get user's current 2FA method
   const getCurrentTwoFactorMethod = (): "totp" | "email" | "sms" => {
-    return user.otpSettings?.method || "totp";
+    return user.otpSettings?.preferredMethod || "totp";
   };
 
   // Utility functions for masking
@@ -1444,23 +1445,26 @@ export default function SecurityTab({ user }: SecurityTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {mockLoginHistory.map((login, index) => (
+          <div className="space-y-4 h-80 overflow-auto">
+            {user.loginHistory.map((login:any, index:number) => (
               <div key={index}>
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <p className="font-medium text-sm">{login.device}</p>
+                    <p className="font-medium text-sm capitalize">{login.device.type}</p>
                     <p className="text-xs text-muted-foreground">
-                      {login.location} • {login.time}
+                      {login.location.city}, {login.location.country} •  {formatDistanceToNow(new Date(login.loginTime), { addSuffix: true })}
+                      <br></br>
+                       Device ID:  {login.deviceId}  •    Ip Address: {login.ipAddress}
                     </p>
                   </div>
                   <Badge
-                    variant={login.status === "success" ? "secondary" : "destructive"}
+                
+                    variant={login.successful === true ? "secondary" : "destructive"}
                   >
-                    {login.status === "success" ? "Success" : "Failed"}
+                    {login.successful === true ? "Success" : "Failed"}
                   </Badge>
                 </div>
-                {index < mockLoginHistory.length - 1 && (
+                {index < user.loginHistory.length - 1 && (
                   <Separator className="mt-4" />
                 )}
               </div>

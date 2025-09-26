@@ -45,7 +45,7 @@ export interface User {
   subscriptionType: string
   twoFactorEnabled: boolean
   knownDevices: Device[]
-  loginHistory: LoginHistory[]
+  loginHistory: any
   securityEvents: SecurityEvent[]
   /** OTP Settings */
   otpSettings: {

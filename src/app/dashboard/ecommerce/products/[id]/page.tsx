@@ -4,38 +4,17 @@ import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/api/products-api";
 import { ProductView } from "@/components/pages/dashboard/product/details/ProductView";
 
+// Explicitly import Next.js types to ensure compatibility
+import type { NextPage } from "next";
+
+// Define the props interface to match Next.js dynamic route expectations
 interface ProductPageProps {
-  params: { id: string };
+  params: { id: string }; // Non-promise params
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
-export async function generateMetadata({
-  params,
-}: ProductPageProps): Promise<Metadata> {
-  try {
-    const product = await getProduct(params.id);
-
-    return {
-      title: product.seoTitle || `${product.title} - Your Store`,
-      description: product.seoDescription || product.shortDescription,
-      openGraph: {
-        title: product.title,
-        description: product.shortDescription,
-        images: product.images.map((img) => ({ url: img })),
-        type: "website",
-      },
-      other: {
-        "product:price:amount": product.price.original.toString(),
-        "product:price:currency": product.price.currency,
-      },
-    };
-  } catch {
-    return {
-      title: "Product Not Found",
-    };
-  }
-}
-
-export default async function ProductPage({ params }: ProductPageProps) {
+// Use NextPage type for the component to align with Next.js expectations
+const ProductPage: NextPage<ProductPageProps> = async ({ params }) => {
   try {
     const product = await getProduct(params.id);
 
@@ -82,4 +61,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   } catch {
     notFound();
   }
-}
+};
+
+
+
+export default ProductPage;

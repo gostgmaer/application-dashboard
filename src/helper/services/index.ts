@@ -263,11 +263,12 @@ const requests = {
 
   delete: async <T = any>(
     endpoint: string,
+    body?: any,
     token?: string,
     params?: Record<string, any>,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> =>
-    await fetchData<T>(endpoint, { method: "DELETE", params, headers, token }),
+    await fetchData<T>(endpoint, { method: "DELETE",body, params, headers, token }),
 };
 
 export default requests;
