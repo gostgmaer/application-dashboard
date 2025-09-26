@@ -62,7 +62,7 @@ import { getToken } from 'next-auth/jwt';
 import { secret } from './config/setting';
 
 /**
- * Middleware to protect routes and redirect based on authentication status
+ * Middleware to protect routes and redirect based on authentication + 2FA status
  * @param req NextRequest
  */
 export async function middleware(req: NextRequest) {
@@ -85,12 +85,31 @@ export async function middleware(req: NextRequest) {
   if (isProtectedRoute || isAuthRoute) {
     const token = await getToken({ req, secret });
 
-    if (isProtectedRoute && !token) {
-      return NextResponse.redirect(new URL('/auth/login', req.url));
+    if (!token) {
+      // Not logged in → block protected pages
+      if (isProtectedRoute) {
+        return NextResponse.redirect(new URL('/auth/login', req.url));
+      }
+      return NextResponse.next();
     }
 
-    if (isAuthRoute && token) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+    const twoFARequired = token?.["2fa_required"] ?? false;
+    const twoFAVerified = token?.["2fa_verified"] ?? false;
+
+    // 🔐 Protected route requires 2FA
+    if (isProtectedRoute) {
+      if (twoFARequired && !twoFAVerified) {
+        return NextResponse.redirect(new URL('/auth/login', req.url));
+      }
+    }
+
+    // 🚫 If user is logged in and:
+    // - 2FA not required, OR
+    // - 2FA required but already verified → prevent going back to /auth (login/register)
+    if (isAuthRoute) {
+      if (!twoFARequired || (twoFARequired && twoFAVerified)) {
+        return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
     }
   }
 

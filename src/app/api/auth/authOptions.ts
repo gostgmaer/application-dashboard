@@ -53,18 +53,21 @@ interface CustomToken extends JWT {
 
 interface CustomUser extends User {
   accessToken?: string;
+  tempToken?: string,
   refreshToken?: string;
   id_token?: string;
   token_type?: string;
   accessTokenExpires?: number;
   role?: string;
-  twoFactorEnabled?: boolean;
+  otp_method?: string,
+  "2fa_required"?: boolean;
+  "2fa_verified"?: boolean;
 }
 
 // Custom error for 2FA requirement
 export class TwoFactorRequiredError extends Error {
   constructor(public tempUserId: string, public email: string, public requiresMFA: boolean = true, public tempToken: string = "", public otpType: string = "totp") {
-    super(JSON.stringify({ tempUserId, email, requiresMFA,tempToken, otpType }));
+    super(JSON.stringify({ tempUserId, email, requiresMFA, tempToken, otpType }));
     this.name = "TwoFactorRequiredError";
   }
 }
@@ -121,24 +124,27 @@ export const authOptions: AuthOptions = {
         if (!res.success) {
           throw new Error(res.message || "Invalid credentials");
         }
-        if (res.data?.requiresMFA === true) {
-          throw new TwoFactorRequiredError(
-            res.data.tempUserId || res.data.userId,
-            credentials?.email || "", res.data?.requiresMFA, res.data.tempToken, res.data?.otpType
-          );
-        }
+        // if (res.data?.requiresMFA === true) {
+        //   throw new TwoFactorRequiredError(
+        //     res.data.tempUserId || res.data.userId,
+        //     credentials?.email || "", res.data?.requiresMFA, res.data.tempToken, res.data?.otpType
+        //   );
+        // }
         const { user, tokens } = res.data;
         return {
           id: user.id,
           name: user.fullName ?? user.username,
           email: user.email,
+          otp_method: user.otp_method,
+          tempToken: user.tempToken,
           image: user.image,
           role: user.role,
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
           token_type: "access",
           accessTokenExpires: Date.parse(tokens.accessTokenExpiresAt),
-          twoFactorEnabled: user.twoFactorEnabled || false,
+          "2fa_required": user.requiresMFA,
+          "2fa_verified": user["2fa_verified"],
         };
       },
     }),
@@ -217,7 +223,7 @@ export const authOptions: AuthOptions = {
           user.token_type = data.data.token_type;
           user.role = data.data.role || "";
           user.accessTokenExpires = Date.parse(data.data.expiresAt);
-          user.twoFactorEnabled = data.data.twoFactorEnabled || false;
+          // user.[2fa_required] = data.data.twoFactorEnabled || false;
 
           return true;
         } catch (error) {
@@ -229,7 +235,7 @@ export const authOptions: AuthOptions = {
       return !!user?.accessToken;
     },
 
-    async jwt({ token, user, account, profile, trigger }) {
+    async jwt({ token, user, account, profile, trigger, session }) {
       const customToken = token as CustomToken;
       if (user) {
         const customUser = user as CustomUser;
@@ -240,7 +246,23 @@ export const authOptions: AuthOptions = {
         customToken.accessTokenExpires = customUser.accessTokenExpires;
         customToken.role = customUser.role;
         customToken.sub = customUser.id;
-        customToken.twoFactorEnabled = customUser.twoFactorEnabled;
+        //  tempToken: user.tempToken,
+        customToken["tempToken"] = customUser["tempToken"];
+        customToken["2fa_required"] = customUser["2fa_required"];
+        customToken["otp_method"] = customUser["otp_method"];
+        customToken['2fa_verified'] = customToken['2fa_verified'];
+
+        // Update session trigger (used after OTP verification)
+        if (trigger === 'update' && session) {
+          token['2fa_verified'] = session['2fa_verified'];
+          if (session.access_token) {
+            token.accessToken = session.access_token;
+          }
+          if (session.refresh_token) {
+            token.refreshToken = session.refresh_token;
+          }
+        }
+
 
         try {
           const response = await authService.getUserPermissions(
@@ -284,8 +306,11 @@ export const authOptions: AuthOptions = {
       session.user = {
         ...session.user,
         role: token.role,
+        "2fa_required": token["2fa_required"],
+        "2fa_verified": token["2fa_verified"],
+        otp_method: token.otp_method,
         permissions: token.permissions,
-        twoFactorEnabled: token.twoFactorEnabled,
+        tempToken: token.tempToken,
       };
       session.error = token.error;
 

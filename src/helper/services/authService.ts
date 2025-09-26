@@ -21,7 +21,7 @@ const authService = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
-    safeApiCall(() => requests.post("/auth/verify-otp", body, token, headers)),
+    safeApiCall(() => requests.post("/auth/mfa/verify-login-otp", body, token, headers)),
 
   resendOTP: (
     body: any,
