@@ -31,7 +31,7 @@ export default function ProfileHeader({ user }: ProfileHeaderProps) {
         <div className="flex flex-col items-center text-center space-y-4">
           <div className="relative">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={user?.profilePicture} alt={user.firstName} />
+              {/* <AvatarImage src={user?.profilePicture} alt={user.firstName} /> */}
               <AvatarFallback className="text-lg">
                 {getInitials(user.firstName, user.lastName)}
               </AvatarFallback>

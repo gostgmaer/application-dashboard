@@ -253,7 +253,7 @@ const authService = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete("/auth/devices/remove", token, headers)),
+    safeApiCall(() => requests.delete("/auth/devices/remove",body, token,undefined, headers)),
 
   getActiveSessions: (
     token?: string,
@@ -409,7 +409,7 @@ const authService = {
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() =>
-      requests.delete(`/auth/social/clear/${id}`, token, headers)
+      requests.delete(`/auth/social/clear/${id}`,undefined, token,undefined, headers)
     ),
 
   getOTPAnalytics: (

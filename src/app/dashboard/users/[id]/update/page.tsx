@@ -28,7 +28,7 @@ const Page = async (url: any) => {
             <UserCreate
               data={data.data}
               id={id}
-              master={{ roles: roles["results"] }}
+              master={{ roles: roles.data }}
             ></UserCreate>
           </div>
         </Suspense>

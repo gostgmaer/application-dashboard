@@ -7,7 +7,7 @@ export interface User {
   phoneNumber?: string
   dateOfBirth?: string
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say'
-  profilePicture?: string
+  profilePicture?: null
   role?: string
   isVerified: boolean
   phoneVerified: boolean

@@ -4,19 +4,30 @@ import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/api/products-api";
 import { ProductView } from "@/components/pages/dashboard/product/details/ProductView";
 
-// Explicitly import Next.js types to ensure compatibility
+// Explicitly import Next.js types
 import type { NextPage } from "next";
 
 // Define the props interface to match Next.js dynamic route expectations
 interface ProductPageProps {
-  params: { id: string }; // Non-promise params
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ id: string }>; // params as Promise for dynamic route
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>; // searchParams as Promise
 }
 
-// Use NextPage type for the component to align with Next.js expectations
-const ProductPage: NextPage<ProductPageProps> = async ({ params }) => {
+// Use NextPage type for the component
+const ProductPage: NextPage<ProductPageProps> = async ({ params, searchParams }) => {
   try {
-    const product = await getProduct(params.id);
+    // Resolve params to get id
+    const { id } = await params;
+
+    // Resolve searchParams and provide default empty object if undefined
+    const resolvedSearchParams = (await searchParams) || {};
+
+    // Extract searchParams with defaults
+    const sort = typeof resolvedSearchParams.sort === "string" ? resolvedSearchParams.sort : "default";
+    const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
+
+    // Fetch product, potentially passing searchParams to API
+    const product = await getProduct(id);
 
     // JSON-LD Schema
     const jsonLd = {
@@ -55,14 +66,15 @@ const ProductPage: NextPage<ProductPageProps> = async ({ params }) => {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ProductView productId={params.id} initialProduct={product} />
+        <ProductView
+          productId={id}
+          initialProduct={product}
+        />
       </>
     );
   } catch {
     notFound();
   }
 };
-
-
 
 export default ProductPage;

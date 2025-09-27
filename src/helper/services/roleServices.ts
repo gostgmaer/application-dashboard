@@ -152,7 +152,7 @@ const roleServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/roles/${id}/permission`, token, { permission }, headers));
+    return safeApiCall(() => requests.delete(`/roles/${id}/permission`, token, permission, headers));
   },
 
   hasPermission: async (
@@ -174,21 +174,13 @@ const roleServices = {
 
   assignPermissions: async (
     id: string,
-    permissions: string[],
+    permissions: any[],
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() => requests.post(`/roles/${id}/permissions`, { permissions }, token, headers));
   },
 
-  removePermissions: async (
-    id: string,
-    permissions: string[],
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/roles/${id}/permissions`, token, { permissions }, headers));
-  },
 
   syncPermissions: async (
     id: string,

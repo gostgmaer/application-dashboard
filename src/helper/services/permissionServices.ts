@@ -138,7 +138,7 @@ const permissionServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete("/permission/bulk", token, body, headers));
+    return safeApiCall(() => requests.delete("/permission/bulk",body, token,undefined , headers));
   },
 
   checkExists: async (

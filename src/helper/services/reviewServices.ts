@@ -108,7 +108,7 @@ const reviewServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/review/bulk-delete`, token, body, headers));
+    return safeApiCall(() => requests.delete(`/review/bulk-delete`,body, token,undefined , headers));
   },
 
   markHelpful: async (

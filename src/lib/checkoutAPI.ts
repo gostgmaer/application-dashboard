@@ -269,7 +269,7 @@ export class CheckoutAPI {
 
     // Re-validate coupon if applied
     if (checkoutData.couponCode && checkoutData.couponDiscount > 0) {
-      const categories = [...new Set(checkoutData.cartItems.map(item => item.category))];
+      const categories = Array.from(new Set(checkoutData.cartItems.map(item => item.category)));
       const subtotal = checkoutData.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
       
       const couponValidation = await this.validateCoupon(checkoutData.couponCode, subtotal, categories);

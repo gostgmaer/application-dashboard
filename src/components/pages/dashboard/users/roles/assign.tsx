@@ -58,7 +58,7 @@ export default function RolePermissionForm({
 
       const res = await roleServices.assignPermissions(
         id,
-        data,
+        data.permissionIds,
         session?.accessToken
       );
       toast({

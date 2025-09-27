@@ -161,14 +161,14 @@ const userServices = {
     return safeApiCall(() => requests.post(`/users/${id}/wishlist`, body, token, headers));
   },
 
-  removeFromWishlist: async (
-    id: string,
-    body: { productId: string },
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/wishlist`, token, body, headers));
-  },
+  // removeFromWishlist: async (
+  //   id: string,
+  //   body: { productId: string },
+  //   token?: string,
+  //   headers?: Record<string, any>
+  // ): Promise<ApiResponse> => {
+  //   return safeApiCall(() => requests.delete(`/users/${id}/wishlist`, token, body, headers));
+  // },
 
   clearWishlist: async (
     id: string,
@@ -196,14 +196,14 @@ const userServices = {
     return safeApiCall(() => requests.post(`/users/${id}/cart`, body, token, headers));
   },
 
-  removeFromCart: async (
-    id: string,
-    body: { productId: string },
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/cart`, token, body, headers));
-  },
+  // removeFromCart: async (
+  //   id: string,
+  //   body: { productId: string },
+  //   token?: string,
+  //   headers?: Record<string, any>
+  // ): Promise<ApiResponse> => {
+  //   return safeApiCall(() => requests.delete(`/users/${id}/cart`, token, body, headers));
+  // },
 
   updateCartItemQuantity: async (
     id: string,
@@ -408,14 +408,14 @@ const userServices = {
     return safeApiCall(() => requests.post(`/users/${id}/addresses`, body, token, headers));
   },
 
-  removeAddress: async (
-    id: string,
-    body: { addressId: string },
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/addresses`, token, body, headers));
-  },
+  // removeAddress: async (
+  //   id: string,
+  //   body: { addressId: string },
+  //   token?: string,
+  //   headers?: Record<string, any>
+  // ): Promise<ApiResponse> => {
+  //   return safeApiCall(() => requests.delete(`/users/${id}/addresses`, token, body, headers));
+  // },
 
   setDefaultAddress: async (
     id: string,
@@ -436,14 +436,14 @@ const userServices = {
     return safeApiCall(() => requests.post(`/users/${id}/payment-methods`, body, token, headers));
   },
 
-  removePaymentMethod: async (
-    id: string,
-    body: { paymentMethodId: string },
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/payment-methods`, token, body, headers));
-  },
+  // removePaymentMethod: async (
+  //   id: string,
+  //   body: { paymentMethodId: string },
+  //   token?: string,
+  //   headers?: Record<string, any>
+  // ): Promise<ApiResponse> => {
+  //   return safeApiCall(() => requests.delete(`/users/${id}/payment-methods`, token, body, headers));
+  // },
 
   setDefaultPaymentMethod: async (
     id: string,
@@ -473,14 +473,14 @@ const userServices = {
     return safeApiCall(() => requests.post(`/users/${id}/social-medialink`, body, token, headers));
   },
 
-  unlinkSocialAccount: async (
-    id: string,
-    body: { provider: string },
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/social-mediaunlink`, token, body, headers));
-  },
+  // unlinkSocialAccount: async (
+  //   id: string,
+  //   body: { provider: string },
+  //   token?: string,
+  //   headers?: Record<string, any>
+  // ): Promise<ApiResponse> => {
+  //   return safeApiCall(() => requests.delete(`/users/${id}/social-mediaunlink`, token, body, headers));
+  // },
 
   clearAllSocialLinks: async (
     id: string,
@@ -500,14 +500,14 @@ const userServices = {
     return safeApiCall(() => requests.post(`/users/${id}/interests`, body, token, headers));
   },
 
-  removeInterest: async (
-    id: string,
-    body: { interest: string },
-    token?: string,
-    headers?: Record<string, any>
-  ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/interests`, token, body, headers));
-  },
+  // removeInterest: async (
+  //   id: string,
+  //   body: { interest: string },
+  //   token?: string,
+  //   headers?: Record<string, any>
+  // ): Promise<ApiResponse> => {
+  //   return safeApiCall(() => requests.delete(`/users/${id}/interests`, token, body, headers));
+  // },
 
   addInterestCategory: async (
     id: string,

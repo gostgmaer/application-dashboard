@@ -26,7 +26,7 @@ const DashboardHeader: React.FC = () => {
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  {session?.role}
+                  {session?.user.role}
                 </h1>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   E-commerce Dashboard

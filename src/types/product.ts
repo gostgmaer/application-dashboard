@@ -32,6 +32,7 @@ export interface ProductVariant {
   price?: {
     original: number;
     discounted?: number;
+    currency: string;
   };
   stock: {
     quantity: number;

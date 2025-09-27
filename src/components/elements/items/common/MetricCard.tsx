@@ -9,7 +9,7 @@ interface MetricCardProps {
 }
 
 export function MetricCard({ metric }: MetricCardProps) {
-  const IconComponent = Icons[metric.icon as keyof typeof Icons] as LucideIcon;
+  const IconComponent = Icons[metric.icon as keyof typeof Icons] as typeof LucideIcon;
   const isPositiveTrend = metric.trend === 'up';
   const changeColor = metric.title.toLowerCase().includes('failed') || metric.title.toLowerCase().includes('error')
     ? (isPositiveTrend ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400')

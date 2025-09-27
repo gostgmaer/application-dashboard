@@ -41,7 +41,7 @@ export function CouponDiscount({
   });
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const categories = [...new Set(cartItems.map(item => item.category))];
+  const categories = Array.from(new Set(cartItems.map(item => item.category)));
 
   const applyCoupon = async (data: CouponFormData) => {
     setLoading(true);
