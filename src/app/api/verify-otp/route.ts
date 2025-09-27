@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
                 otp: otp.trim(),
                 timestamp: new Date().toISOString(),
 
-                tempToken: session.user["tempToken"]
+                tempToken: session["tempToken"],type: session["otp_method"]
             }, session.accessToken)
 
             const data: OTPVerifyResponse = await response.data
@@ -252,7 +252,7 @@ export async function POST(request: NextRequest) {
                 {
                     success: true,
                     message: 'OTP verified successfully',
-                    tokens: data,
+                    data: data,
                 }
             );
 

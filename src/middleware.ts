@@ -24,6 +24,7 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = pathname.startsWith("/auth") || pathname === "/";
 
   const token = await getToken({ req, secret });
+console.log(token);
 
   // 🔒 Not logged in
   if (!token) {
@@ -38,6 +39,7 @@ export async function middleware(req: NextRequest) {
 
   const twoFARequired = token?.["2fa_required"] ?? false;
   const twoFAVerified = token?.["2fa_verified"] ?? false;
+
 
   // 🔐 Protected route requires 2FA
   if (isProtectedRoute) {

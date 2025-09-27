@@ -1,3 +1,5 @@
+// Updated authOptions.ts - Fix the jwt callback to properly handle token updates
+
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
@@ -11,13 +13,15 @@ declare module "next-auth" {
   interface Session {
     accessToken?: string;
     refreshToken?: string;
+    "2fa_required"?: boolean;
+    "2fa_verified"?: boolean;
+    otp_method?: string;
+    tempToken?: string;
     id_token?: string;
     token_type?: string;
-    role?: string;
     user: {
       role?: string;
-      permissions?: Record<string, string[]>;
-      twoFactorEnabled?: boolean;
+      permissions?: Record<string, any>;
       [key: string]: any;
     };
     error?: string;
@@ -36,6 +40,7 @@ import {
   twitterSecret,
   secret,
 } from "@/config/setting";
+
 import authService from "@/helper/services/authService";
 
 interface CustomToken extends JWT {
@@ -47,8 +52,11 @@ interface CustomToken extends JWT {
   exp?: number;
   error?: string;
   role?: string;
-  permissions?: Record<string, string[]>;
-  twoFactorEnabled?: boolean;
+  [key: string]: any;
+  "2fa_required"?: boolean;
+  "2fa_verified"?: boolean;
+  otp_method?: string;
+  tempToken?: string;
 }
 
 interface CustomUser extends User {
@@ -85,11 +93,13 @@ async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
     const response = await authService.refreshToken({
       refreshToken: token.refreshToken,
     });
+
     if (!response.success) {
       throw new Error(response?.message || "Failed to refresh token");
     }
 
     const { accessToken, refreshToken, expiresAt } = response.data;
+
     return {
       ...token,
       accessToken,
@@ -127,20 +137,18 @@ export const authOptions: AuthOptions = {
           };
 
           const res = await authService.login(payload);
+
           if (!res) {
             throw new Error("No response from login service");
           }
+
           if (!res.success) {
             throw new Error(res.message || "Invalid credentials");
           }
-          // if (res.data?.requiresMFA === true) {
-          //   throw new TwoFactorRequiredError(
-          //     res.data.tempUserId || res.data.userId,
-          //     credentials?.email || "", res.data?.requiresMFA, res.data.tempToken, res.data?.otpType
-          //   );
-          // }
+
           const { user, tokens } = res.data;
           const { data } = res;
+
           return {
             id: user.id,
             name: user.fullName ?? user.username,
@@ -158,9 +166,7 @@ export const authOptions: AuthOptions = {
           };
         } catch (error) {
           console.error("Authorize error:", error);
-          // Optionally throw here or just return null to reject sign-in
           throw error;
-          // or return null;
         }
       },
     }),
@@ -194,19 +200,16 @@ export const authOptions: AuthOptions = {
       version: "2.0",
     }),
   ],
-
   secret,
   pages: {
     signIn: "/auth/login",
     signOut: "/",
     error: "/auth/error",
   },
-
   session: {
     strategy: "jwt",
     maxAge: 7 * 24 * 60 * 60,
   },
-
   callbacks: {
     async signIn({
       user,
@@ -235,11 +238,9 @@ export const authOptions: AuthOptions = {
 
           user.accessToken = data.data.accessToken;
           user.refreshToken = data.data.refreshToken;
-          user.id_token = data.data.id_token;
           user.token_type = data.data.token_type;
           user.role = data.data.role || "";
           user.accessTokenExpires = Date.parse(data.data.expiresAt);
-          // user.[2fa_required] = data.data.twoFactorEnabled || false;
 
           return true;
         } catch (error) {
@@ -247,13 +248,14 @@ export const authOptions: AuthOptions = {
           return false;
         }
       }
-
       return !!user?.accessToken;
     },
 
+    // ✅ FIXED JWT CALLBACK - Properly handles session updates
     async jwt({ token, user, account, profile, trigger, session }) {
       const customToken = token as CustomToken;
 
+      // Initial sign-in
       if (user) {
         const customUser = user as CustomUser;
         customToken.accessToken = customUser.accessToken;
@@ -265,35 +267,54 @@ export const authOptions: AuthOptions = {
         customToken["tempToken"] = customUser["tempToken"];
         customToken["2fa_required"] = customUser["2fa_required"];
         customToken["otp_method"] = customUser["otp_method"];
-        customToken["2fa_verified"] = customToken["2fa_verified"];
-        // Update session trigger (used after OTP verification)
-        if (trigger === "update" && session) {
-          console.log(trigger, session, token);
+        customToken["2fa_verified"] = customUser["2fa_verified"];
+      }
 
-          token["2fa_verified"] = session["2fa_verified"];
-          if (session.access_token) {
-            token.accessToken = session.access_token;
-          }
-          if (session.refresh_token) {
-            token.refreshToken = session.refresh_token;
-          }
+      // ✅ Handle session update trigger (from useSession().update())
+      console.log(trigger);
+
+      if (trigger === "update" && session) {
+        console.log("JWT Callback - Update trigger:", {
+          trigger,
+          session,
+          token,
+        });
+
+        // Update 2FA verification status
+        if (session["2fa_verified"] !== undefined) {
+          customToken["2fa_verified"] = session["2fa_verified"];
         }
 
-        try {
-          const response = await authService.getUserPermissions(
-            customToken.accessToken
-          );
-          // console.log(response);
+        // Update tokens if provided
+        if (session.access_token) {
+          customToken.accessToken = session.access_token;
+        }
 
-          if (response.data) {
-            customToken.permissions = response.data.permissions;
-          } else {
-            customToken.permissions = {};
-          }
-        } catch {
-          customToken.permissions = {};
+        if (session.refresh_token) {
+          customToken.refreshToken = session.refresh_token;
+        }
+
+        if (session.accessTokenExpires) {
+          customToken.accessTokenExpires = session.accessTokenExpires;
         }
       }
+
+      // Fetch user permissions if we have a valid access token
+      // try {
+      //   if (customToken.accessToken) {
+      //     const response = await authService.getUserPermissions(
+      //       customToken.accessToken
+      //     );
+
+      //     if (response.data) {
+      //       customToken.permissions = response.data.permissions;
+      //     } else {
+      //       customToken.permissions = {};
+      //     }
+      //   }
+      // } catch {
+      //   customToken.permissions = {};
+      // }
 
       // Check if token is expired and refresh if necessary
       if (
@@ -309,23 +330,26 @@ export const authOptions: AuthOptions = {
     async session({
       session,
       token,
+      trigger,
+      newSession,
     }: {
       session: Session;
+      trigger: string;
+      newSession?: Session;
       token: CustomToken;
     }) {
-      // console.log(session,token);
+      // console.log("Session Callback:", { session, token });
+      console.log("Session callback:", { session, token, trigger, newSession });
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.token_type = token.token_type;
-      session.role = token.role;
+      session["2fa_required"] = token["2fa_required"];
+      session["2fa_verified"] = token["2fa_verified"];
+      session["otp_method"] = token["otp_method"];
+      session.tempToken = token.tempToken;
       session.user = {
         ...session.user,
         role: token.role,
-        "2fa_required": token["2fa_required"],
-        "2fa_verified": token["2fa_verified"],
-        otp_method: token.otp_method,
-        permissions: token.permissions,
-        tempToken: token.tempToken,
       };
       session.error = token.error;
 
@@ -338,12 +362,10 @@ export const authOptions: AuthOptions = {
         : baseUrl;
     },
   },
-
   theme: {
     colorScheme: "auto",
     brandColor: "",
     logo: "/vercel.svg",
   },
-
   debug: true,
 };

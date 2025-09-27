@@ -26,8 +26,8 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { data: session } = useSession();
-   const searchParams = useSearchParams();
+  const { data: session, update ,} = useSession();
+  const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -55,7 +55,6 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-
     try {
       const result = await signIn("credentials", {
         email: data.email,
@@ -71,11 +70,12 @@ export default function LoginPage() {
       if (result?.ok) {
         // Get the updated session to check 2FA requirement
         const session = await getSession();
+        console.log("Login", session);
 
-        if (session?.user?.["2fa_required"]) {
+        if (session?.["2fa_required"]) {
           // Show OTP modal
           setOtpMethod(
-            (session.user.otp_method as "totp" | "sms" | "email") || "totp"
+            (session.otp_method as "totp" | "sms" | "email") || "totp"
           );
 
           // Set session expiry (typically 15 minutes for 2FA)
@@ -111,12 +111,11 @@ export default function LoginPage() {
         body: JSON.stringify({ otp }),
       });
 
-      const data = await response.json();
-      console.log(data);
+      const d = await response.json();
 
-      if (!data.success) {
+      if (!d.success) {
         // Handle specific error cases
-        switch (data.error_code) {
+        switch (d.error_code) {
           case "INVALID_OTP":
             setOtpError(
               "Invalid verification code. Please check and try again."
@@ -131,7 +130,7 @@ export default function LoginPage() {
             setOtpError(
               "Too many failed attempts. Account temporarily locked."
             );
-            setLockoutUntil(data.lockout_until);
+            setLockoutUntil(d.lockout_until);
             break;
           case "RATE_LIMITED":
             setOtpError(
@@ -149,52 +148,39 @@ export default function LoginPage() {
             );
             break;
           default:
-            setOtpError(
-              data.message || "Verification failed. Please try again."
-            );
+            setOtpError(d.message || "Verification failed. Please try again.");
         }
 
         // Update remaining attempts if provided
-        if (data.remaining_attempts !== undefined) {
-          setRemainingAttempts(data.remaining_attempts);
+        if (d.remaining_attempts !== undefined) {
+          setRemainingAttempts(d.remaining_attempts);
         }
 
         // Update lockout time if provided
-        if (data.lockout_until) {
-          setLockoutUntil(data.lockout_until);
+        if (d.lockout_until) {
+          setLockoutUntil(d.lockout_until);
         }
         return;
+      } else {
+        const { data } = d;
+        console.log(session);
+        
+        await update ({
+          "2fa_verified": true,
+          accessToken: data.tokens.accessToken,
+          refreshToken: data.tokens.refreshToken,
+          accessTokenExpires: data.tokens.accessTokenExpiresAt,
+        });
+        console.log(session);
+        
+        setShowOTPModal(false);
+        router.push(callbackUrl);
       }
 
-      await signIn("credentials", {
-        redirect: false,
-        otp: "", // optional depending on your backend needs
-        tempUserId: "", // your stored temp token if needed
-        accessToken: data.tokens.tokens.accessToken,
-        refreshToken: data.tokens.tokens.refreshToken,
-        accessTokenExpires: Date.parse(
-          data.tokens.tokens?.accessTokenExpiresAt
-        ),
-        "2fa_verified": true,
-      });
       // // Update the session with 2FA verified status
-      // await fetch("/api/auth/session", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     "2fa_verified": true,
-      //     ...(data.tokens && {
-      //       access_token: data.tokens.access_token,
-      //       refresh_token: data.tokens.refresh_token,
-      //     }),
-      //   }),
-      // });
+      // Update the session with 2FA verified status using NextAuth's update method
 
       // Close modal and redirect
-      setShowOTPModal(false);
-      router.push("/dashboard");
     } catch (error) {
       console.error("OTP verification error:", error);
       setOtpError("Verification failed. Please try again.");
@@ -387,17 +373,17 @@ export default function LoginPage() {
           </form>
 
           {/* Footer */}
-           <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Want to Connact?{" "}
-                <Link
-                  href="/contact"
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
-                >
-                  Contact here
-                </Link>
-              </p>
-            </div>
+          <div className="text-center pt-4 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Want to Connact?{" "}
+              <Link
+                href="/contact"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
+              >
+                Contact here
+              </Link>
+            </p>
+          </div>
         </div>
       </motion.div>
 
