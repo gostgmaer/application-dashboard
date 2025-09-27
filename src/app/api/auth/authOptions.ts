@@ -253,6 +253,8 @@ export const authOptions: AuthOptions = {
 
     // ✅ FIXED JWT CALLBACK - Properly handles session updates
     async jwt({ token, user, account, profile, trigger, session }) {
+
+      
       const customToken = token as CustomToken;
 
       // Initial sign-in
@@ -285,13 +287,13 @@ export const authOptions: AuthOptions = {
           customToken["2fa_verified"] = session["2fa_verified"];
         }
 
-        // Update tokens if provided
-        if (session.access_token) {
-          customToken.accessToken = session.access_token;
+        // ✅ Fix: Use correct property names
+        if (session.accessToken) {           // Changed from access_token
+          customToken.accessToken = session.accessToken;
         }
 
-        if (session.refresh_token) {
-          customToken.refreshToken = session.refresh_token;
+        if (session.refreshToken) {          // Changed from refresh_token
+          customToken.refreshToken = session.refreshToken;
         }
 
         if (session.accessTokenExpires) {

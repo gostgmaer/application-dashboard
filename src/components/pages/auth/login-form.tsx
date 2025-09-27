@@ -26,7 +26,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { data: session, update ,} = useSession();
+  const {  update ,} = useSession();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const router = useRouter();
@@ -46,6 +46,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+       getValues,
     formState: { errors, isSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -163,15 +164,12 @@ export default function LoginPage() {
         return;
       } else {
         const { data } = d;
-        console.log(session);
-        
         await update ({
           "2fa_verified": true,
           accessToken: data.tokens.accessToken,
           refreshToken: data.tokens.refreshToken,
           accessTokenExpires: data.tokens.accessTokenExpiresAt,
         });
-        console.log(session);
         
         setShowOTPModal(false);
         router.push(callbackUrl);
@@ -399,7 +397,7 @@ export default function LoginPage() {
         remainingAttempts={remainingAttempts}
         lockoutUntil={lockoutUntil}
         sessionExpiry={sessionExpiry}
-        email={session?.user?.email}
+        email={getValues("email")}
         phone={undefined} // Add phone number if available in session
       />
     </div>
