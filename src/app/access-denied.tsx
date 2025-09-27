@@ -1,9 +1,9 @@
 // app/access-denied.tsx
-import Link from 'next/link';
+import Link from "next/link";
 
 export const metadata = {
-  title: 'Access Denied | NextApp',
-  description: 'You do not have permission to access this page',
+  title: "Access Denied | NextApp",
+  description: "You do not have permission to access this page",
 };
 
 export default function AccessDenied() {
@@ -14,9 +14,12 @@ export default function AccessDenied() {
       tabIndex={-1}
     >
       <section className="bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-md w-full p-8 text-center transition-colors">
-        <h1 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-4">Access Denied</h1>
+        <h1 className="text-4xl font-bold text-red-600 dark:text-red-400 mb-4">
+          Access Denied
+        </h1>
         <p className="text-gray-500 dark:text-gray-300 mb-6">
-          You do not have permission to view this page. Please contact your administrator or return to the homepage.
+          You do not have permission to view this page. Please contact your
+          administrator or return to the homepage.
         </p>
         <Link
           href="/"

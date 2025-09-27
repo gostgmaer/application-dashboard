@@ -31,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: setting?.siteName || "My E-Commerce Store",
     description: setting?.name || "Best E-Commerce Store for all your shopping needs",
     keywords: seoKeywords,
-    themeColor: setting?.branding?.themeColor || "#FF6600",
+    // themeColor: setting?.branding?.themeColor || "#FF6600",
     authors: [{ name: "My Store Team" }],
     metadataBase: new URL("https://yourdomain.com"),
     openGraph: {
