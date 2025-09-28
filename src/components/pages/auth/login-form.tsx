@@ -140,8 +140,7 @@ export default function LoginPage() {
   }, []);
 
   const onSubmit = async (data: LoginForm) => {
-      console.log(data);
-    
+
     if (!mounted.current) return;
   
     setIsLoading(true);
@@ -156,7 +155,6 @@ export default function LoginPage() {
         redirect: false,
       });
 
-      if (!mounted.current) return;
 
       if (result?.error) {
         console.error("❌ Login failed:", result.error);

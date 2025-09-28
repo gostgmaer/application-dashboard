@@ -1,6 +1,7 @@
 // src/context/NotificationContext.tsx
 "use client";
 import NotificationClient from "@/utils/socket";
+import { useSession } from "next-auth/react";
 import React, {
   createContext,
   useContext,
@@ -26,7 +27,6 @@ export const useNotification = () => useContext(NotificationContext);
 
 interface NotificationProviderProps {
   children: ReactNode;
-  authToken: string;
 }
 class MockSocket {
   private listeners: { [key: string]: Function[] } = {};
@@ -91,12 +91,11 @@ interface SocketContextType {
 
 export function NotificationProvider({
   children,
-  authToken,
 }: NotificationProviderProps) {
   const notificationClientRef = useRef<NotificationClient | null>(null);
   const [socket, setSocket] = useState<MockSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-
+  const { data: session } = useSession();
   useEffect(() => {
     // Initialize mock socket
     const mockSocket = new MockSocket();
@@ -113,19 +112,19 @@ export function NotificationProvider({
   }, []);
 
   useEffect(() => {
-    if (authToken) {
-      notificationClientRef.current = new NotificationClient(authToken);
+    if (session?.accessToken) {
+      notificationClientRef.current = new NotificationClient(session?.accessToken);
     }
 
     return () => {
       notificationClientRef.current?.disconnect();
       notificationClientRef.current = null;
     };
-  }, [authToken]);
+  }, [session?.accessToken]);
 
   return (
     <NotificationContext.Provider
-      value={{  
+      value={{
         notificationClient: notificationClientRef.current,
         socket,
         isConnected,
