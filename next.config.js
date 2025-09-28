@@ -24,9 +24,9 @@ const nextConfig = {
     // optimizeCss: true,
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
+  // compiler: {
+  //   removeConsole: process.env.NODE_ENV === "production",
+  // },
   poweredByHeader: false,
   compress: true,
   swcMinify: true,
