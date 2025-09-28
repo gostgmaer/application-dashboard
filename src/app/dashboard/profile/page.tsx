@@ -3,10 +3,10 @@ import { getServerSession } from "next-auth";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import Profile from "@/components/pages/dashboard/profile";
 import { Suspense } from "react";
-import userServices from "@/helper/services/userService";
+import userServices from "@/lib/http/userService";
 import { authOptions } from "@/app/api/auth/authOptions";
 import PrivateLayout from "@/components/layout/dashboard";
-import addressServices from "@/helper/services/address";
+import addressServices from "@/lib/http/address";
 // Adjust path based on your project structure
 
 export default async function Page() {

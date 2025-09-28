@@ -22,7 +22,7 @@ import RoleForm from "./form";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import RolePermissionForm from "./assign";
 import authService from "@/lib/services/auth";
-import roleServices from "@/helper/services/roleServices";
+import roleServices from "@/lib/http/roleServices";
 import { useSession } from "next-auth/react";
 import { useModal } from "@/contexts/modal-context";
 

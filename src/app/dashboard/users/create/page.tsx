@@ -2,7 +2,7 @@ import { authOptions } from "@/app/api/auth/authOptions";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
 import UserCreate from "@/components/pages/dashboard/users/form";
-import roleServices from "@/helper/services/roleServices";
+import roleServices from "@/lib/http/roleServices";
 import { getServerSession } from "next-auth";
 import React, { Suspense } from "react";
 

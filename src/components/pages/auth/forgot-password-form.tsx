@@ -31,7 +31,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import authService from "@/lib/http/authService";
-// import authService from "@/helper/services/authService";
+// import authService from "@/lib/http/authService";
 // import authService from "@/lib/services/auth"
 export default function ForgotPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);

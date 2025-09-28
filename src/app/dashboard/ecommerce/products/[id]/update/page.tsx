@@ -1,7 +1,7 @@
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
 import ProductCreate from "@/components/pages/dashboard/product/form";
-import productService from "@/helper/services/ProductServices";
+import productService from "@/lib/http/ProductServices";
 import React, { Suspense } from "react";
 
 const Page = async (url: any) => {

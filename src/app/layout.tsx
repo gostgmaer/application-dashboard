@@ -13,7 +13,7 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/authOptions";
 import { SettingProvider } from "@/contexts/SettingContext";
-import settingServices from "@/helper/services/settngsServices";
+import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
 
 const roboto = Roboto({ subsets: ["latin"] });

@@ -5,8 +5,8 @@ import axios from "axios";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { toast } from "@/hooks/useToast";
-import attachmentService from "@/helper/services/attachments";
-import authService from "@/helper/services/authService";
+import attachmentService from "@/lib/http/attachments";
+import authService from "@/lib/http/authService";
 
 // Define interfaces
 interface Attachment {

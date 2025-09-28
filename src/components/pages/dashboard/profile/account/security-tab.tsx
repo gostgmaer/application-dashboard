@@ -42,7 +42,7 @@ import {
   phoneVerificationSchema,
 } from "@/lib/validation/account";
 import { User } from "@/types/user";
-import authService from "@/helper/services/authService";
+import authService from "@/lib/http/authService";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/useToast";
 import Image from "next/image";

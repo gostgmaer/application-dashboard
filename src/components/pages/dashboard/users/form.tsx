@@ -25,16 +25,16 @@ import {
   Trash2,
   Info,
 } from "lucide-react";
-import UserServices from "@/helper/services/userService";
+import UserServices from "@/lib/http/userService";
 import { useToast } from "@/hooks/useToast";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDialog } from "@/hooks/use-dialog";
 import Image from "next/image";
-import roleServices from "@/helper/services/roleServices";
+import roleServices from "@/lib/http/roleServices";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import userServices from "@/helper/services/userService";
+import userServices from "@/lib/http/userService";
 import FileUploader from "@/components/elements/uploader";
 
 interface Role {

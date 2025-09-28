@@ -23,7 +23,7 @@ import { User } from "@/types/user";
 import { toast } from "sonner";
 import ProfilePictureUploader from "@/components/elements/profilePhoto";
 import { useSession } from "next-auth/react";
-import authService from "@/helper/services/authService";
+import authService from "@/lib/http/authService";
 
 interface PersonalDetailsTabProps {
   user: User;

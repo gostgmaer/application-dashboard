@@ -4,7 +4,7 @@ import Table from "@/components/pages/dashboard/product/categories/table";
 import PrivateLayout from "@/components/layout/dashboard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
-import categoryServices from "@/helper/services/categoryService";
+import categoryServices from "@/lib/http/categoryService";
 // import Table from "@/components/pages/dashboard/users/roles/table";
 
 export default async function UsersPage(props: any) {

@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 // import { authOptions } from "@/lib/auth/authOptions";
-import authService from "@/helper/services/authService";
+import authService from "@/lib/http/authService";
 import { authOptions } from "../auth/authOptions";
 
 export async function POST(request: NextRequest) {

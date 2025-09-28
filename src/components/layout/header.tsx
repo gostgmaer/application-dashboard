@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils/utils';
 import { ThemeSwitch } from '@/components/elements/theme-switch';
 import { useAppSelector } from '@/hooks/useAppSelector';
 import { useAppDispatch } from '@/hooks/useAppDispatch';
-import { logout } from '@/store/slices/authSlice';
+// import { logout } from '@/store/slices/authSlice';
 import { Button } from '@/components/ui/button';
 import { useSession } from 'next-auth/react';
 import { UserStatus } from '../elements/userpopover';
@@ -19,7 +19,7 @@ export function Header() {
   const { data: session, status } = useSession();
   
   const pathname = usePathname();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  // const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -32,7 +32,7 @@ export function Header() {
 
   // Handle logout
   const handleLogout = () => {
-    dispatch(logout());
+    // dispatch(logout());
     closeMenu();
   };
 
@@ -86,7 +86,7 @@ export function Header() {
               Home
             </Link>
 
-            {isAuthenticated ? (
+            {session ? (
               <>
                 <Link
                   href="/profile"

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Table from "@/components/pages/dashboard/product/table";
 import PrivateLayout from "@/components/layout/dashboard";
-import productService from "@/helper/services/ProductServices";
+import productService from "@/lib/http/ProductServices";
 // import Table from "@/components/pages/dashboard/users/roles/table";
 
 export default async function UsersPage(props: any) {

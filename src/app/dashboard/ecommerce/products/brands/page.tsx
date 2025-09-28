@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Table from "@/components/pages/dashboard/product/brand/table";
-import brandService from "@/helper/services/brands";
+import brandService from "@/lib/http/brands";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
 export default async function UsersPage(props: any) {

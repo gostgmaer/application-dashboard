@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { headers } from 'next/headers';
 import type { ResendOTPResponse } from '@/types/auth';
-import authService from '@/helper/services/authService';
+import authService from '@/lib/http/authService';
 
 // Rate limiting for resend requests
 const resendRateLimitStore = new Map<string, { count: number; resetTime: number; lastResend: number }>();

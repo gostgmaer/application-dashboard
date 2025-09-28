@@ -2,7 +2,7 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
 import SettingsPage from "@/components/pages/dashboard/setting/form";
 import { sitekey } from "@/config/setting";
-import settingServices from "@/helper/services/settngsServices";
+import settingServices from "@/lib/http/settngsServices";
 import React, { Suspense } from "react";
 
 const Page = async () => {

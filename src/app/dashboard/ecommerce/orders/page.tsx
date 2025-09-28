@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Table from "@/components/pages/dashboard/order/table";
 import PrivateLayout from "@/components/layout/dashboard";
-import orderServices from "@/helper/services/OrderServices";
+import orderServices from "@/lib/http/OrderServices";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import settingServices from "@/helper/services/settngsServices";
+import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
 
 // Define the setting type based on your data structure

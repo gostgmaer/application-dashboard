@@ -13,8 +13,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import { useToast } from "@/hooks/useToast";
 import { useSession } from "next-auth/react";
-import permissionServices from "@/helper/services/permissionServices";
-import roleServices from "@/helper/services/roleServices";
+import permissionServices from "@/lib/http/permissionServices";
+import roleServices from "@/lib/http/roleServices";
 
 // Zod schema for form validation
 const rolePermissionSchema = z

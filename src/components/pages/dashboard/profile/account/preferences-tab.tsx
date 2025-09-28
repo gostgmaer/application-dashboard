@@ -13,8 +13,8 @@ import { Loader2, Globe, Palette, Bell, Mail } from 'lucide-react'
 import { preferencesSchema, PreferencesFormData } from '@/lib/validation/account'
 import { User } from '@/types/user'
 import { toast } from 'sonner'
-import userServices from '@/helper/services/userService'
-import authService from '@/helper/services/authService'
+import userServices from '@/lib/http/userService'
+import authService from '@/lib/http/authService'
 import { useSession } from 'next-auth/react'
 
 interface PreferencesTabProps {

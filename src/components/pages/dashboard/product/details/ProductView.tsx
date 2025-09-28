@@ -12,8 +12,9 @@ import { ProductReviews } from './ProductReviews';
 import { RelatedProducts } from './RelatedProduc';
 import { LoadingSkeleton } from './LoadingSkeleton';
 
-import { getProduct } from '@/lib/api/products-api';
+// import { getProduct } from '@/lib/api/products-api';
 import { ErrorBoundary } from './ErrorBoundary';
+import productService from '@/lib/http/ProductServices';
 
 interface ProductViewProps {
   productId: string;
@@ -26,7 +27,7 @@ export function ProductView({ productId, initialProduct }: ProductViewProps) {
 
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', productId],
-    queryFn: () => getProduct(productId),
+    queryFn: () => productService.get(productId),
     initialData: initialProduct,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

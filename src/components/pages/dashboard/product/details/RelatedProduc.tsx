@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { RelatedProduct } from '@/types/product';
 
-import { getRelatedProducts } from '@/lib/api/products-api';
+// import { getRelatedProducts } from '@/lib/api/products';
 import { StarRating } from './StarRating';
+import productService from '@/lib/http/ProductServices';
 
 interface RelatedProductsProps {
   productId: string;
@@ -17,7 +18,7 @@ interface RelatedProductsProps {
 export function RelatedProducts({ productId }: RelatedProductsProps) {
   const { data: products, isLoading, isError } = useQuery({
     queryKey: ['related-products', productId],
-    queryFn: () => getRelatedProducts(productId),
+    queryFn: () => productService.getRelatedProducts(productId),
   });
 
   if (isLoading) {
@@ -59,7 +60,7 @@ export function RelatedProducts({ productId }: RelatedProductsProps) {
         You Might Also Like
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product: RelatedProduct) => (
+        {products?.map((product: RelatedProduct) => (
           <div key={product.id} className="group relative">
             <Link href={`/products/${product.id}`}>
               <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4 group-hover:opacity-90 transition-opacity">

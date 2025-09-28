@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import Table from "@/components/pages/dashboard/users/roles/table";
-import roleServices from "@/helper/services/roleServices";
+import roleServices from "@/lib/http/roleServices";
 import PrivateLayout from "@/components/layout/dashboard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
-import permissionServices from "@/helper/services/permissionServices";
+import permissionServices from "@/lib/http/permissionServices";
 
 export default async function Page(props: any) {
   const query = await props.searchParams;

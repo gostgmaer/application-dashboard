@@ -21,9 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import BrandServices from "@/helper/services/brands";
+import BrandServices from "@/lib/http/brands";
 import { useDialog } from "@/hooks/use-dialog";
-import brandService from "@/helper/services/brands";
+import brandService from "@/lib/http/brands";
 import { useSession } from "next-auth/react";
 
 const statusArray = [

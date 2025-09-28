@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 
 import Table from "@/components/pages/dashboard/users/permission/table";
-import permissionServices from "@/helper/services/permissionServices";
+import permissionServices from "@/lib/http/permissionServices";
 import PrivateLayout from "@/components/layout/dashboard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";

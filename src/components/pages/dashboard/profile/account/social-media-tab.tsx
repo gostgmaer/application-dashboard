@@ -15,7 +15,7 @@ import { Loader2, Facebook, Twitter, Instagram, Linkedin, Chrome, Pin, Github, C
 import { socialMediaSchema, connectedAccountsSchema, SocialMediaFormData, ConnectedAccountsFormData } from '@/lib/validation/account'
 import { User } from '@/types/user'
 import { toast } from 'sonner'
-import authService from '@/helper/services/authService'
+import authService from '@/lib/http/authService'
 import { useSession } from 'next-auth/react'
 
 interface SocialMediaTabProps {

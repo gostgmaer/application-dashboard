@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Upload, Image as ImageIcon, Save, Eye } from "lucide-react";
-import CategoryServices from "@/helper/services/CategoryServices";
+// import CategoryServices from "@/lib/http/CategoryServices";
 import { useDialog } from "@/hooks/use-dialog";
 import {  useToast } from "@/hooks/useToast";
 import { useSession } from "next-auth/react";
-import categoryServices from "@/helper/services/categoryService";
+import categoryServices from "@/lib/http/categoryService";
+// import categoryServices from "@/lib/http/categoryService";
 
 // Zod schema for validation
 const categorySchema = z.object({

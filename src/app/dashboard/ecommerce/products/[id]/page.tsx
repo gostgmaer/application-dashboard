@@ -1,11 +1,12 @@
 // app/products/[id]/page.tsx
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getProduct } from "@/lib/api/products-api";
+// import { getProduct } from "@/lib/api";
 import { ProductView } from "@/components/pages/dashboard/product/details/ProductView";
 
 // Explicitly import Next.js types
 import type { NextPage } from "next";
+import productService from "@/lib/http/ProductServices";
 
 // Define the props interface to match Next.js dynamic route expectations
 interface ProductPageProps {
@@ -27,7 +28,7 @@ const ProductPage: NextPage<ProductPageProps> = async ({ params, searchParams })
     const filter = typeof resolvedSearchParams.filter === "string" ? resolvedSearchParams.filter : "all";
 
     // Fetch product, potentially passing searchParams to API
-    const product = await getProduct(id);
+    const product:any = await productService.get(id);
 
     // JSON-LD Schema
     const jsonLd = {

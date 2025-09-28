@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Plus, X, Save, Eye, Trash2 } from "lucide-react";
-import roleServices from "@/helper/services/roleServices";
+import roleServices from "@/lib/http/roleServices";
 import { useToast } from "@/hooks/useToast";
 import { useDialog } from "@/hooks/use-dialog";
 import { Controller, useForm } from "react-hook-form";

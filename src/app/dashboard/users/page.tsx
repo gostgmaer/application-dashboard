@@ -3,7 +3,7 @@ import UsersTable from "@/components/pages/dashboard/users/table";
 import PrivateLayout from "@/components/layout/dashboard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
-import userServices from "@/helper/services/userService";
+import userServices from "@/lib/http/userService";
 
 export default async function UsersPage(props: any) {
 
