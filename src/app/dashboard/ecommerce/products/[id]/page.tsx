@@ -2,7 +2,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 // import { getProduct } from "@/lib/api";
-import { ProductView } from "@/components/pages/dashboard/product/details/ProductView";
+// import { ProductView } from "@/components/pages/dashboard/product/details/ProductView";
 
 // Explicitly import Next.js types
 import type { NextPage } from "next";
@@ -67,10 +67,10 @@ const ProductPage: NextPage<ProductPageProps> = async ({ params, searchParams })
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ProductView
+        {/* <ProductView
           productId={id}
           initialProduct={product}
-        />
+        /> */}
       </>
     );
   } catch {

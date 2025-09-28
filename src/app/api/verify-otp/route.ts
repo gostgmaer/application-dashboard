@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
         'ACCOUNT_LOCKED': 'MAX_ATTEMPTS_EXCEEDED',
       };
 
-      const mappedErrorCode = errorCodeMapping[verificationResult.error_code || ''] || 'INVALID_OTP';
+      const mappedErrorCode = errorCodeMapping[verificationResult.code || ''] || 'INVALID_OTP';
 
       return NextResponse.json(
         {
