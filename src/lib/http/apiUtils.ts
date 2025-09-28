@@ -1,17 +1,7 @@
 // apiUtils.ts
 
-export interface ApiResponse {
-  success: boolean;
-  status?: number;
-  error_code?: string;
-  data?: any;
-  message?: string;
-  error?: string;
-  errors?: Array<{ msg: string; param: string; value: any }>;
-  totalCount?: number;
-  currentPage?: number;
-  totalPages?: number;
-}
+import { ApiResponse } from "@/types/global";
+
 
 
 export const handleApiError = (error: any): ApiResponse => {

@@ -40,37 +40,8 @@ import {
   twitterSecret,
   secret,
 } from "@/config/setting";
-
-import authService from "@/helper/services/authService";
-
-interface CustomToken extends JWT {
-  accessToken?: string;
-  refreshToken?: string;
-  accessTokenExpires?: number;
-  id_token?: string;
-  token_type?: string;
-  exp?: number;
-  error?: string;
-  role?: string;
-  [key: string]: any;
-  "2fa_required"?: boolean;
-  "2fa_verified"?: boolean;
-  otp_method?: string;
-  tempToken?: string;
-}
-
-interface CustomUser extends User {
-  accessToken?: string;
-  tempToken?: string;
-  refreshToken?: string;
-  id_token?: string;
-  token_type?: string;
-  accessTokenExpires?: number;
-  role?: string;
-  otp_method?: string;
-  "2fa_required"?: boolean;
-  "2fa_verified"?: boolean;
-}
+import authService from "@/lib/http/authService";
+import { CustomToken, CustomUser } from "@/types/auth";
 
 // Custom error for 2FA requirement
 export class TwoFactorRequiredError extends Error {
@@ -91,7 +62,7 @@ export class TwoFactorRequiredError extends Error {
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
   try {
     console.log("🔄 Refreshing access token...");
-    
+
     if (!token.refreshToken) {
       console.error("❌ No refresh token available");
       return {
@@ -110,9 +81,9 @@ async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
     }
 
     const { accessToken, refreshToken, expiresAt } = response.data;
-    
+
     console.log("✅ Token refreshed successfully");
-    
+
     return {
       ...token,
       accessToken,
@@ -143,7 +114,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           console.log("🔐 Authorizing credentials...");
-          
+
           const payload = {
             identifier: credentials?.email,
             password: credentials?.password,
@@ -179,7 +150,9 @@ export const authOptions: AuthOptions = {
             accessToken: tokens?.accessToken,
             refreshToken: tokens?.refreshToken,
             token_type: "access",
-            accessTokenExpires: tokens?.accessTokenExpiresAt ? Date.parse(tokens.accessTokenExpiresAt) : undefined,
+            accessTokenExpires: tokens?.accessTokenExpiresAt
+              ? Date.parse(tokens.accessTokenExpiresAt)
+              : undefined,
             "2fa_required": data?.["2fa_required"],
             "2fa_verified": data?.["2fa_verified"],
           };
@@ -190,6 +163,37 @@ export const authOptions: AuthOptions = {
       },
     }),
     // ... other providers remain the same
+
+    GitHubProvider({
+      clientId: githubClient || "",
+      clientSecret: githubSecret || "",
+    }),
+    GoogleProvider({
+      clientId: googleClient || "",
+      clientSecret: googleSecret || "",
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
+    }),
+    LinkedInProvider({
+      clientId: linkedinClient || "",
+      clientSecret: linkedinSecret || "",
+      authorization: {
+        params: {
+          scope: "r_liteprofile r_emailaddress",
+        },
+      },
+    }),
+    TwitterProvider({
+      clientId: twitterClient || "",
+      clientSecret: twitterSecret || "",
+      version: "2.0",
+    }),
+
   ],
 
   secret,
@@ -266,7 +270,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         const customUser = user as CustomUser;
         console.log("👤 Setting initial user data in token");
-        
+
         customToken.accessToken = customUser.accessToken;
         customToken.refreshToken = customUser.refreshToken;
         customToken.token_type = customUser.token_type;
@@ -284,16 +288,19 @@ export const authOptions: AuthOptions = {
         console.log("🔄 Handling session update:", {
           trigger,
           sessionData: session,
-          tokenBefore: { 
+          tokenBefore: {
             "2fa_verified": customToken["2fa_verified"],
-            accessToken: customToken.accessToken ? "***" : undefined
-          }
+            accessToken: customToken.accessToken ? "***" : undefined,
+          },
         });
 
         // Update 2FA verification status
         if (session["2fa_verified"] !== undefined) {
           customToken["2fa_verified"] = session["2fa_verified"];
-          console.log("✅ Updated 2FA verification status:", session["2fa_verified"]);
+          console.log(
+            "✅ Updated 2FA verification status:",
+            session["2fa_verified"]
+          );
         }
 
         // ✅ FIXED: Use correct property names that match what's sent from login form
@@ -309,9 +316,10 @@ export const authOptions: AuthOptions = {
 
         if (session.accessTokenExpires) {
           // Handle both string and number formats
-          const expires = typeof session.accessTokenExpires === 'string' 
-            ? Date.parse(session.accessTokenExpires)
-            : session.accessTokenExpires;
+          const expires =
+            typeof session.accessTokenExpires === "string"
+              ? Date.parse(session.accessTokenExpires)
+              : session.accessTokenExpires;
           customToken.accessTokenExpires = expires;
           console.log("✅ Updated token expiration:", new Date(expires));
         }
@@ -354,10 +362,10 @@ export const authOptions: AuthOptions = {
       token: CustomToken;
     }) {
       if (process.env.NODE_ENV === "development") {
-        console.log("📋 Session callback:", { 
-          trigger, 
+        console.log("📋 Session callback:", {
+          trigger,
           hasToken: !!token,
-          "2fa_verified": token["2fa_verified"]
+          "2fa_verified": token["2fa_verified"],
         });
       }
 

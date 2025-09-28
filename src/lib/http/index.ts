@@ -1,110 +1,274 @@
-
-// utils/fetchData.js
-
+// httpServices.ts
 import { baseurl } from "@/config/setting";
-// import { getCookiesData } from "@/helper/functions";
+import { ApiResponse } from "@/types/global";
+
+// Types for fetchData options and response
 export interface FetchOptions {
-  method?: string;
-  body?: any;
-  params?: Record<string, string | number>;
-  query?: Record<string, string | number>;
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: any | FormData;
+  token?: string;
+  params?: Record<string, any>;
+  query?: Record<string, any> | string;
   headers?: Record<string, string>;
   cacheTime?: number;
 }
 
-export async function fetchData(
+/**
+ * Robust fetchData function with error handling to prevent UI breaks.
+ */
+export async function fetchData<T = any>(
   endpoint: string,
   options: FetchOptions = {}
-): Promise<any> {
+): Promise<ApiResponse<T>> {
   try {
     const {
       method = "GET",
       body,
+      token,
       params = {},
       query = {},
       headers = {},
-      cacheTime = 60,
+      cacheTime = 0,
     } = options;
 
     // Validate endpoint
     if (!endpoint || typeof endpoint !== "string" || endpoint.trim() === "") {
-      throw new Error("Invalid or missing endpoint");
+      return {
+        success: false,
+        error: "Invalid or missing endpoint",
+      };
     }
+
+    // Decode query if it's a string
+    const decoded = typeof query === "string" ? decodeURIComponent(query) : "";
 
     // Build the URL
     let url = `${baseurl}${endpoint}`;
 
     // Replace URL params
-    Object.keys(params).forEach((key) => {
-      const value = params[key];
-      if (value === undefined || value === null || value === "") {
-        throw new Error(`Invalid or missing URL parameter: ${key}`);
+    if (params && Object.keys(params).length > 0) {
+      try {
+        Object.keys(params).forEach((key) => {
+          const value = params[key];
+          if (value === undefined || value === null || value === "") {
+            throw new Error(`Invalid or missing URL parameter: ${key}`);
+          }
+          url = url.replace(`:${key}`, encodeURIComponent(value));
+        });
+      } catch (paramError) {
+        return {
+          success: false,
+          error:
+            paramError instanceof Error
+              ? paramError.message
+              : "URL parameter error",
+        };
       }
-      url = url.replace(`:${key}`, encodeURIComponent(String(value)));
-    });
+    }
 
     // Append query parameters
-    const validQuery = Object.entries(query).reduce((acc, [key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
-        acc[key] = String(value);
-      }
-      return acc;
-    }, {} as Record<string, string>);
+    if (query && typeof query === "object" && !Array.isArray(query)) {
+      try {
+        const validQuery = Object.entries(query)
+          .filter(
+            ([_, value]) =>
+              value !== undefined && value !== null && value !== ""
+          )
+          .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+          }, {} as Record<string, any>);
 
-    const queryString = new URLSearchParams(validQuery).toString();
-    if (queryString) {
-      url += `?${queryString}`;
+        const queryString = new URLSearchParams(validQuery).toString();
+        if (queryString) {
+          url += `?${queryString}`;
+        }
+      } catch (queryError) {
+        return {
+          success: false,
+          error: "Failed to process query parameters",
+        };
+      }
+    } else if (decoded) {
+      url += `?${decoded}`;
     }
 
     const defaultHeaders: Record<string, string> = {
-      "Content-Type": "application/json",
+      ...(body instanceof FormData
+        ? {}
+        : { "Content-Type": "application/json" }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
+
     const mergedHeaders = { ...defaultHeaders, ...headers };
 
-    const res = await fetch(url, {
+    // Configure fetch options
+    const fetchOptions: RequestInit = {
       method,
       headers: mergedHeaders,
-      body: method === "GET" ? undefined : JSON.stringify(body),
-      next: { revalidate: cacheTime },
-    });
+      ...(method === "GET" || !body
+        ? {}
+        : { body: body instanceof FormData ? body : JSON.stringify(body) }), // Handle FormData or JSON
+      ...(typeof window === "undefined"
+        ? { next: { revalidate: cacheTime } }
+        : {}), // Next.js ISR cache control
+    };
 
-    return await res.json();
+    // Execute fetch
+    const res = await fetch(url, fetchOptions);
+
+    // Handle non-OK responses
+    if (!res.ok) {
+      const contentType = res.headers.get("content-type");
+
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          const errorData = await res.json();
+          return {
+            success: false,
+            error:
+              errorData.message ||
+              errorData.error ||
+              `HTTP ${res.status}: ${res.statusText}`,
+            ...errorData,
+          };
+        } catch {
+          return {
+            success: false,
+            error: `HTTP ${res.status}: ${res.statusText}`,
+          };
+        }
+      } else {
+        try {
+          const text = await res.text();
+          return {
+            success: false,
+            error: text || `HTTP ${res.status}: ${res.statusText}`,
+          };
+        } catch {
+          return {
+            success: false,
+            error: `HTTP ${res.status}: ${res.statusText}`,
+          };
+        }
+      }
+    }
+
+    // Handle JSON response
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      try {
+        const jsonData = await res.json();
+        return {
+          success: true,
+          ...jsonData,
+        };
+      } catch {
+        return {
+          success: false,
+          error: "Failed to parse JSON response",
+        };
+      }
+    } else {
+      // Non-JSON response fallback
+      try {
+        const raw = await res.text();
+        console.warn("Non-JSON response received:", raw);
+        return {
+          success: true,
+          data: raw as unknown as T,
+          raw,
+        };
+      } catch {
+        return {
+          success: false,
+          error: "Failed to read response",
+        };
+      }
+    }
   } catch (error) {
     console.error("Fetch error:", error);
-    return { error: "Data could not be fetched" };
+
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      return {
+        success: false,
+        error: "Network error: Please check your internet connection",
+      };
+    }
+
+    if (error instanceof Error) {
+      return {
+        success: false,
+        error: error.message || "Request failed",
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred",
+    };
   }
 }
 
-
-
+/**
+ * Helper HTTP methods with type support
+ */
 const requests = {
-  get: async (endpoint: string, query: any, params: any, headers: any, cacheTime = 3600) =>
-    await fetchData(endpoint, {
-      method: 'GET',
-      cacheTime: cacheTime,
-      query, params, headers // Cache for 5 minutes
-    }),
-  post: async (endpoint: string, body: any, headers: any) =>
-    await fetchData(endpoint, {
-      method: 'POST',
-      body, headers 
-    }),
-  put: async (endpoint: string, body: any, params: any, headers: any) =>
-    await fetchData(endpoint, {
-      method: 'PUT', body, params, headers 
-    }),
-  patch: async (endpoint: string, body: any, params: any, headers: any,token:any) =>
-    await fetchData(endpoint, {
-      method: 'PATCH', body, params, headers 
-    }),
-  delete: async (endpoint: string, params: any, headers: any) =>
-    await fetchData(endpoint, {
-      method: 'DELETE', params, headers
+  get: async <T = any>(
+    endpoint: string,
+    token?: string,
+    query?: Record<string, any> | string,
+    params?: Record<string, any>,
+    headers?: Record<string, string>,
+    cacheTime: number = 3600
+  ): Promise<ApiResponse<T>> =>
+    await fetchData<T>(endpoint, {
+      method: "GET",
+      cacheTime,
+      query,
+      params,
+      headers,
+      token,
     }),
 
+  post: async <T = any>(
+    endpoint: string,
+    body?: any | FormData,
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse<T>> =>
+    await fetchData<T>(endpoint, { method: "POST", body, headers, token }),
 
+  put: async <T = any>(
+    endpoint: string,
+    body?: any | FormData,
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse<T>> =>
+    await fetchData<T>(endpoint, { method: "PUT", body, headers, token }),
+
+  patch: async <T = any>(
+    endpoint: string,
+    body?: any | FormData,
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse<T>> =>
+    await fetchData<T>(endpoint, { method: "PATCH", body, headers, token }),
+
+  delete: async <T = any>(
+    endpoint: string,
+    body?: any,
+    token?: string,
+    params?: Record<string, any>,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse<T>> =>
+    await fetchData<T>(endpoint, {
+      method: "DELETE",
+      body,
+      params,
+      headers,
+      token,
+    }),
 };
-
-
 
 export default requests;

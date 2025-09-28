@@ -1,5 +1,6 @@
 import requests from "./index";
-import { ApiResponse, handleApiError, safeApiCall } from "./apiUtils";
+import { safeApiCall } from "./apiUtils";
+import { ApiResponse } from "@/types/global";
 
 const roleServices = {
   create: async (

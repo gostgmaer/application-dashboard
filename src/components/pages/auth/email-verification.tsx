@@ -7,11 +7,11 @@ import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import {
-  verifyEmailStart,
-  verifyEmailSuccess,
-  verifyEmailFailure,
-} from "@/store/slices/authSlice";
+// import {
+//   verifyEmailStart,
+//   verifyEmailSuccess,
+//   verifyEmailFailure,
+// } from "@/store/slices/authSlice";
 import { useSearchParams } from "next/navigation";
 interface EmailVerificationProps {
   token?: string;
@@ -32,23 +32,23 @@ export function EmailVerification() {
       if (!token) {
         setStatus("error");
         setError("Verification token is missing");
-        dispatch(verifyEmailFailure("Verification token is missing"));
+        // dispatch(verifyEmailFailure("Verification token is missing"));
         return;
       }
 
-      dispatch(verifyEmailStart());
+      // dispatch(verifyEmailStart());
 
       try {
         // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // For demo purposes, let's say the verification is successful
-        dispatch(verifyEmailSuccess());
+        // dispatch(verifyEmailSuccess());
         setStatus("success");
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to verify email";
-        dispatch(verifyEmailFailure(errorMessage));
+        // dispatch(verifyEmailFailure(errorMessage));
         setStatus("error");
         setError(errorMessage);
       }

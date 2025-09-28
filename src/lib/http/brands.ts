@@ -1,5 +1,6 @@
 import requests from "./index";
-import { safeApiCall, ApiResponse } from "./apiUtils";
+import { safeApiCall } from "./apiUtils";
+import { ApiResponse } from "@/types/global";
 
 const brandService = {
   create: async (body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>

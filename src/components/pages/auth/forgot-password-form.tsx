@@ -27,10 +27,11 @@ import {
   forgotPasswordFormSchema,
   type ForgotPasswordFormData,
 } from "@/lib/validation-schemas";
-import { forgotPasswordStart } from "@/store/slices/authSlice";
+// import { forgotPasswordStart } from "@/store/slices/authSlice";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import authService from "@/helper/services/authService";
+import authService from "@/lib/http/authService";
+// import authService from "@/helper/services/authService";
 // import authService from "@/lib/services/auth"
 export default function ForgotPasswordForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +51,7 @@ export default function ForgotPasswordForm() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setIsSubmitting(true);
-    dispatch(forgotPasswordStart());
+    // dispatch(forgotPasswordStart());
 
     try {
       const response = await authService.forgotPassword(data);

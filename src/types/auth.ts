@@ -1,3 +1,5 @@
+import { User } from "next-auth";
+import { JWT } from "next-auth/jwt";
 
 export interface LoginResponse {
   success: boolean;
@@ -45,14 +47,43 @@ export interface ResendOTPResponse {
   next_resend_at?: string;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  '2fa_verified': boolean;
-}
+// export interface User {
+//   id: string;
+//   email: string;
+//   name: string;
+//   '2fa_verified': boolean;
+// }
 
 export interface AuthTokens {
   access_token: string;
   refresh_token: string;
+}
+
+export interface CustomToken extends JWT {
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpires?: number;
+  id_token?: string;
+  token_type?: string;
+  exp?: number;
+  error?: string;
+  role?: string;
+  [key: string]: any;
+  "2fa_required"?: boolean;
+  "2fa_verified"?: boolean;
+  otp_method?: string;
+  tempToken?: string;
+}
+
+export interface CustomUser extends User {
+  accessToken?: string;
+  tempToken?: string;
+  refreshToken?: string;
+  id_token?: string;
+  token_type?: string;
+  accessTokenExpires?: number;
+  role?: string;
+  otp_method?: string;
+  "2fa_required"?: boolean;
+  "2fa_verified"?: boolean;
 }

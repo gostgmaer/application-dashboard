@@ -1,5 +1,6 @@
 import requests from "./index";
-import { ApiResponse, safeApiCall } from "./apiUtils";
+import { safeApiCall } from "./apiUtils";
+import { ApiResponse } from "@/types/global";
 
 const permissionServices = {
   create: async (
