@@ -35,10 +35,12 @@ interface permission {
 }
 
 export default function Table({ props }: any) {
+
+  console.log(props);
+  
   // const { openDialog, closeDialog, confirm,monfirmModal, alert, options } = useDialog();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { data: session } = useSession();
-  const { openModal } = useCommonModal();
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.data || [],

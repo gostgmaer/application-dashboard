@@ -165,7 +165,7 @@ export default function Table({ props }: any) {
       },
     },
     {
-      accessorKey: "price",
+      accessorKey: "basePrice",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -176,23 +176,23 @@ export default function Table({ props }: any) {
             Sale Price
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="price" />
+          <ColumnFilter column={column} title="basePrice" />
         </div>
       ),
       cell: ({ row }) => {
-        const price = row.getValue("price") as string;
+        const basePrice = row.getValue("basePrice") as string;
 
         return (
           <div className="flex items-center space-x-3">
             <div>
-              <div className="font-medium">{price}</div>
+              <div className="font-medium">{basePrice}</div>
             </div>
           </div>
         );
       },
     },
     {
-      accessorKey: "stock",
+      accessorKey: "inventory",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
           <Button
@@ -203,16 +203,16 @@ export default function Table({ props }: any) {
             Stock
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
-          <ColumnFilter column={column} title="stock" />
+          <ColumnFilter column={column} title="inventory" />
         </div>
       ),
       cell: ({ row }) => {
-        const stock = row.getValue("stock") as string;
+        const inventory = row.getValue("inventory") as string;
 
         return (
           <div className="flex items-center space-x-3">
             <div>
-              <div className="font-medium">{stock}</div>
+              <div className="font-medium">{inventory}</div>
             </div>
           </div>
         );

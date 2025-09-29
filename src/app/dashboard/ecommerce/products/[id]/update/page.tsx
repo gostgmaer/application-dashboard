@@ -7,6 +7,8 @@ import React, { Suspense } from "react";
 const Page = async (url: any) => {
   const params = await url.params;
   const data = await productService.get(params.id);
+  console.log(data);
+  
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">
@@ -17,7 +19,7 @@ const Page = async (url: any) => {
           ></Breadcrumbs>
 
           <div className="rounded-md   shadow-sm overflow-auto ">
-            <ProductCreate></ProductCreate>
+            <ProductCreate data={data.data}></ProductCreate>
           </div>
         </Suspense>
       </div>

@@ -58,7 +58,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}`,undefined, token, undefined, headers));
   },
 
   login: async (

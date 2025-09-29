@@ -51,7 +51,7 @@ const ProductVariantSchema = z.object({
 
 // Zod schema for ProductData - Updated for mainImage and videoUrls validation
 const ProductDataSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
+  title: z.string().min(1, "Product name is required"),
   description: z.string().optional(),
   shortDescription: z.string().optional(),
   category: z.string().min(1, "Category is required"),
@@ -211,7 +211,7 @@ interface ProductVariant {
 }
 
 interface ProductData {
-  name: string;
+  title: string;
   description: string;
   shortDescription: string;
   category: string;
@@ -431,7 +431,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   } = useForm<ProductData>({
     resolver: zodResolver(ProductDataSchema),
     defaultValues: data || {
-      name: "",
+      title: "",
       description: "",
       shortDescription: "",
       category: "",
@@ -642,7 +642,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   };
 
   const addVariant = () => {
-    const productName = getValues("name");
+    const productName = getValues("title");
     const productSku = getValues("sku");
     appendVariant({
       id: Date.now().toString(),
@@ -686,7 +686,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
         status,
         seo: {
           ...formData.seo,
-          slug: formData.seo.slug || generateSlug(formData.name),
+          slug: formData.seo.slug || generateSlug(formData.title),
         },
         mainImage: mainImageFile
           ? URL.createObjectURL(mainImageFile)
@@ -750,20 +750,20 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
             <CardContent className="space-y-6">
               <div>
                 <Label
-                  htmlFor="name"
+                  htmlFor="title"
                   className="text-sm font-medium text-gray-700"
                 >
                   Product Name *
                 </Label>
                 <Input
-                  id="name"
-                  {...register("name")}
+                  id="title"
+                  {...register("title")}
                   className="mt-1"
                   placeholder="Enter product name"
                 />
-                {errors.name && (
+                {errors.title && (
                   <p className="text-red-600 text-sm mt-1">
-                    {errors.name.message}
+                    {errors.title.message}
                   </p>
                 )}
               </div>
@@ -2074,7 +2074,7 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                 </Label>
                 <div className="mt-1 p-3 bg-gray-50 rounded-md">
                   <span className="text-lg font-semibold text-green-600">
-                    {watch("profitMargin").toFixed(2)}%
+                    {/* {watch("profitMargin").toFixed(2)}% */}
                   </span>
                 </div>
               </div>

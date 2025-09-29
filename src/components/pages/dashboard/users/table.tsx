@@ -19,6 +19,9 @@ import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { useModal } from "@/contexts/modal-context";
+import userServices from "@/lib/http/userService";
+import { useSession } from "next-auth/react";
 
 interface User {
   id: string;
@@ -32,50 +35,41 @@ interface User {
 
 export default function UsersTable({ props }: any) {
   console.log(props);
-  
 
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+  const { showConfirm, showAlert, showCustom } = useModal();
+  const { data: session } = useSession();
 
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
-      data: props.users||[],
-      totalCount: props.pagination.totalUsers||0,
+      data: props.users || [],
+      totalCount: props.pagination.totalUsers || 0,
       pageCount: props.pagination.totalPages,
     };
   };
 
-  const handleFullScreenDialog = (user: any) => {
-    console.log(user);
+  const deleteRequest = async (id: any) => {
+    return await userServices.remove(id, session?.accessToken);
+  };
+  const handleDelete = async (data: any) => {
 
-    openDialog(
-      <div>
-        {" "}
-        <CustomDialog
-          showHeader
-          title="Dashboard Analytics"
-          showFooter
-          footer={
-            <div className="flex justify-between w-full">
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  Export
-                </Button>
-                <Button variant="outline" size="sm">
-                  Share
-                </Button>
-              </div>
-              <Button onClick={closeDialog}>Close Dashboard</Button>
-            </div>
-          }
-        >
-          <div>{JSON.stringify(user)}</div>
-        </CustomDialog>{" "}
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-      }
-    );
+    const confirmed = await showConfirm({
+      title: "Delete Item",
+      description:
+        "Are you sure you want to delete this item? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        deleteRequest(data.id);
+      },
+    });
+    if (confirmed) {
+      await showAlert({
+        title: "Success",
+        description: "Item has been deleted successfully.",
+        variant: "success",
+      });
+    }
   };
 
   const columns: ColumnDef<User>[] = [
@@ -158,7 +152,7 @@ export default function UsersTable({ props }: any) {
         );
       },
     },
-  
+
     {
       accessorKey: "lastLoginAttempt",
       header: ({ column }) => (
@@ -176,7 +170,7 @@ export default function UsersTable({ props }: any) {
         return <div className="text-muted-foreground">{lastLoginAttempt}</div>;
       },
     },
-      {
+    {
       accessorKey: "rolename",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
@@ -217,11 +211,17 @@ export default function UsersTable({ props }: any) {
               >
                 Copy ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFullScreenDialog(user)}>
+              {/* <DropdownMenuItem onClick={() => handleFullScreenDialog(user)}>
                 View
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem>
                 <Link href={`/dashboard/users/${user["id"]}/update`}>Edit</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="text-red-500"
+                onClick={() => handleDelete(user)}
+              >
+                Remove
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
