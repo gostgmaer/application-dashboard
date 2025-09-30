@@ -20,6 +20,7 @@ import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { BrandForm } from "./form";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface brands {
   _id: string;
@@ -75,6 +76,28 @@ export default function Table({ props }: any) {
   };
 
   const columns: ColumnDef<brands>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "name",
       header: ({ column }) => (

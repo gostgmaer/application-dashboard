@@ -49,6 +49,9 @@ export function TableToolbar<TData>({
   exportFileName = "table-export",
   exportColumns = [],
 }: TableToolbarProps<TData>) {
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const allRows = table.getFilteredRowModel().rows;
+
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
@@ -62,7 +65,6 @@ export function TableToolbar<TData>({
     setIsExporting(true);
 
     try {
-      const allRows = table.getPreFilteredRowModel().rows;
       const data = allRows.map((row) => row.original);
 
       // Use provided export columns or generate from table columns
@@ -145,6 +147,14 @@ export function TableToolbar<TData>({
       </div>
 
       <div className="flex items-center space-x-2">
+        {selectedRows.length > 0 && (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-muted-foreground">
+              {selectedRows.length} of {table.getFilteredRowModel().rows.length}{" "}
+              row(s) selected
+            </span>
+          </div>
+        )}
         <Button
           variant="outline"
           size="sm"

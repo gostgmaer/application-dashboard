@@ -22,6 +22,7 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { useModal } from "@/contexts/modal-context";
 import userServices from "@/lib/http/userService";
 import { useSession } from "next-auth/react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface User {
   id: string;
@@ -51,7 +52,6 @@ export default function UsersTable({ props }: any) {
     return await userServices.remove(id, session?.accessToken);
   };
   const handleDelete = async (data: any) => {
-
     const confirmed = await showConfirm({
       title: "Delete Item",
       description:
@@ -73,6 +73,28 @@ export default function UsersTable({ props }: any) {
   };
 
   const columns: ColumnDef<User>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "fullName",
       header: ({ column }) => (

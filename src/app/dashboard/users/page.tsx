@@ -10,6 +10,7 @@ export default async function UsersPage(props: any) {
   const query = await props.searchParams;
    const session = await getServerSession(authOptions);
   const user = await userServices.getAll(query, session?.accessToken);
+console.log(user);
 
   return (
    <PrivateLayout>

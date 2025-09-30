@@ -19,6 +19,7 @@ import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface category {
   _id: string;
@@ -53,6 +54,28 @@ export default function Table({ props }: any) {
   };
 
   const columns: ColumnDef<products>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
     {
       accessorKey: "title",
       header: ({ column }) => (
