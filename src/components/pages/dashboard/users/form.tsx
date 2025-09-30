@@ -35,7 +35,7 @@ import roleServices from "@/lib/http/roleServices";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import userServices from "@/lib/http/userService";
-import FileUploader from "@/components/elements/uploader";
+import FileUploader, { Attachment } from "@/components/elements/uploader";
 
 interface Role {
   _id: string;
@@ -161,11 +161,13 @@ const subscriptionTypes = ["free", "premium", "enterprise"];
 
 export default function UserCreate({ data, id, master }: any) {
   const { data: session } = useSession();
-console.log(master);
+  console.log(master);
 
   const route = useRouter();
   const { toast } = useToast();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<Attachment | null>(null);
+
   const generateReferralCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
@@ -173,11 +175,13 @@ console.log(master);
     values: UserData,
     s: "draft" | "published" | "update"
   ) => {
+    console.log(uploadedFile);
+
     const updatedUser = {
       ...values,
       status: s === "draft" ? "draft" : values?.status,
       referralCode: values?.referralCode || generateReferralCode(),
-      profilePicture,
+      profilePicture: uploadedFile,
     };
     let res: any = {};
 
@@ -474,15 +478,13 @@ console.log(master);
           </Card>
           <FileUploader
             title="Upload Gallery Images"
-            allowedTypes={["image/jpeg", "image/png"]}
+            // allowedTypes={["image/jpeg", "image/png"]}
             maxFileSize={5 * 1024 * 1024}
             fileTypeLabel="PNG, JPG up to 5MB"
             apiEndpoint="/files"
             authToken={session?.accessToken || ""}
             multiple={false}
-            onFileChange={(files: File[]) =>
-              console.log("Selected files:", files)
-            }
+            onFileChange={(files: any) => console.log(files)}
           />
 
           {/* Social Media & Interests */}

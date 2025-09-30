@@ -28,6 +28,14 @@ const nextConfig = {
   //   removeConsole: process.env.NODE_ENV === "production",
   // },
   poweredByHeader: false,
+  async rewrites() {
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: "http://localhost:3500/uploads/:path*",
+      },
+    ];
+  },
   compress: true,
   swcMinify: true,
   reactStrictMode: true,

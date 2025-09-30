@@ -1,18 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useRef } from 'react';
-import axios from 'axios';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ImageIcon, Upload, Trash2, Download, Edit } from 'lucide-react';
-import Image from 'next/image';
-import { toast } from '@/hooks/useToast';
-import { baseurl } from '@/config/setting';
-
+import { useState, useRef } from "react";
+import axios from "axios";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ImageIcon, Upload, Trash2, Download, Edit } from "lucide-react";
+import Image from "next/image";
+import { toast } from "@/hooks/useToast";
+import { baseurl } from "@/config/setting";
 
 // Define interfaces
-interface Attachment {
+export interface Attachment {
   _id: string;
   tenant: string;
   fileName: string;
@@ -32,6 +31,28 @@ interface Attachment {
   signedUrl?: string;
 }
 
+interface AttachmentData {
+  data: {
+    _id: string;
+    tenant: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    fileUrl: string;
+    storageType: string;
+    bucketName: string | null;
+    storagePath: string;
+    extension: string;
+    category: string;
+    uploadedBy: string;
+    uploadedAt: string;
+    status: string;
+    createdAt: string;
+    updatedAt: string;
+    signedUrl?: string;
+  };
+}
+
 interface FileUploaderProps {
   title?: string;
   allowedTypes?: string[];
@@ -48,28 +69,33 @@ interface Errors {
   file?: { message: string };
 }
 
-
 const FileUploader: React.FC<FileUploaderProps> = ({
-  title = 'Upload File',
-  allowedTypes = ['image/jpeg', 'image/png'],
+  title = "Upload File",
+  allowedTypes = ["image/jpeg", "image/png"],
   maxFileSize = 5 * 1024 * 1024, // 5MB default
-  fileTypeLabel = 'PNG, JPG up to 5MB',
+  fileTypeLabel = "PNG, JPG up to 5MB",
   multiple = false,
   onFileChange = () => {},
   initialFile = null,
-  apiEndpoint = '/attachments',
+  apiEndpoint = "/attachments",
   authToken,
 }) => {
-  const [fileData, setFileData] = useState<Attachment | Attachment[] | null>(initialFile);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(Array.isArray(initialFile) ? null : initialFile?.fileUrl || null);
+  const [fileData, setFileData] = useState<Attachment | Attachment[] | null>(
+    initialFile
+  );
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    Array.isArray(initialFile) ? null : initialFile?.fileUrl || null
+  );
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
-  const [newFileName, setNewFileName] = useState<string>('');
+  const [newFileName, setNewFileName] = useState<string>("");
   const [errors, setErrors] = useState<Errors>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle file selection and validation
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = multiple ? Array.from(event.target.files || []) : [event.target.files?.[0]].filter(Boolean) as File[];
+    const files = multiple
+      ? Array.from(event.target.files || [])
+      : ([event.target.files?.[0]].filter(Boolean) as File[]);
     if (!files.length) return;
 
     // Validate files
@@ -79,7 +105,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     if (invalidFiles.length) {
       setErrors({
         file: {
-          message: `Invalid file(s). Allowed types: ${fileTypeLabel}. Max size: ${maxFileSize / 1024 / 1024}MB`,
+          message: `Invalid file(s). Allowed types: ${fileTypeLabel}. Max size: ${
+            maxFileSize / 1024 / 1024
+          }MB`,
         },
       });
       return;
@@ -99,26 +127,37 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const uploadFile = async (file: File) => {
     try {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      const response = await axios.post<Attachment>(`${baseurl}${apiEndpoint}`, formData, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const { data: response } = await axios.post<AttachmentData>(
+        `${baseurl}${apiEndpoint}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      console.log(response);
 
       if (!multiple) {
+           console.log(response.data, fileData);
         setFileData(response.data);
         setPreviewUrl(response.data.signedUrl || response.data.fileUrl);
       } else {
-        setFileData((prev) => [...(Array.isArray(prev) ? prev : []), response.data]);
+        setFileData((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          response.data,
+        ]);
       }
-      toast({ title: 'Success', description: 'File uploaded successfully' });
+      console.log(response.data, "fileData");
+      toast({ title: "Success", description: "File uploaded successfully" });
     } catch (error: any) {
-      const message = error.response?.data?.error || `Failed to upload ${file.name}`;
+      const message =
+        error.response?.data?.error || `Failed to upload ${file.name}`;
       setErrors({ file: { message } });
-      toast({ title: 'Error', description: message });
+      toast({ title: "Error", description: message });
     }
   };
 
@@ -126,33 +165,41 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   const viewFile = async () => {
     if (!multiple && (fileData as Attachment)?._id) {
       try {
-        const response = await axios.get<Attachment>(`${baseurl}${apiEndpoint}/${(fileData as Attachment)._id}`, {
-          headers: { Authorization: `Bearer ${authToken}` },
-        });
+        const response = await axios.get<Attachment>(
+          `${baseurl}${apiEndpoint}/${(fileData as Attachment)._id}`,
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        );
         setFileData(response.data);
         setPreviewUrl(response.data.signedUrl || response.data.fileUrl);
-        toast({ title: 'Success', description: 'File metadata refreshed' });
+        toast({ title: "Success", description: "File metadata refreshed" });
       } catch (error: any) {
-        const message = error.response?.data?.error || 'Failed to fetch file';
-        toast({ title: 'Error', description: message });
+        const message = error.response?.data?.error || "Failed to fetch file";
+        toast({ title: "Error", description: message });
       }
     }
   };
 
   // Download file
   const downloadFile = async () => {
-    if (!multiple && (fileData as Attachment)?.signedUrl || (fileData as Attachment)?.fileUrl) {
+    if (
+      (!multiple && (fileData as Attachment)?.signedUrl) ||
+      (fileData as Attachment)?.fileUrl
+    ) {
       try {
-        const url = (fileData as Attachment).signedUrl || (fileData as Attachment).fileUrl;
-        const link = document.createElement('a');
+        const url =
+          (fileData as Attachment).signedUrl ||
+          (fileData as Attachment).fileUrl;
+        const link = document.createElement("a");
         link.href = url;
         link.download = (fileData as Attachment).fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast({ title: 'Success', description: 'File download initiated' });
+        toast({ title: "Success", description: "File download initiated" });
       } catch (error) {
-        toast({ title: 'Error', description: 'Failed to download file' });
+        toast({ title: "Error", description: "Failed to download file" });
       }
     }
   };
@@ -160,7 +207,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
   // Rename file
   const renameFile = async () => {
     if (!newFileName.trim() || !(fileData as Attachment)?._id) {
-      setErrors({ file: { message: 'Valid file name is required' } });
+      setErrors({ file: { message: "Valid file name is required" } });
       return;
     }
 
@@ -173,12 +220,12 @@ const FileUploader: React.FC<FileUploaderProps> = ({
       setFileData(response.data);
       setPreviewUrl(response.data.signedUrl || response.data.fileUrl);
       setIsRenaming(false);
-      setNewFileName('');
-      toast({ title: 'Success', description: 'File renamed successfully' });
+      setNewFileName("");
+      toast({ title: "Success", description: "File renamed successfully" });
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to rename file';
+      const message = error.response?.data?.error || "Failed to rename file";
       setErrors({ file: { message } });
-      toast({ title: 'Error', description: message });
+      toast({ title: "Error", description: message });
     }
   };
 
@@ -187,16 +234,19 @@ const FileUploader: React.FC<FileUploaderProps> = ({
     if (!(fileData as Attachment)?._id) return;
 
     try {
-      await axios.delete(`${baseurl}${apiEndpoint}/${(fileData as Attachment)._id}`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
+      await axios.delete(
+        `${baseurl}${apiEndpoint}/${(fileData as Attachment)._id}`,
+        {
+          headers: { Authorization: `Bearer ${authToken}` },
+        }
+      );
       setFileData(null);
       setPreviewUrl(null);
       setErrors({});
-      toast({ title: 'Success', description: 'File removed successfully' });
+      toast({ title: "Success", description: "File removed successfully" });
     } catch (error: any) {
-      const message = error.response?.data?.error || 'Failed to remove file';
-      toast({ title: 'Error', description: message });
+      const message = error.response?.data?.error || "Failed to remove file";
+      toast({ title: "Error", description: message });
     }
   };
 
@@ -224,13 +274,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="w-4 h-4" />
-              Choose File{multiple ? 's' : ''}
+              Choose File{multiple ? "s" : ""}
             </Button>
             <input
               type="file"
               ref={fileInputRef}
               className="hidden"
-              accept={allowedTypes.join(',')}
+              accept={allowedTypes.join(",")}
               multiple={multiple}
               onChange={handleFileChange}
             />
@@ -239,7 +289,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({
         {fileData && previewUrl && !multiple && (
           <div className="mt-4 flex items-center gap-2">
             <Image
-              src={previewUrl}
+              src={
+                (fileData as Attachment).fileUrl ||
+                (fileData as Attachment).signedUrl ||
+                previewUrl
+              }
               alt={(fileData as Attachment).fileName}
               width={48}
               height={48}
@@ -301,7 +355,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({
               className="border-gray-600 text-gray-200"
               onClick={() => {
                 setIsRenaming(false);
-                setNewFileName('');
+                setNewFileName("");
               }}
             >
               Cancel
