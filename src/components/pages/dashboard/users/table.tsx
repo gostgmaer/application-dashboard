@@ -233,9 +233,6 @@ export default function UsersTable({ props }: any) {
               >
                 Copy ID
               </DropdownMenuItem>
-              {/* <DropdownMenuItem onClick={() => handleFullScreenDialog(user)}>
-                View
-              </DropdownMenuItem> */}
               <DropdownMenuItem>
                 <Link href={`/dashboard/users/${user["id"]}/update`}>Edit</Link>
               </DropdownMenuItem>

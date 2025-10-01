@@ -121,8 +121,6 @@ export default function UserDashboard() {
 
       <div className="rounded-md    shadow-sm overflow-auto ">
         <div className=" mx-auto space-y-8">
-       
-
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Users"

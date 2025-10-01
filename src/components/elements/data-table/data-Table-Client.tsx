@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useApiSWR } from "@/hooks/useApiSWR";
 import {
   useReactTable,
   getCoreRowModel,
-  getSortedRowModel,
-  getPaginationRowModel,
-  getFilteredRowModel,
   ColumnDef,
   SortingState,
   ColumnFiltersState,
@@ -58,11 +55,11 @@ export interface DataTableFilter {
   placeholder?: string;
 }
 
-export interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
+export interface DataTableProps<TData> {
+  columns: ColumnDef<TData>[];
   endpoint: string;
   token?: string;
-  queryParams?: Record<string, any>;
+  baseQueryParams?: Record<string, any>;
   params?: Record<string, any>;
   headers?: Record<string, string>;
   refreshInterval?: number;
@@ -73,16 +70,18 @@ export interface DataTableProps<TData, TValue> {
   onRowSelect?: (rows: TData[]) => void;
   onDelete?: (rows: TData[]) => void;
   onExport?: (rows: TData[]) => void;
-  pageSize?: number;
+  initialPageSize?: number;
   searchPlaceholder?: string;
   emptyMessage?: string;
+  searchKey?: string; // The key to use for search in backend
+  enableServerSideOperations?: boolean;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData>({
   columns,
   endpoint,
   token,
-  queryParams = {},
+  baseQueryParams = {},
   params = {},
   headers,
   refreshInterval = 0,
@@ -93,10 +92,13 @@ export function DataTable<TData, TValue>({
   onRowSelect,
   onDelete,
   onExport,
-  pageSize = 10,
+  initialPageSize = 10,
   searchPlaceholder = "Search...",
   emptyMessage = "No results found.",
-}: DataTableProps<TData, TValue>) {
+  searchKey = "search",
+  enableServerSideOperations = true,
+}: DataTableProps<TData>) {
+  // Client state for UI
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -104,29 +106,91 @@ export function DataTable<TData, TValue>({
   const [globalFilter, setGlobalFilter] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
 
-  const { data, error, isLoading, mutate } = useApiSWR<TData[]>(
+  // Server state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(initialPageSize);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortField, setSortField] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // Build query parameters for server-side operations
+  const serverQueryParams = useMemo(() => {
+    if (!enableServerSideOperations) return baseQueryParams;
+
+    const params: Record<string, any> = {
+      ...baseQueryParams,
+      page: currentPage,
+      limit: pageSize,
+    };
+
+    // Add search
+    if (searchQuery.trim()) {
+      params[searchKey] = searchQuery.trim();
+    }
+
+    // Add sorting
+    if (sortField) {
+      params.sortBy = sortField;
+      params.sortOrder = sortOrder;
+    }
+
+    // Add filters
+    Object.entries(filterValues).forEach(([key, value]) => {
+      if (value && value.trim()) {
+        params[key] = value.trim();
+      }
+    });
+
+    return params;
+  }, [
+    enableServerSideOperations,
+    baseQueryParams,
+    currentPage,
+    pageSize,
+    searchQuery,
+    searchKey,
+    sortField,
+    sortOrder,
+    filterValues,
+  ]);
+
+  const { data, error, isLoading, mutate } = useApiSWR(
     endpoint,
     token,
-    queryParams,
+    serverQueryParams,
     params,
     headers,
-    {
-      refreshInterval,
-      revalidateOnFocus,
-    }
+   { refreshInterval,
+    revalidateOnFocus}
   );
 
-  console.log(data);
+  console.log("Server Response:", data);
+  console.log("Query Params:", serverQueryParams);
 
   const tableData = useMemo(() => {
     if (!data?.result) return [];
     return Array.isArray(data.result) ? data.result : [];
   }, [data?.result]);
 
+  const pagination = useMemo(() => {
+    return data?.pagination || {
+      page: 1,
+      totalPages: 1,
+      total: 0,
+      hasNext: false,
+      hasPrev: false,
+      limit: pageSize,
+    };
+  }, [data?.pagination, pageSize]);
+
+  const appliedFilters = useMemo(() => {
+    return data?.filters || { applied: 0, search: null };
+  }, [data?.filters]);
+
   const tableColumns = useMemo(() => {
     if (!enableRowSelection) return columns;
 
-    const selectionColumn: ColumnDef<TData, TValue> = {
+    const selectionColumn: ColumnDef<TData> = {
       id: "select",
       header: ({ table }) =>
         enableMultiRowSelection ? (
@@ -159,15 +223,11 @@ export function DataTable<TData, TValue>({
     data: tableData,
     columns: tableColumns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: "includesString",
     state: {
       sorting,
       columnFilters,
@@ -175,16 +235,68 @@ export function DataTable<TData, TValue>({
       rowSelection,
       globalFilter,
     },
-    initialState: {
-      pagination: {
-        pageSize,
-      },
-    },
     enableRowSelection: true,
     enableMultiRowSelection,
+    // Disable client-side operations when server-side is enabled
+    manualPagination: enableServerSideOperations,
+    manualSorting: enableServerSideOperations,
+    manualFiltering: enableServerSideOperations,
+    // Set page count from server response
+    pageCount: enableServerSideOperations ? pagination.totalPages : undefined,
   });
 
   const selectedRows = table.getFilteredSelectedRowModel().rows;
+
+  // Handle server-side sorting
+  const handleSort = useCallback((columnId: string) => {
+    if (!enableServerSideOperations) return;
+
+    const currentSort = sorting.find(s => s.id === columnId);
+    const newOrder = currentSort?.desc ? "asc" : "desc";
+    
+    setSortField(columnId);
+    setSortOrder(newOrder);
+    setSorting([{ id: columnId, desc: newOrder === "desc" }]);
+    setCurrentPage(1); // Reset to first page when sorting changes
+  }, [sorting, enableServerSideOperations]);
+
+  // Handle server-side search with debounce
+  useEffect(() => {
+    if (!enableServerSideOperations) return;
+
+    const debounceTimer = setTimeout(() => {
+      setSearchQuery(globalFilter);
+      setCurrentPage(1); // Reset to first page when search changes
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [globalFilter, enableServerSideOperations]);
+
+  // Handle server-side filter changes
+  const handleFilterChange = useCallback((filterId: string, value: string) => {
+    setFilterValues((prev) => ({ ...prev, [filterId]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
+    
+    // Also update client-side filters for UI consistency
+    if (value) {
+      setColumnFilters((prev) => [
+        ...prev.filter((f) => f.id !== filterId),
+        { id: filterId, value },
+      ]);
+    } else {
+      setColumnFilters((prev) => prev.filter((f) => f.id !== filterId));
+    }
+  }, []);
+
+  // Handle pagination
+  const handlePageChange = useCallback((newPage: number) => {
+    setCurrentPage(newPage);
+  }, []);
+
+  const handlePageSizeChange = useCallback((newSize: number) => {
+    setPageSize(newSize);
+    setCurrentPage(1); // Reset to first page when page size changes
+  }, []);
 
   const handleRefresh = useCallback(() => {
     mutate();
@@ -216,23 +328,15 @@ export function DataTable<TData, TValue>({
     setColumnFilters([]);
     setGlobalFilter("");
     setFilterValues({});
-  }, []);
-
-  const handleFilterChange = useCallback((filterId: string, value: string) => {
-    setFilterValues((prev) => ({ ...prev, [filterId]: value }));
-    if (value) {
-      setColumnFilters((prev) => [
-        ...prev.filter((f) => f.id !== filterId),
-        { id: filterId, value },
-      ]);
-    } else {
-      setColumnFilters((prev) => prev.filter((f) => f.id !== filterId));
-    }
+    setSearchQuery("");
+    setSortField("");
+    setSortOrder("asc");
+    setSorting([]);
+    setCurrentPage(1);
   }, []);
 
   const convertToCSV = (data: any[]): string => {
     if (data.length === 0) return "";
-
     const headers = Object.keys(data[0]);
     const csvRows = [
       headers.join(","),
@@ -240,7 +344,6 @@ export function DataTable<TData, TValue>({
         headers.map((header) => JSON.stringify(row[header] ?? "")).join(",")
       ),
     ];
-
     return csvRows.join("\n");
   };
 
@@ -256,11 +359,11 @@ export function DataTable<TData, TValue>({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <div className="text-destructive text-sm font-medium">
+      <div className="flex flex-col items-center justify-center p-8 text-center">
+        <p className="text-destructive mb-4">
           Error loading data: {error.message}
-        </div>
-        <Button onClick={handleRefresh} variant="outline" size="sm">
+        </p>
+        <Button onClick={handleRefresh} variant="outline">
           <RefreshCw className="mr-2 h-4 w-4" />
           Retry
         </Button>
@@ -270,19 +373,24 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {selectedRows.length > 0 ? (
-        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-          <div className="text-sm font-medium">
-            {selectedRows.length} row(s) selected
-          </div>
-          <div className="flex items-center gap-2">
+      {/* Action Bar */}
+      <div className="flex items-center justify-between">
+        {selectedRows.length > 0 ? (
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">
+              {selectedRows.length} row(s) selected
+            </span>
             {onDelete && (
-              <Button onClick={handleDelete} variant="destructive" size="sm">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+              >
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </Button>
             )}
-            <Button onClick={handleExport} variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export Selected
             </Button>
@@ -291,96 +399,101 @@ export function DataTable<TData, TValue>({
               variant="ghost"
               size="sm"
             >
+              <X className="mr-2 h-4 w-4" />
               Clear
             </Button>
           </div>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={searchPlaceholder}
-                  value={globalFilter ?? ""}
-                  onChange={(e) => setGlobalFilter(e.target.value)}
-                  className="pl-9 pr-9"
-                />
-                {globalFilter && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                    onClick={() => setGlobalFilter("")}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleRefresh}
-                variant="outline"
-                size="sm"
-                disabled={isLoading}
-              >
-                <RefreshCw
-                  className={cn("h-4 w-4", isLoading && "animate-spin")}
-                />
-              </Button>
-              <Button onClick={handleExport} variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-            </div>
-          </div>
-
-          {filters.length > 0 && (
-            <div className="flex flex-wrap gap-4">
-              {filters.map((filter) => (
-                <div key={filter.id} className="flex-1 min-w-[200px]">
-                  {filter.type === "select" ? (
-                    <Select
-                      value={filterValues[filter.id] || ""}
-                      onValueChange={(value) =>
-                        handleFilterChange(filter.id, value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={filter.label} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {filter.options?.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      placeholder={filter.placeholder || filter.label}
-                      value={filterValues[filter.id] || ""}
-                      onChange={(e) =>
-                        handleFilterChange(filter.id, e.target.value)
-                      }
-                    />
-                  )}
-                </div>
-              ))}
-              {(columnFilters.length > 0 || globalFilter) && (
-                <Button onClick={handleResetFilters} variant="ghost" size="sm">
-                  Reset Filters
+        ) : (
+          <div className="flex items-center space-x-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={searchPlaceholder}
+                value={globalFilter}
+                onChange={(e) => setGlobalFilter(e.target.value)}
+                className="pl-9 pr-9"
+              />
+              {globalFilter && (
+                <Button
+                  onClick={() => setGlobalFilter("")}
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
+                >
+                  <X className="h-3 w-3" />
                 </Button>
               )}
             </div>
-          )}
+            
+            {/* Export */}
+            <Button variant="outline" onClick={handleExport}>
+              <Download className="mr-2 h-4 w-4" />
+              Export
+            </Button>
+            
+            {/* Refresh */}
+            <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
+
+            {/* Filters */}
+            {filters.length > 0 && (
+              <div className="flex items-center space-x-2">
+                {filters.map((filter) => (
+                  <div key={filter.id}>
+                    {filter.type === "select" ? (
+                      <Select
+                        value={filterValues[filter.id] || ""}
+                        onValueChange={(value) =>
+                          handleFilterChange(filter.id, value)
+                        }
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder={filter.placeholder || filter.label} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="NA ">{`All ${filter.label}`}</SelectItem>
+                          {filter.options?.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        placeholder={filter.placeholder || filter.label}
+                        value={filterValues[filter.id] || ""}
+                        onChange={(e) =>
+                          handleFilterChange(filter.id, e.target.value)
+                        }
+                        className="w-[180px]"
+                      />
+                    )}
+                  </div>
+                ))}
+                {(Object.keys(filterValues).some(key => filterValues[key]) || globalFilter) && (
+                  <Button variant="ghost" size="sm" onClick={handleResetFilters}>
+                    <X className="mr-2 h-4 w-4" />
+                    Reset Filters
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Filters Info */}
+      {appliedFilters.applied > 0 && (
+        <div className="text-sm text-muted-foreground">
+          {appliedFilters.applied} filter(s) applied
+          {appliedFilters.search && ` • Searching for: "${appliedFilters.search}"`}
         </div>
       )}
 
+      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -391,24 +504,23 @@ export function DataTable<TData, TValue>({
                     {header.isPlaceholder ? null : (
                       <div
                         className={cn(
-                          "flex items-center gap-2",
-                          header.column.getCanSort() &&
-                            "cursor-pointer select-none"
+                          "flex items-center space-x-2",
+                          header.column.getCanSort() && "cursor-pointer select-none"
                         )}
-                        onClick={header.column.getToggleSortingHandler()}
+                        onClick={() => header.column.getCanSort() && handleSort(header.id)}
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
                         {header.column.getCanSort() && (
-                          <div className="ml-auto">
+                          <div className="ml-2">
                             {header.column.getIsSorted() === "asc" ? (
                               <ArrowUp className="h-4 w-4" />
                             ) : header.column.getIsSorted() === "desc" ? (
                               <ArrowDown className="h-4 w-4" />
                             ) : (
-                              <ArrowUpDown className="h-4 w-4 opacity-50" />
+                              <ArrowUpDown className="h-4 w-4" />
                             )}
                           </div>
                         )}
@@ -423,34 +535,40 @@ export function DataTable<TData, TValue>({
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={tableColumns.length}
+                  colSpan={columns.length + (enableRowSelection ? 1 : 0)}
                   className="h-24 text-center"
                 >
                   <div className="flex items-center justify-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
                   </div>
                 </TableCell>
               </TableRow>
-            ) : table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+            ) : tableData.length ? (
+              tableData.map((row:any, index:number) => {
+                const tableRow = table.getRowModel().rows[index];
+                if (!tableRow) return null;
+                
+                return (
+                  <TableRow
+                    key={`row-${index}`}
+                    data-state={tableRow.getIsSelected() && "selected"}
+                  >
+                    {tableRow.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={tableColumns.length}
+                  colSpan={columns.length + (enableRowSelection ? 1 : 0)}
                   className="h-24 text-center"
                 >
                   {emptyMessage}
@@ -461,67 +579,74 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">Rows per page</p>
-          <Select
-            value={`${table.getState().pagination.pageSize}`}
-            onValueChange={(value) => {
-              table.setPageSize(Number(value));
-            }}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
-            </SelectTrigger>
-            <SelectContent side="top">
-              {[10, 20, 30, 40, 50].map((pageSize) => (
-                <SelectItem key={pageSize} value={`${pageSize}`}>
-                  {pageSize}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Pagination */}
+      <div className="flex items-center justify-between px-2">
+        <div className="flex items-center space-x-6 lg:space-x-8">
+          <div className="flex items-center space-x-2">
+            <p className="text-sm font-medium">Rows per page</p>
+            <Select
+              value={`${pageSize}`}
+              onValueChange={(value) => handlePageSizeChange(Number(value))}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={pageSize} />
+              </SelectTrigger>
+              <SelectContent side="top">
+                {[10, 20, 30, 40, 50].map((pageSizeOption) => (
+                  <SelectItem key={pageSizeOption} value={`${pageSizeOption}`}>
+                    {pageSizeOption}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+            Page {pagination.page} of {pagination.totalPages}
+          </div>
+          
+          <div className="text-sm text-muted-foreground">
+            {pagination.total} total results
+          </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center text-sm font-medium">
-            Page {table.getState().pagination.pageIndex + 1} of{" "}
-            {table.getPageCount()}
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronsLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronsRight className="h-4 w-4" />
-            </Button>
-          </div>
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            className="hidden h-8 w-8 p-0 lg:flex"
+            onClick={() => handlePageChange(1)}
+            disabled={!pagination.hasPrev || isLoading}
+          >
+            <span className="sr-only">Go to first page</span>
+            <ChevronsLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="h-8 w-8 p-0"
+            onClick={() => handlePageChange(pagination.page - 1)}
+            disabled={!pagination.hasPrev || isLoading}
+          >
+            <span className="sr-only">Go to previous page</span>
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="h-8 w-8 p-0"
+            onClick={() => handlePageChange(pagination.page + 1)}
+            disabled={!pagination.hasNext || isLoading}
+          >
+            <span className="sr-only">Go to next page</span>
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            className="hidden h-8 w-8 p-0 lg:flex"
+            onClick={() => handlePageChange(pagination.totalPages)}
+            disabled={!pagination.hasNext || isLoading}
+          >
+            <span className="sr-only">Go to last page</span>
+            <ChevronsRight className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </div>

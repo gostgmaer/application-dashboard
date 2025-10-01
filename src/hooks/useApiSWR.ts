@@ -16,7 +16,7 @@ export function useApiSWR<T = any>(
   query?: Record<string, any>,
   params?: Record<string, any>,
   headers?: Record<string, any>,
-  options?: SWROptions
+  options?: SWROptions,
 ) {
   const fetcher = async (url: string): Promise<T> => {
     const res: ApiResponse<T> = await request.get<T>(url, token, query, params, headers);
