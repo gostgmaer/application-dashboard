@@ -1,6 +1,8 @@
 import { Suspense } from "react";
+
 import PrivateLayout from "@/components/layout/dashboard";
-import UserDashboard from "@/components/pages/dashboard/users/stats";
+
+import InvoiceDashboard from "@/components/pages/dashboard/order/invoice/table";
 
 export default async function UsersPage(props: any) {
 
@@ -9,7 +11,7 @@ export default async function UsersPage(props: any) {
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-         <UserDashboard></UserDashboard>
+          <InvoiceDashboard />
         </Suspense>
       </div>
     </PrivateLayout>

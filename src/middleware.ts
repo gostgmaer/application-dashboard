@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
   const isAuthRoute = pathname.startsWith("/auth") || pathname === "/";
 
   const token = await getToken({ req, secret });
-console.log(token);
+
 
   // 🔒 Not logged in
   if (!token) {

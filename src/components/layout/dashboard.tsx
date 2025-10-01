@@ -1,19 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Search, Bell, Menu, Users } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+
 import { Sidebar } from "./sidebar";
-import { ThemeSwitch } from "../elements/theme-switch";
-import { UserStatus } from "../elements/userpopover";
 import { useState } from "react";
-import Breadcrumbs from "./common/breadcrumb";
 import DashboardHeader from "./private/header";
 interface DashboardProps {
   children: React.ReactNode;

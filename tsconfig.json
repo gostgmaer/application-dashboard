@@ -25,6 +25,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/helper/services/httpServices.js", "src/config/setting.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/helper/services/httpServices.js", "src/config/setting.js", "src/app/dashboard/ecommerce/invoices"],
   "exclude": ["node_modules"]
 }
