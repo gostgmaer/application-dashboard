@@ -49,9 +49,9 @@ export function SelectedItemsModal<T>({
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {selectedItems.map((item) => (
+            {selectedItems.map((item:any,index) => (
               <div
-                key={getItemKey(item)}
+                key={index}
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50"
               >
                 <span className="flex-1 text-sm">
@@ -73,9 +73,9 @@ export function SelectedItemsModal<T>({
         {selectedItems.length > 0 && (
           <div className="pt-4 border-t">
             <div className="flex flex-wrap gap-2">
-              {selectedItems.slice(0, 10).map((item) => (
+              {selectedItems.slice(0, 10).map((item,index) => (
                 <Badge
-                  key={getItemKey(item)}
+                  key={index}
                   variant="secondary"
                   className="text-xs"
                 >

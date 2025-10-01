@@ -11,6 +11,8 @@ import {
   FileText,
   Search,
   X,
+  Menu,
+  Badge,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,6 +27,8 @@ import {
   formatCellValue,
 } from "@/lib/utils/export-utils";
 import { useState } from "react";
+import { SelectedItemsModal } from "./selected-items-modal";
+import { useModal } from "@/contexts/modal-context";
 
 interface TableToolbarProps<TData> {
   table: Table<TData>;
@@ -49,8 +53,10 @@ export function TableToolbar<TData>({
   exportFileName = "table-export",
   exportColumns = [],
 }: TableToolbarProps<TData>) {
+  const { showConfirm, showAlert, showCustom, closeModal } = useModal();
   const selectedRows = table.getFilteredSelectedRowModel().rows;
   const allRows = table.getFilteredRowModel().rows;
+  const [showSelectedModal, setShowSelectedModal] = useState(false);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -96,6 +102,37 @@ export function TableToolbar<TData>({
     } finally {
       setTimeout(() => setIsExporting(false), 500);
     }
+  };
+  const handleClearSelection = () => {
+    table.resetRowSelection();
+    closeModal();
+  };
+  const removeItem = (index: number) => {
+    const row = selectedRows[index];
+    if (row) {
+      selectedRows.filter((i) => i.id !== row.id);
+    }
+  };
+
+  const hanldeShow = (data: any) => {
+    showCustom({
+      title: `View Selection`,
+      content: (
+        <SelectedItemsModal
+          isOpen={showSelectedModal}
+          onClose={() => setShowSelectedModal(false)}
+          selectedItems={selectedRows}
+          onRemoveItem={(index: any) => {
+            removeItem(index);
+          }}
+          onClearAll={handleClearSelection}
+          getItemDisplay={(item: any) => {
+            return item.original.email;
+          }}
+          getItemKey={(item: any) => item.original._id}
+        />
+      ),
+    });
   };
 
   const isFiltered =
@@ -154,6 +191,28 @@ export function TableToolbar<TData>({
               row(s) selected
             </span>
           </div>
+        )}
+
+        {selectedRows.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="relative">
+                <Menu className="mr-2 h-4 w-4" />
+                Actions
+                <Badge className="ml-2 h-5 min-w-[20px] rounded-full px-1 text-xs">
+                  {selectedRows.length}
+                </Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => hanldeShow(true)}>
+                View Selected ({selectedRows.length})
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleClearSelection}>
+                Clear Selection
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         )}
         <Button
           variant="outline"

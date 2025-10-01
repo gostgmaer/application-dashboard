@@ -37,7 +37,7 @@ const nextConfig = {
     ];
   },
   compress: true,
-  swcMinify: true,
+  // swcMinify: true,
   reactStrictMode: true,
   async headers() {
     return [
