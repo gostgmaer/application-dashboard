@@ -81,11 +81,10 @@ export default async function RootLayout({
         <SessionProviderWrapper>
           <Providers>
             <SettingProvider>
-                 <WebSocketProvider>
-              <NotificationProvider>
-                <NotificationProviderCommunication>
-                  <MessagingProvider>
-                 
+              <WebSocketProvider>
+                <NotificationProvider>
+                  <NotificationProviderCommunication>
+                    <MessagingProvider>
                       <DialogProvider>
                         <ModalProvider>
                           {children}
@@ -93,11 +92,10 @@ export default async function RootLayout({
                           <ModalManager />
                         </ModalProvider>
                       </DialogProvider>
-                 
-                  </MessagingProvider>
-                </NotificationProviderCommunication>
-              </NotificationProvider>
-                 </WebSocketProvider>
+                    </MessagingProvider>
+                  </NotificationProviderCommunication>
+                </NotificationProvider>
+              </WebSocketProvider>
             </SettingProvider>
           </Providers>
         </SessionProviderWrapper>

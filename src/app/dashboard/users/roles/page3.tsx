@@ -13,6 +13,9 @@ export default async function Page(props: any) {
     session?.accessToken,
     query
   );
+    const stats = await roleServices.getCompleteRoleStatistics(
+    session?.accessToken,
+  );
   const p = await permissionServices.getPermissionsGrouped(
     query,
     session?.accessToken
@@ -22,7 +25,7 @@ export default async function Page(props: any) {
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <Table props={{ ...roles.data, permissions: p.data }} />
+          <Table props={{ ...roles.data, permissions: p.data ,stats:stats.data}} />
         </Suspense>
       </div>
     </PrivateLayout>

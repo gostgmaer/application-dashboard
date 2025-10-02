@@ -104,7 +104,11 @@ const roleServices = {
   ): Promise<ApiResponse> => {
     return safeApiCall(() => requests.get("/roles/statistics", token, query, undefined, undefined, 1));
   },
-
+  getCompleteRoleStatistics: async (
+    token?: string,
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/roles/stats/data", token, undefined, undefined, undefined, 1));
+  },
   bulkDeactivate: async (
     data: { roleIds: string[] },
     token?: string,

@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import LinkedInProvider from "next-auth/providers/linkedin";
+import FacebookProvider from "next-auth/providers/facebook";
 import TwitterProvider from "next-auth/providers/twitter";
 import { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
@@ -39,6 +40,8 @@ import {
   twitterClient,
   twitterSecret,
   secret,
+  facebookClient,
+  facebookSecret,
 } from "@/config/setting";
 import authService from "@/lib/http/authService";
 
@@ -91,7 +94,7 @@ export class TwoFactorRequiredError extends Error {
 async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
   try {
     console.log("🔄 Refreshing access token...");
-    
+
     if (!token.refreshToken) {
       console.error("❌ No refresh token available");
       return {
@@ -110,9 +113,9 @@ async function refreshAccessToken(token: CustomToken): Promise<CustomToken> {
     }
 
     const { accessToken, refreshToken, expiresAt } = response.data;
-    
+
     console.log("✅ Token refreshed successfully");
-    
+
     return {
       ...token,
       accessToken,
@@ -143,7 +146,7 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           console.log("🔐 Authorizing credentials...");
-          
+
           const payload = {
             identifier: credentials?.email,
             password: credentials?.password,
@@ -189,7 +192,32 @@ export const authOptions: AuthOptions = {
         }
       },
     }),
+
+
     // ... other providers remain the same
+
+    GoogleProvider({
+      clientId: googleClient ?? "",
+      clientSecret: googleSecret ?? "",
+    }),
+    LinkedInProvider({
+      clientId: linkedinClient ?? "",
+      clientSecret: linkedinSecret ?? "",
+    }),
+    FacebookProvider({
+      clientId: facebookClient ?? "",
+      clientSecret: facebookSecret ?? "",
+    }),
+    GitHubProvider({
+      clientId: githubClient ?? "",
+      clientSecret: githubSecret ?? "",
+    }),
+    TwitterProvider({
+      clientId: twitterClient ?? "",
+      clientSecret: twitterSecret ?? "",
+      version: "2.0",
+    }),
+
   ],
 
   secret,
@@ -266,7 +294,7 @@ export const authOptions: AuthOptions = {
       if (user) {
         const customUser = user as CustomUser;
         console.log("👤 Setting initial user data in token");
-        
+
         customToken.accessToken = customUser.accessToken;
         customToken.refreshToken = customUser.refreshToken;
         customToken.token_type = customUser.token_type;
@@ -284,7 +312,7 @@ export const authOptions: AuthOptions = {
         console.log("🔄 Handling session update:", {
           trigger,
           sessionData: session,
-          tokenBefore: { 
+          tokenBefore: {
             "2fa_verified": customToken["2fa_verified"],
             accessToken: customToken.accessToken ? "***" : undefined
           }
@@ -309,7 +337,7 @@ export const authOptions: AuthOptions = {
 
         if (session.accessTokenExpires) {
           // Handle both string and number formats
-          const expires = typeof session.accessTokenExpires === 'string' 
+          const expires = typeof session.accessTokenExpires === 'string'
             ? Date.parse(session.accessTokenExpires)
             : session.accessTokenExpires;
           customToken.accessTokenExpires = expires;
@@ -354,8 +382,8 @@ export const authOptions: AuthOptions = {
       token: CustomToken;
     }) {
       if (process.env.NODE_ENV === "development") {
-        console.log("📋 Session callback:", { 
-          trigger, 
+        console.log("📋 Session callback:", {
+          trigger,
           hasToken: !!token,
           "2fa_verified": token["2fa_verified"]
         });

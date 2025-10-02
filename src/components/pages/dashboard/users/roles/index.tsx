@@ -9,7 +9,10 @@ import { RoleTable } from '@/components/pages/dashboard/users/roles/roles/role-t
 import { RoleDetailsDrawer } from '@/components/pages/dashboard/users/roles/roles/role-details-drawer';
 
 
-export default function RolesPage() {
+export default function RolesPage({props}:any) {
+
+  console.log(props);
+  
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
@@ -31,8 +34,9 @@ export default function RolesPage() {
     setTimeout(() => setSelectedRoleId(null), 300);
   };
 
-  const totalUsers = roles.reduce((sum, role) => sum + role.userCount, 0);
-  const totalPermissions = roles.reduce((sum, role) => sum + role.permissionCount, 0);
+  const totalUsers = props?.stats?.summary?.totalUsersAssigned
+;
+  const totalPermissions = props?.stats?.summary?.activePermissions
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -47,7 +51,7 @@ export default function RolesPage() {
           ) : (
             <>
               <StatCards
-                totalRoles={roles.length}
+                totalRoles={props?.stats?.summary?.totalRoles}
                 totalUsers={totalUsers}
                 totalPermissions={totalPermissions}
               />
