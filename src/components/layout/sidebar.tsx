@@ -71,22 +71,7 @@ const navigationItems: NavItem[] = [
       { title: "Orders", href: "/dashboard/ecommerce/orders", icon: Calendar },
     ],
   },
-];
-
-const personalNavigationItems: NavItem[] = [
-  {
-    title: "Profile",
-    icon: User,
-    children: [
-      { title: "View Profile", href: "/dashboard/profile", icon: User },
-      {
-        title: "Account Settings",
-        href: "/dashboard/profile/settings",
-        icon: Settings,
-      },
-    ],
-  },
-  {
+    {
     title: "Analytics",
     icon: BarChart3,
     children: [
@@ -102,6 +87,15 @@ const personalNavigationItems: NavItem[] = [
       },
     ],
   },
+];
+
+const personalNavigationItems: NavItem[] = [
+  {
+    title: "Profile",
+    icon: User,
+    href: "/dashboard/profile/settings",
+  },
+
   {
     title: "Settings",
     icon: Settings,
@@ -110,23 +104,7 @@ const personalNavigationItems: NavItem[] = [
   {
     title: "Communication",
     icon: MailOpen,
-    children: [
-      {
-        title: "Messages",
-        href: "/dashboard/communication/messages",
-        icon: Mail,
-      },
-      {
-        title: "Email",
-        href: "/dashboard/communication/email",
-        icon: MailPlus,
-      },
-      {
-        title: "Notifications",
-        href: "/dashboard/communication/notifications",
-        icon: Calendar,
-      },
-    ],
+    href: "/dashboard/communication",
   },
   {
     title: "Logout",

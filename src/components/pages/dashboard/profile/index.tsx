@@ -35,7 +35,7 @@ import {
   LucideUsersRound,
   UserCheck2Icon,
 } from "lucide-react";
-// import { cn } from '@/lib/utils';
+// import { cn } from '@/lib/utils/utils';
 import { useDebounce } from "use-debounce";
 import Image from "next/image";
 import Link from "next/link";

@@ -1,30 +1,27 @@
-import { Suspense } from "react";
-import Table from "@/components/pages/dashboard/users/roles/table";
-import roleServices from "@/lib/http/roleServices";
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PrivateLayout from "@/components/layout/dashboard";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/authOptions";
-import permissionServices from "@/lib/http/permissionServices";
+import RolesPage from "@/components/pages/dashboard/users/roles";
+import React, { Suspense } from "react";
 
-export default async function Page(props: any) {
-  const query = await props.searchParams;
-  const session: any = await getServerSession(authOptions);
-  const roles = await roleServices.getRoleStatistics(
-    session?.accessToken,
-    query
-  );
-  const p = await permissionServices.getPermissionsGrouped(
-    query,
-    session?.accessToken
-  );
+const Page = async () => {
 
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <Table props={{ ...roles.data, permissions: p.data }} />
+          <Breadcrumbs
+            heading={"Role Dashboard"}
+            desc={"Manage user roles, permissions, and access control across your organization"}
+            btn={{ show: false }}
+          ></Breadcrumbs>
+
+          <div className="rounded-md  shadow-sm overflow-auto ">
+           <RolesPage></RolesPage>
+          </div>
         </Suspense>
       </div>
     </PrivateLayout>
   );
-}
+};
+
+export default Page;

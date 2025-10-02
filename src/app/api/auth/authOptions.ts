@@ -252,15 +252,15 @@ export const authOptions: AuthOptions = {
       const customToken = token as CustomToken;
 
       // Debug logging
-      if (process.env.NODE_ENV === "development") {
-        console.log("🔧 JWT Callback:", {
-          trigger,
-          hasToken: !!token,
-          hasUser: !!user,
-          hasSession: !!session,
-          sessionKeys: session ? Object.keys(session) : [],
-        });
-      }
+      // if (process.env.NODE_ENV === "development") {
+      //   console.log("🔧 JWT Callback:", {
+      //     trigger,
+      //     hasToken: !!token,
+      //     hasUser: !!user,
+      //     hasSession: !!session,
+      //     sessionKeys: session ? Object.keys(session) : [],
+      //   });
+      // }
 
       // Initial sign-in
       if (user) {

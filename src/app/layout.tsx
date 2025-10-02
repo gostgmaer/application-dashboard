@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 // @ts-ignore
 import "./globals.css";
@@ -15,21 +14,25 @@ import { authOptions } from "./api/auth/authOptions";
 import { SettingProvider } from "@/contexts/SettingContext";
 import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
+import { NotificationProviderCommunication } from "@/contexts/notification-context";
+import { WebSocketProvider } from "@/contexts/websocket-context";
+import { MessagingProvider } from "@/contexts/messaging-context";
 
 const roboto = Roboto({ subsets: ["latin"] });
 
 export async function generateMetadata(): Promise<Metadata> {
   const settingResponse = await settingServices.getBySiteKey(sitekey as string);
   const setting = settingResponse?.data;
-  
-  const seoKeywords = setting?.seo?.keywords?.length 
-    ? setting.seo.keywords.join(", ") 
+
+  const seoKeywords = setting?.seo?.keywords?.length
+    ? setting.seo.keywords.join(", ")
     : "ecommerce, shopping, online store";
   const siteLocale = setting?.siteLocale?.replace("-", "_") || "en_US";
 
   return {
     title: setting?.siteName || "My E-Commerce Store",
-    description: setting?.name || "Best E-Commerce Store for all your shopping needs",
+    description:
+      setting?.name || "Best E-Commerce Store for all your shopping needs",
     keywords: seoKeywords,
     // themeColor: setting?.branding?.themeColor || "#FF6600",
     authors: [{ name: "My Store Team" }],
@@ -39,8 +42,8 @@ export async function generateMetadata(): Promise<Metadata> {
       description: setting?.name,
       locale: siteLocale,
       siteName: setting?.siteName,
-      images: setting?.branding?.logo 
-        ? [{ url: setting.branding.logo, width: 800, height: 600 }] 
+      images: setting?.branding?.logo
+        ? [{ url: setting.branding.logo, width: 800, height: 600 }]
         : undefined,
       type: "website",
     },
@@ -78,15 +81,23 @@ export default async function RootLayout({
         <SessionProviderWrapper>
           <Providers>
             <SettingProvider>
+                 <WebSocketProvider>
               <NotificationProvider>
-                <DialogProvider>
-                  <ModalProvider>
-                    {children}
-                    <ReusableDialog />
-                    <ModalManager />
-                  </ModalProvider>
-                </DialogProvider>
+                <NotificationProviderCommunication>
+                  <MessagingProvider>
+                 
+                      <DialogProvider>
+                        <ModalProvider>
+                          {children}
+                          <ReusableDialog />
+                          <ModalManager />
+                        </ModalProvider>
+                      </DialogProvider>
+                 
+                  </MessagingProvider>
+                </NotificationProviderCommunication>
               </NotificationProvider>
+                 </WebSocketProvider>
             </SettingProvider>
           </Providers>
         </SessionProviderWrapper>

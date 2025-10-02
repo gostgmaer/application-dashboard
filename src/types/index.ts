@@ -1,111 +1,103 @@
-// User types
-export interface UserBasicInfo {
-  firstName: string;
-  middleName?: string;
-  lastName: string;
-  username: string;
-  password: string;
-  confirmPassword: string;
+export interface User {
+  id: string;
+  name: string;
+  avatar?: string;
   email: string;
-  phone: string;
-  dateOfBirth: string;
-  gender: string;
-  profilePicture?: string;
+  online: boolean;
+  lastSeen?: Date;
 }
 
-export interface UserAddressInfo {
-  streetAddress: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
+export interface Notification {
+  id: string;
+  type: 'info' | 'warning' | 'error' | 'success' | 'promo';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: Date;
+  actionUrl?: string;
+  actionLabel?: string;
+  groupId?: string;
+  userId: string;
 }
 
-export interface UserSecurityInfo {
-  securityQuestion1: string;
-  securityAnswer1: string;
-  securityQuestion2: string;
-  securityAnswer2: string;
-  twoFactorEnabled: boolean;
-  backupEmail?: string;
-  backupPhone?: string;
+export interface Conversation {
+  id: string;
+  name: string;
+  participants: User[];
+  lastMessage?: Message;
+  unreadCount: number;
+  isPinned: boolean;
+  isGroup: boolean;
+  avatar?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface UserContactPreferences {
-  preferredContactMethod: 'email' | 'sms' | 'phone';
-  newsletterSubscription: boolean;
-  marketingPreferences: {
-    productUpdates: boolean;
-    promotions: boolean;
-    events: boolean;
-  };
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  sender: User;
+  content: string;
+  type: 'text' | 'image' | 'file' | 'audio' | 'video';
+  attachments?: Attachment[];
+  replyTo?: string;
+  reactions: Reaction[];
+  readBy: ReadReceipt[];
+  editedAt?: Date;
+  createdAt: Date;
+  status: 'sending' | 'sent' | 'delivered' | 'read' | 'failed';
 }
 
-export interface UserDemographicInfo {
-  nationality?: string;
-  ethnicity?: string;
-  maritalStatus?: string;
-  employmentStatus?: string;
-  educationLevel?: string;
-  incomeRange?: string;
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
 }
 
-export interface UserProfessionalInfo {
-  jobTitle?: string;
-  companyName?: string;
-  industry?: string;
-  workEmail?: string;
-  linkedInProfile?: string;
+export interface Reaction {
+  emoji: string;
+  users: User[];
+  count: number;
 }
 
-export interface UserAccountSettings {
-  languagePreference: string;
-  timeZone: string;
-  theme: 'light' | 'dark' | 'system';
-  notificationPreferences: {
-    email: boolean;
-    push: boolean;
-    sms: boolean;
-  };
+export interface ReadReceipt {
+  userId: string;
+  readAt: Date;
 }
 
-export interface UserLegalInfo {
-  termsAgreed: boolean;
-  privacyPolicyAgreed: boolean;
-  ageConfirmation: boolean;
-  dataProcessingConsent: boolean;
+export interface TypingIndicator {
+  conversationId: string;
+  userId: string;
+  userName: string;
 }
 
-export interface UserCustomInfo {
-  interests?: string[];
-  referralCode?: string;
-  hearAboutUs?: string;
-  userRole?: string;
+export interface WebSocketEvent {
+  type: 'message:new' | 'message:read' | 'conversation:new' | 'typing:start' | 'typing:stop' | 'notification:new';
+  data: any;
 }
 
-export interface UserRegistrationData {
-  basicInfo: UserBasicInfo;
-  addressInfo: UserAddressInfo;
-  securityInfo: UserSecurityInfo;
-  contactPreferences: UserContactPreferences;
-  demographicInfo?: UserDemographicInfo;
-  professionalInfo?: UserProfessionalInfo;
-  accountSettings: UserAccountSettings;
-  legalInfo: UserLegalInfo;
-  customInfo?: UserCustomInfo;
+export interface CallSession {
+  id: string;
+  conversationId: string;
+  initiatorId: string;
+  participants: User[];
+  type: 'audio' | 'video';
+  status: 'initiating' | 'ringing' | 'active' | 'ended' | 'declined';
+  startedAt?: Date;
+  endedAt?: Date;
+  teamsUrl?: string;
 }
 
-export type RegistrationStep = 
-  | 'basicInfo' 
-  | 'addressInfo' 
-  | 'securityInfo' 
-  | 'contactPreferences' 
-  | 'demographicInfo'
-  | 'professionalInfo'
-  | 'accountSettings'
-  | 'legalInfo'
-  | 'customInfo'
-  | 'review';
-
-// Theme types
-export type Theme = 'dark' | 'light' | 'system';
+export interface CallNotification {
+  id: string;
+  callId: string;
+  type: 'incoming_call' | 'missed_call' | 'call_ended';
+  from: User;
+  conversationId: string;
+  callType: 'audio' | 'video';
+  createdAt: Date;
+}
