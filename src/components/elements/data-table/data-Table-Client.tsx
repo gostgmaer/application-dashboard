@@ -164,8 +164,8 @@ export function DataTable<TData>({
     revalidateOnFocus}
   );
 
-  console.log("Server Response:", data);
-  console.log("Query Params:", serverQueryParams);
+  // console.log("Server Response:", data);
+  // console.log("Query Params:", serverQueryParams);
 
   const tableData = useMemo(() => {
     if (!data?.result) return [];

@@ -51,12 +51,7 @@ const navigationItems: NavItem[] = [
     icon: Users,
     children: [
       { title: "All Users", href: "/dashboard/users", icon: Users },
-      { title: "User Roles", href: "/dashboard/users/roles", icon: Shield },
-      {
-        title: "Permissions",
-        href: "/dashboard/users/permissions",
-        icon: ShieldCheck,
-      },
+      { title: "User Roles", href: "/dashboard/users/roles", icon: Shield }
     ],
   },
   {

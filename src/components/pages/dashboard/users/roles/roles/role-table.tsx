@@ -23,14 +23,14 @@ export function RoleTable({ roles, onViewRole }: RoleTableProps) {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {roles.map((role) => (
         <Card
-          key={role.id}
+          key={role._id}
           className="p-6 bg-white hover:shadow-lg transition-all cursor-pointer group"
-          onClick={() => onViewRole(role.id)}
+          onClick={() => onViewRole(role._id)}
         >
           <div className="space-y-4">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-lg text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-lg text-gray-900 truncate capitalize group-hover:text-blue-600 transition-colors">
                   {role.name}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1 line-clamp-2">
@@ -47,7 +47,7 @@ export function RoleTable({ roles, onViewRole }: RoleTableProps) {
                   <DropdownMenuItem
                     onClick={(e) => {
                       e.stopPropagation();
-                      onViewRole(role.id);
+                      onViewRole(role._id);
                     }}
                   >
                     <Eye className="mr-2 h-4 w-4" />
@@ -82,26 +82,26 @@ export function RoleTable({ roles, onViewRole }: RoleTableProps) {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Permissions</p>
-                  <p className="text-sm font-semibold text-gray-900">{role.permissionCount}</p>
+                  <p className="text-sm font-semibold text-gray-900">{role.permissionsCount}</p>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-2 border-t">
               <Badge
-                variant={role.status === 'active' ? 'default' : 'secondary'}
+                variant={role.isActive ? 'default' : 'secondary'}
                 className={
-                  role.status === 'active'
+                  role.isActive
                     ? 'bg-green-100 text-green-800 hover:bg-green-100'
                     : 'bg-gray-100 text-gray-800 hover:bg-gray-100'
                 }
               >
-                {role.status === 'active' ? 'Active' : 'Inactive'}
+                {role.isActive ? 'Active' : 'Inactive'}
               </Badge>
 
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Clock className="w-3 h-3" />
-                <span>{format(new Date(role.updatedAt), 'MMM d, yyyy')}</span>
+                <span>{format(new Date(role.updatedAt|| new Date()), 'MMM d, yyyy')}</span>
               </div>
             </div>
           </div>

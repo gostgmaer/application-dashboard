@@ -68,7 +68,7 @@ export function DataTableExample() {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const handleDeleteRow = (rows: User[]) => {
-    console.log("Deleting users:", rows);
+    // console.log("Deleting users:", rows);
     alert(`Deleting ${rows.length} user(s)`);
   };
   const deleteRequest = async (id: any) => {

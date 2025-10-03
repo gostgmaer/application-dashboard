@@ -1,28 +1,36 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Shield } from 'lucide-react';
-import { Role, fetchRoles } from '@/lib/mock-data';
-import { RoleTableSkeleton, StatCardsSkeleton } from '@/components/pages/dashboard/users/roles/roles/loading-skeleton';
-import { StatCards } from '@/components/pages/dashboard/users/roles/roles/stat-cards';
-import { RoleTable } from '@/components/pages/dashboard/users/roles/roles/role-table';
-import { RoleDetailsDrawer } from '@/components/pages/dashboard/users/roles/roles/role-details-drawer';
+import { useState, useEffect } from "react";
+import { Shield } from "lucide-react";
+import { Role } from "@/lib/mock-data";
+import {
+  RoleTableSkeleton,
+  StatCardsSkeleton,
+} from "@/components/pages/dashboard/users/roles/roles/loading-skeleton";
+import { StatCards } from "@/components/pages/dashboard/users/roles/roles/stat-cards";
+import { RoleTable } from "@/components/pages/dashboard/users/roles/roles/role-table";
+import { RoleDetailsDrawer } from "@/components/pages/dashboard/users/roles/roles/role-details-drawer";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
+export default function RolesPage({ props }: any) {
 
-export default function RolesPage({props}:any) {
-
-  console.log(props);
-  
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    fetchRoles()
-      .then(setRoles)
-      .finally(() => setLoading(false));
-  }, []);
+
+
+  const { data, error, isLoading, mutate } = useApiSWR(
+    "/roles",
+    props.token,
+    undefined,
+    undefined,
+    undefined
+  );
+// console.log(data, error, isLoading, mutate);
+  console.log("Server Response:", data,isLoading);
+  // console.log("Query Params:", serverQueryParams);
 
   const handleViewRole = (roleId: string) => {
     setSelectedRoleId(roleId);
@@ -34,16 +42,14 @@ export default function RolesPage({props}:any) {
     setTimeout(() => setSelectedRoleId(null), 300);
   };
 
-  const totalUsers = props?.stats?.summary?.totalUsersAssigned
-;
-  const totalPermissions = props?.stats?.summary?.activePermissions
+  const totalUsers = props?.stats?.summary?.totalUsersAssigned;
+  const totalPermissions = props?.stats?.summary?.activePermissions;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-8">
-       
+      <div className=" mx-auto  py-8">
         <div className="space-y-6">
-          {loading ? (
+          {isLoading ? (
             <>
               <StatCardsSkeleton />
               <RoleTableSkeleton />
@@ -58,12 +64,14 @@ export default function RolesPage({props}:any) {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-gray-900">All Roles</h2>
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    All Roles
+                  </h2>
                   <p className="text-sm text-gray-500">
-                    {roles.length} {roles.length === 1 ? 'role' : 'roles'} total
+                    {data.length} {data.length === 1 ? "role" : "roles"} total
                   </p>
                 </div>
-                <RoleTable roles={roles} onViewRole={handleViewRole} />
+                <RoleTable roles={data} onViewRole={handleViewRole} />
               </div>
             </>
           )}

@@ -14,7 +14,7 @@ const Page = async (props: any) => {
   const stats = await roleServices.getCompleteRoleStatistics(
     session?.accessToken
   );
-  console.log(stats);
+
   
   const p = await permissionServices.getPermissionsGrouped(
     query,
@@ -34,7 +34,7 @@ const Page = async (props: any) => {
 
           <div className="rounded-md  shadow-sm overflow-auto ">
             <RolesPage
-              props={{  permissions: p.data, stats: stats.data }}
+              props={{  permissions: p.data, stats: stats.data,token:session.accessToken }}
             ></RolesPage>
           </div>
         </Suspense>

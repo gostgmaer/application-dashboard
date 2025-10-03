@@ -31,6 +31,7 @@ import {
 import UsersTable from "./table";
 import { DataTableExample } from "./tableClient";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { useApiSWR } from "@/hooks/useApiSWR";
 
 const usersByRole = [
   { name: "Admin", value: 5, fill: "#3b82f6" },
@@ -111,7 +112,20 @@ const mockUsers: User[] = [
   },
 ];
 
-export default function UserDashboard() {
+export default function UserDashboard(token: any) {
+
+    const { data, error, isLoading, mutate } = useApiSWR(
+      "/users/stats-data",
+      token,
+      undefined,
+      undefined,
+      undefined
+    );
+
+
+console.log(data);
+
+
   return (
     <>
       <Breadcrumbs
@@ -124,25 +138,25 @@ export default function UserDashboard() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Users"
-              value="1,542"
+              value={data?.totalUsers||0}
               icon={Users}
               description="All registered users"
             />
             <StatCard
               title="Active Users"
-              value="1,400"
+              value={data?.activeUsers||0}
               icon={UserCheck}
               description="Currently active"
             />
             <StatCard
               title="Inactive Users"
-              value="142"
+              value={data?.inactiveUsers||0}
               icon={UserX}
               description="No recent activity"
             />
             <StatCard
               title="New Users Today"
-              value="25"
+              value={data?.newUsersToday||0}
               icon={UserPlus}
               description="Registered today"
             />
@@ -151,7 +165,7 @@ export default function UserDashboard() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard
               title="Growth Rate"
-              value="+12.5%"
+                value={data?.weeklyGrowthRate||0}
               icon={TrendingUp}
               description="User growth this month"
             />
@@ -169,7 +183,7 @@ export default function UserDashboard() {
             />
             <StatCard
               title="Email Verified"
-              value="1,489"
+              value={data?.emailVerifiedCount||0}
               icon={Mail}
               description="96.6% verification rate"
             />
@@ -181,7 +195,7 @@ export default function UserDashboard() {
             />
             <StatCard
               title="2FA Enabled"
-              value="892"
+              value={data?.twoFactorEnabledCount||0}
               icon={ShieldCheck}
               description="57.9% security adoption"
             />
@@ -192,7 +206,7 @@ export default function UserDashboard() {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={usersByRole}
+                    data={data?.usersByRole||[]}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -213,12 +227,12 @@ export default function UserDashboard() {
 
             <ChartCard title="Users by Device">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={usersByDevice}>
+                <BarChart data={data?.usersByDevice||[]}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="device" />
+                  <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="users" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="value" fill="#3b82f6" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>

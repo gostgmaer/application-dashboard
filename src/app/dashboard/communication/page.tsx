@@ -32,7 +32,7 @@ const Page = () => {
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
           <Breadcrumbs
-            heading={"Notification Center"}
+            heading={"Communication Center"}
             btn={{ show: false }}
           ></Breadcrumbs>
 

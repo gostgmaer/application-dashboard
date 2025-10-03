@@ -3,8 +3,8 @@ export interface Role {
   name: string;
   description: string;
   userCount: number;
-  permissionCount: number;
-  status: 'active' | 'inactive';
+  permissionsCount: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,58 +33,7 @@ export interface RoleDetails {
   permissions: Permission[];
 }
 
-export const mockRoles: Role[] = [
-  {
-    id: '1',
-    name: 'Administrator',
-    description: 'Full system access with all permissions',
-    userCount: 3,
-    permissionCount: 45,
-    status: 'active',
-    createdAt: '2024-01-15T10:30:00Z',
-    updatedAt: '2024-03-20T14:45:00Z',
-  },
-  {
-    id: '2',
-    name: 'Manager',
-    description: 'Manage team members and view reports',
-    userCount: 12,
-    permissionCount: 28,
-    status: 'active',
-    createdAt: '2024-01-20T09:15:00Z',
-    updatedAt: '2024-03-18T11:20:00Z',
-  },
-  {
-    id: '3',
-    name: 'Editor',
-    description: 'Create and edit content across the platform',
-    userCount: 24,
-    permissionCount: 18,
-    status: 'active',
-    createdAt: '2024-02-01T08:00:00Z',
-    updatedAt: '2024-03-15T16:30:00Z',
-  },
-  {
-    id: '4',
-    name: 'Viewer',
-    description: 'Read-only access to platform resources',
-    userCount: 87,
-    permissionCount: 8,
-    status: 'active',
-    createdAt: '2024-02-10T13:45:00Z',
-    updatedAt: '2024-03-10T09:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'Guest',
-    description: 'Limited access for external collaborators',
-    userCount: 5,
-    permissionCount: 4,
-    status: 'inactive',
-    createdAt: '2024-03-01T10:00:00Z',
-    updatedAt: '2024-03-05T15:20:00Z',
-  },
-];
+
 
 export const mockRoleDetails: Record<string, RoleDetails> = {
   '1': {
@@ -190,10 +139,7 @@ export const mockRoleDetails: Record<string, RoleDetails> = {
   },
 };
 
-export async function fetchRoles(): Promise<Role[]> {
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return mockRoles;
-}
+
 
 export async function fetchRoleDetails(id: string): Promise<RoleDetails | null> {
   await new Promise((resolve) => setTimeout(resolve, 600));

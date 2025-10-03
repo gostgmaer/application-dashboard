@@ -18,14 +18,18 @@ export function useApiSWR<T = any>(
   headers?: Record<string, any>,
   options?: SWROptions,
 ) {
+
+  
   const fetcher = async (url: string): Promise<T> => {
     const res: ApiResponse<T> = await request.get<T>(url, token, query, params, headers);
     if (!res.success) throw new Error(res.error || "Failed to fetch");
     return res.data as T;
   };
 
+  
+
   return useSWR<T>(key, key ? fetcher : null, {
-    refreshInterval: options?.refreshInterval ?? 0,
+    refreshInterval: options?.refreshInterval ?? 100000,
     revalidateOnFocus: options?.revalidateOnFocus ?? true,
   });
 }
