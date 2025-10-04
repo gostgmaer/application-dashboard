@@ -122,10 +122,6 @@ export default function UserDashboard(token: any) {
       undefined
     );
 
-
-console.log(data);
-
-
   return (
     <>
       <Breadcrumbs

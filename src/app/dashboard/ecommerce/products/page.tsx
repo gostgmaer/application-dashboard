@@ -1,20 +1,20 @@
 import { Suspense } from "react";
-import Table from "@/components/pages/dashboard/product/table";
 import PrivateLayout from "@/components/layout/dashboard";
 import productService from "@/lib/http/ProductServices";
-import ProductDashboard from "@/components/pages/dashboard/product";
+import DashboardPage from "@/components/pages/dashboard/product";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/authOptions";
 // import Table from "@/components/pages/dashboard/users/roles/table";
 
 export default async function UsersPage(props: any) {
-  const query = await props.searchParams;
-  // const {sortBy,sortDesc} = query
-  const product = await productService.list(query);
+
+  const session: any = await getServerSession(authOptions);
 
   return (
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <ProductDashboard />
+          <DashboardPage token={session.accessToken} />
         </Suspense>
       </div>
     </PrivateLayout>

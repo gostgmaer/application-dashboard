@@ -1,6 +1,7 @@
 // types/product.ts
 export interface Product {
   id: string;
+  _id: string;
   title: string;
   images: string[];
   price: {
@@ -87,4 +88,80 @@ export interface ReviewsResponse {
 export interface ReviewSubmission {
   rating: number;
   text: string;
+}
+
+export interface TopListItem {
+  id: string;
+  name: string;
+  value: number | string;
+  subValue?: number | string;
+  status?: string;
+  image?: string;
+}
+
+export interface DashboardStats {
+  totalProducts: number;
+  activeProducts: number;
+  outOfStockCount: number;
+  productsOnSale: number;
+  avgBasePrice: number;
+  totalRevenue: number;
+  lowStockProductsCount: number;
+  topSellingCategory: string;
+  thisMonthProducts: number;
+  revenueGrowth: number;
+  averageStockPerProduct: number;
+  topDiscountedProductsCount: number
+}
+
+export interface DashboardFilters {
+  dateRange: 'today' | 'week' | 'month' | 'custom';
+  customDateStart?: string;
+  customDateEnd?: string;
+  category: string;
+  brand: string;
+  priceRange: [number, number];
+  stockStatus: 'all' | 'in-stock' | 'low-stock' | 'out-of-stock';
+  search: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  productCount: number;
+}
+
+export interface Brand {
+  id: string;
+  name: string;
+  productCount: number;
+}
+export interface Sale {
+  id: string;
+  productId: string;
+  customerId: string;
+  quantity: number;
+  amount: number;
+  date: string;
+  region: string;
+}
+
+export interface ProductList {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  brand: string;
+  price: number;
+  originalPrice: number;
+  stock: number;
+  status: 'active' | 'draft' | 'out-of-stock';
+  image: string;
+  createdDate: string;
+  updatedDate: string;
+  sales: number;
+  views: number;
+  returnRate: number;
+  rating: number;
+  region: string;
 }
