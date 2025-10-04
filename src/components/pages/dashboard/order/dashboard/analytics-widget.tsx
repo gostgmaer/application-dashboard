@@ -1,12 +1,12 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { IceCreamCone, IconNode } from 'lucide-react';
+import { IceCreamCone, IconNode, LucideIcon } from 'lucide-react';
 
 
 interface AnalyticsWidgetProps {
   title: string;
-  icon: IconNode;
+  icon: LucideIcon;
   items: {
     label: string;
     value: string | number;
@@ -15,7 +15,7 @@ interface AnalyticsWidgetProps {
   isLoading?: boolean;
 }
 
-export function AnalyticsWidget({ title, icon: Icon, items, isLoading }: AnalyticsWidgetProps) {
+export function AnalyticsWidget({ title, icon: LucideIcon, items, isLoading }: AnalyticsWidgetProps) {
   if (isLoading) {
     return (
       <Card>

@@ -20,7 +20,7 @@ export interface Notification {
   groupId?: string;
   userId: string;
 }
-
+export type Theme = "light" | "dark" | "system";
 export interface Conversation {
   id: string;
   name: string;
@@ -76,7 +76,7 @@ export interface TypingIndicator {
 }
 
 export interface WebSocketEvent {
-  type: 'message:new' | 'message:read' | 'conversation:new' | 'typing:start' | 'typing:stop' | 'notification:new';
+  type: 'message:new' | 'message:read' | 'conversation:new' | 'typing:start' | 'typing:stop' | 'notification:new'|'call:incoming';
   data: any;
 }
 

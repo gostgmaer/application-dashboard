@@ -78,7 +78,6 @@ export function MessagingProvider({ children }: { children: React.ReactNode }) {
       setActiveCall(data);
       // Add notification for incoming call
       addNotification({
-        id: `call-${data.id}`,
         type: 'info',
         priority: 'urgent',
         title: `Incoming ${data.type} call`,
