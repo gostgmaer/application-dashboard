@@ -64,6 +64,7 @@ export interface DataTableProps<TData> {
   headers?: Record<string, string>;
   refreshInterval?: number;
   revalidateOnFocus?: boolean;
+  paginationLimits?: number[];
   filters?: DataTableFilter[];
   enableRowSelection?: boolean;
   enableMultiRowSelection?: boolean;
@@ -81,6 +82,7 @@ export function DataTable<TData>({
   columns,
   endpoint,
   token,
+  paginationLimits=[10, 20, 50, 100],
   baseQueryParams = {},
   params = {},
   headers,
@@ -592,7 +594,7 @@ export function DataTable<TData>({
                 <SelectValue placeholder={pageSize} />
               </SelectTrigger>
               <SelectContent side="top">
-                {[10, 20, 30, 40, 50].map((pageSizeOption) => (
+                {paginationLimits.map((pageSizeOption) => (
                   <SelectItem key={pageSizeOption} value={`${pageSizeOption}`}>
                     {pageSizeOption}
                   </SelectItem>

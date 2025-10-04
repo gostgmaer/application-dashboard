@@ -16,7 +16,7 @@ import {
 import {
   DataTable,
   DataTableFilter,
-} from "@/components/elements/data-table/data-Table-Client";
+} from "@/components/ui/data-table/data-Table-Client";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import userServices from "@/lib/http/userService";
@@ -219,7 +219,7 @@ export function DataTableExample() {
           onDelete={handleDelete}
           onExport={handleExport}
           //   pageSize={10}
-          refreshInterval={30000}
+          refreshInterval={3000000}
           searchPlaceholder="Search users by name, email..."
           emptyMessage="No users found."
         />

@@ -1,5 +1,5 @@
 "use client";
-import { DataTable } from "@/components/elements/data-table/data-table";
+import { DataTable } from "@/components/ui/data-table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ColumnFilter } from "@/components/elements/data-table/column-filter";
+import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { ServerResponse, TableState } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import Link from "next/link";

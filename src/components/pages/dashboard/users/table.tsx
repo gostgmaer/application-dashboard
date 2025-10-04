@@ -1,6 +1,6 @@
 "use client";
 import { Suspense } from "react";
-import { DataTable } from "@/components/elements/data-table/data-table";
+import { DataTable } from "@/components/ui/data-table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ColumnFilter } from "@/components/elements/data-table/column-filter";
+import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
 import { useDialog } from "@/hooks/use-dialog";
 import { CustomDialog } from "@/components/layout/dialog";
