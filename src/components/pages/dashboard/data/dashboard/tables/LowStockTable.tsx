@@ -11,7 +11,7 @@ export default function LowStockTable() {
     { 
       key: 'stock', 
       header: 'Stock',
-      render: (value) => (
+      render: (value:any) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           value <= 5 
             ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300'

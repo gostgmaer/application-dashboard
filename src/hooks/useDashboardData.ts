@@ -1,10 +1,10 @@
 'use client';
 
 import useSWR from 'swr';
-import { 
-  statsData, 
-  salesChartData, 
-  topCategoriesData, 
+import {
+  statsData,
+  salesChartData,
+  topCategoriesData,
   revenueDistributionData,
   ordersTrendData,
   customerGrowthData,
@@ -85,9 +85,9 @@ const getMockData = (url: string) => {
 };
 
 // Custom hooks for dashboard data
-export const useStats = (filters?: any) => {
+export const useStats: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/stats', fetcher);
-  
+
   return {
     stats: data,
     isLoading,
@@ -95,9 +95,9 @@ export const useStats = (filters?: any) => {
   };
 };
 
-export const useSalesData = (filters?: any) => {
+export const useSalesData: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/sales', fetcher);
-  
+
   return {
     salesData: data,
     isLoading,
@@ -105,9 +105,9 @@ export const useSalesData = (filters?: any) => {
   };
 };
 
-export const useCategoriesData = (filters?: any) => {
+export const useCategoriesData: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/categories', fetcher);
-  
+
   return {
     categoriesData: data,
     isLoading,
@@ -115,9 +115,9 @@ export const useCategoriesData = (filters?: any) => {
   };
 };
 
-export const useRevenueDistribution = (filters?: any) => {
+export const useRevenueDistribution: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/revenue-distribution', fetcher);
-  
+
   return {
     revenueData: data,
     isLoading,
@@ -125,9 +125,9 @@ export const useRevenueDistribution = (filters?: any) => {
   };
 };
 
-export const useOrdersData = (filters?: any) => {
+export const useOrdersData: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/orders', fetcher);
-  
+
   return {
     ordersData: data,
     isLoading,
@@ -135,9 +135,9 @@ export const useOrdersData = (filters?: any) => {
   };
 };
 
-export const useCustomersData = (filters?: any) => {
+export const useCustomersData: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/customers', fetcher);
-  
+
   return {
     customersData: data,
     isLoading,
@@ -145,9 +145,9 @@ export const useCustomersData = (filters?: any) => {
   };
 };
 
-export const useDiscountUsage = (filters?: any) => {
+export const useDiscountUsage: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/discount-usage', fetcher);
-  
+
   return {
     discountData: data,
     isLoading,
@@ -155,9 +155,9 @@ export const useDiscountUsage = (filters?: any) => {
   };
 };
 
-export const useTopProducts = (filters?: any) => {
+export const useTopProducts: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/products/top', fetcher);
-  
+
   return {
     products: data,
     isLoading,
@@ -165,9 +165,9 @@ export const useTopProducts = (filters?: any) => {
   };
 };
 
-export const useTopBrands = (filters?: any) => {
+export const useTopBrands: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/brands/top', fetcher);
-  
+
   return {
     brands: data,
     isLoading,
@@ -175,9 +175,9 @@ export const useTopBrands = (filters?: any) => {
   };
 };
 
-export const useRecentOrders = (filters?: any) => {
+export const useRecentOrders: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/orders/recent', fetcher);
-  
+
   return {
     orders: data,
     isLoading,
@@ -185,9 +185,9 @@ export const useRecentOrders = (filters?: any) => {
   };
 };
 
-export const useDiscountedProducts = (filters?: any) => {
+export const useDiscountedProducts: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/products/discounted', fetcher);
-  
+
   return {
     discountedProducts: data,
     isLoading,
@@ -195,9 +195,9 @@ export const useDiscountedProducts = (filters?: any) => {
   };
 };
 
-export const useLowStockProducts = (filters?: any) => {
+export const useLowStockProducts: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/products/low-stock', fetcher);
-  
+
   return {
     lowStockProducts: data,
     isLoading,
@@ -205,18 +205,18 @@ export const useLowStockProducts = (filters?: any) => {
   };
 };
 
-export const useRecentlyAdded = (filters?: any) => {
+export const useRecentlyAdded: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/products/recently-added', fetcher);
-  
+
   return {
     recentlyAdded: data,
     isLoading,
     error,
   };
 };
-export const useConversionFunnel = (filters?: any) => {
+export const useConversionFunnel: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/conversion-funnel', fetcher);
-  
+
   return {
     funnelData: data,
     isLoading,
@@ -224,9 +224,9 @@ export const useConversionFunnel = (filters?: any) => {
   };
 };
 
-export const useSalesByChannel = (filters?: any) => {
+export const useSalesByChannel: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/sales-by-channel', fetcher);
-  
+
   return {
     channelData: data,
     isLoading,
@@ -234,9 +234,9 @@ export const useSalesByChannel = (filters?: any) => {
   };
 };
 
-export const useTopCountries = (filters?: any) => {
+export const useTopCountries: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/top-countries', fetcher);
-  
+
   return {
     countriesData: data,
     isLoading,
@@ -244,9 +244,9 @@ export const useTopCountries = (filters?: any) => {
   };
 };
 
-export const useHourlyTraffic = (filters?: any) => {
+export const useHourlyTraffic: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/hourly-traffic', fetcher);
-  
+
   return {
     trafficData: data,
     isLoading,
@@ -254,9 +254,9 @@ export const useHourlyTraffic = (filters?: any) => {
   };
 };
 
-export const useProductPerformance = (filters?: any) => {
+export const useProductPerformance: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/product-performance', fetcher);
-  
+
   return {
     performanceData: data,
     isLoading,
@@ -264,9 +264,9 @@ export const useProductPerformance = (filters?: any) => {
   };
 };
 
-export const useAgeGroups = (filters?: any) => {
+export const useAgeGroups: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/age-groups', fetcher);
-  
+
   return {
     ageData: data,
     isLoading,
@@ -274,9 +274,9 @@ export const useAgeGroups = (filters?: any) => {
   };
 };
 
-export const useDeviceTypes = (filters?: any) => {
+export const useDeviceTypes: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/device-types', fetcher);
-  
+
   return {
     deviceData: data,
     isLoading,
@@ -284,9 +284,9 @@ export const useDeviceTypes = (filters?: any) => {
   };
 };
 
-export const usePaymentMethods = (filters?: any) => {
+export const usePaymentMethods: any = (filters?: any) => {
   const { data, error, isLoading } = useSWR('/api/payment-methods', fetcher);
-  
+
   return {
     paymentData: data,
     isLoading,

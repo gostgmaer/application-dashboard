@@ -12,12 +12,12 @@ export default function TopProductsTable() {
     { 
       key: 'price', 
       header: 'Price',
-      render: (value) => `$${value}`
+      render: (value:any) => `$${value}`
     },
     { 
       key: 'status', 
       header: 'Status',
-      render: (value) => (
+      render: (value:any) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           value === 'Active' 
             ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'

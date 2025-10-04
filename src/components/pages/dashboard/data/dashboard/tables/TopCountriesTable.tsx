@@ -11,12 +11,12 @@ export default function TopCountriesTable() {
     { 
       key: 'sales', 
       header: 'Sales',
-      render: (value) => `$${value.toLocaleString()}`
+      render: (value:any) => `$${value.toLocaleString()}`
     },
     { 
       key: 'orders', 
       header: 'Orders',
-      render: (value) => value.toLocaleString()
+      render: (value:any) => value.toLocaleString()
     },
   ];
 

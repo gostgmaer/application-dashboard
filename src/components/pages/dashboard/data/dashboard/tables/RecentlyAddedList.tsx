@@ -29,7 +29,7 @@ export default function RecentlyAddedList() {
         Recently Added Products
       </h3>
       <div className="space-y-4">
-        {recentlyAdded?.map((product) => (
+        {recentlyAdded?.map((product:any) => (
           <div key={product.id} className="flex items-center justify-between py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg px-2 transition-colors duration-150">
             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
               {product.name}

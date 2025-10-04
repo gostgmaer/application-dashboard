@@ -12,7 +12,7 @@ export default function TopBrandsTable() {
     { 
       key: 'revenue', 
       header: 'Revenue',
-      render: (value) => `$${value.toLocaleString()}`
+      render: (value:any) => `$${value.toLocaleString()}`
     },
   ];
 

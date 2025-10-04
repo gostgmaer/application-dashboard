@@ -11,17 +11,17 @@ export default function TopDiscountedTable() {
     { 
       key: 'originalPrice', 
       header: 'Original Price',
-      render: (value) => `$${value}`
+      render: (value:any) => `$${value}`
     },
     { 
       key: 'discountedPrice', 
       header: 'Sale Price',
-      render: (value) => `$${value}`
+      render: (value:any) => `$${value}`
     },
     { 
       key: 'discount', 
       header: 'Discount',
-      render: (value) => (
+      render: (value:any) => (
         <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300">
           {value}% OFF
         </span>

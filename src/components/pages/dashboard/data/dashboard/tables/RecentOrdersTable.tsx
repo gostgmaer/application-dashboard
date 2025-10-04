@@ -12,12 +12,12 @@ export default function RecentOrdersTable() {
     { 
       key: 'total', 
       header: 'Total',
-      render: (value) => `$${value}`
+      render: (value:any) => `$${value}`
     },
     { 
       key: 'status', 
       header: 'Status',
-      render: (value) => (
+      render: (value:any) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
           value === 'Completed' 
             ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300'
