@@ -79,7 +79,7 @@ export default function RolesPage({ props }: any) {
                       All Roles
                     </h2>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {data.length} {data.length === 1 ? "role" : "roles"} total
+                      {props?.stats?.summary?.totalRoles} {props?.stats?.summary?.totalRoles === 1 ? "role" : "roles"} total
                     </p>
                   </div>
 

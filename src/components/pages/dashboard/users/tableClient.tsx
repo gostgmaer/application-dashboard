@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoveHorizontal as MoreHorizontal, Mail } from "lucide-react";
+import { MoveHorizontal as MoreHorizontal, Mail, Copy, Pencil, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -185,19 +185,22 @@ export function DataTableExample() {
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(user.id)}
               >
+                <Copy className="mr-2 h-4 w-4 text-gray-600 dark:text-gray-300" />
                 Copy user ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
               <DropdownMenuItem>
-                <Link href={`/dashboard/users/${user["id"]}/update`}>
-                  Edit{" "} 
+                <Link href={`/dashboard/users/${user["id"]}/update`} className="flex items-center">
+                 <Pencil className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  Edit
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-500"
                 onClick={() => handleDelete(user)}
               >
+                  <Trash2 className="mr-2 h-4 w-4" />
                 Remove
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -1,40 +1,36 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
+// app/error.tsx
+"use client";
+import { useEffect } from "react";
 
-export const metadata: Metadata = {
-  title: 'Error | NextApp',
-  description: 'An error occurred in the application'
-};
-
-export default function ErrorPage({ statusCode }: { statusCode?: number }) {
-
-  const message = statusCode === 404 
-    ? 'The page you are looking for could not be found.'
-    : 'An unexpected error occurred on our server.';
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error("🚨 React Rendering Error:", error);
+  }, [error]);
 
   return (
-    <div className="container mx-auto">
-      <div className="mx-auto rounded-lg shadow-md max-w-md">
-        <div className="p-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">
-            {statusCode ? `${statusCode} - Error` : 'Application Error'}
-          </h1>
-          <p className="text-gray-500 mb-6">
-            {message} Please try again later or contact support for assistance.
-          </p>
-          <Link
-            href="/"
-            className="inline-block px-8 py-3 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition-colors"
+    <html>
+      <body className="flex h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+        <div className="text-center p-6 border rounded-xl shadow-md bg-white dark:bg-gray-800">
+          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400">
+            Something went wrong 😞
+          </h2>
+          <pre className="mt-2 text-sm whitespace-pre-wrap break-all">
+            {error.message}
+          </pre>
+          <button
+            onClick={() => reset()}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Back to Home
-          </Link>
+            Try again
+          </button>
         </div>
-      </div>
-    </div>
+      </body>
+    </html>
   );
 }
-
-ErrorPage.getInitialProps = ({ res, err }: any) => {
-  const statusCode = res ? res.statusCode : err ? err.statusCode : 404;
-  return { statusCode };
-};

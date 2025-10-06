@@ -77,16 +77,16 @@ const userSchema = z
       .optional(),
     profilePicture: z.string().optional().nullable(),
     isVerified: z.boolean(),
-    socialMedia: z
-      .object({
-        facebook: z.string().optional().nullable(),
-        twitter: z.string().optional().nullable(),
-        instagram: z.string().optional().nullable(),
-        linkedin: z.string().optional().nullable(),
-        google: z.string().optional().nullable(),
-        pinterest: z.string().optional().nullable(),
-      })
-      .optional(),
+    // socialMedia: z
+    //   .object({
+    //     facebook: z.string().optional().nullable(),
+    //     twitter: z.string().optional().nullable(),
+    //     instagram: z.string().optional().nullable(),
+    //     linkedin: z.string().optional().nullable(),
+    //     google: z.string().optional().nullable(),
+    //     pinterest: z.string().optional().nullable(),
+    //   })
+    //   .optional(),
     preferences: z.object({
       newsletter: z.boolean(),
       notifications: z.boolean(),
@@ -94,11 +94,11 @@ const userSchema = z
       currency: z.string(),
       theme: z.enum(["light", "dark"]),
     }),
-    loyaltyPoints: z.coerce
-      .number()
-      .min(0, "Loyalty points cannot be negative"),
-    referralCode: z.string().optional(),
-    subscriptionType: z.enum(["free", "premium", "enterprise"]),
+    // loyaltyPoints: z.coerce
+    //   .number()
+    //   .min(0, "Loyalty points cannot be negative"),
+    // referralCode: z.string().optional(),
+    // subscriptionType: z.enum(["free", "premium", "enterprise"]),
   })
   .strict();
 
@@ -250,14 +250,14 @@ export default function UserCreate({ data, id, master }: any) {
         : "",
       role: data?.role || "",
       status: data?.status || "draft",
-      socialMedia: data?.socialMedia || {
-        facebook: null,
-        twitter: null,
-        instagram: null,
-        linkedin: null,
-        google: null,
-        pinterest: null,
-      },
+      // socialMedia: data?.socialMedia || {
+      //   facebook: null,
+      //   twitter: null,
+      //   instagram: null,
+      //   linkedin: null,
+      //   google: null,
+      //   pinterest: null,
+      // },
       preferences: {
         newsletter: data?.newsletter || true,
         notifications: data?.notifications || true,
@@ -265,8 +265,8 @@ export default function UserCreate({ data, id, master }: any) {
         currency: data?.currency || "USD",
         theme: data?.theme || "light",
       },
-      loyaltyPoints: data?.loyaltyPoints || 0,
-      subscriptionType: data?.subscriptionType || "free",
+      // loyaltyPoints: data?.loyaltyPoints || 0,
+      // subscriptionType: data?.subscriptionType || "free",
     },
   });
   console.log(Object.keys(errors));
@@ -488,7 +488,7 @@ export default function UserCreate({ data, id, master }: any) {
           />
 
           {/* Social Media & Interests */}
-          <Card className="">
+          {/* <Card className="">
             <CardHeader className="">
               <CardTitle className="flex items-center gap-2">
                 <div className="w-2 h-6 bg-purple-400 rounded-full"></div>
@@ -524,7 +524,7 @@ export default function UserCreate({ data, id, master }: any) {
                 )}
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Sidebar */}
@@ -570,7 +570,7 @@ export default function UserCreate({ data, id, master }: any) {
                     )}
                   />
                 </div>
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <Label className="text-sm text-gray-700 dark:text-gray-400">
                     Verified Account
                   </Label>
@@ -584,7 +584,7 @@ export default function UserCreate({ data, id, master }: any) {
                       />
                     )}
                   />
-                </div>
+                </div> */}
               </div>
               <div>
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -698,7 +698,7 @@ export default function UserCreate({ data, id, master }: any) {
                   </p>
                 )}
               </div>
-              <div>
+              {/* <div>
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-400">
                   Subscription Type
                 </Label>
@@ -776,7 +776,7 @@ export default function UserCreate({ data, id, master }: any) {
                     {errors.referralCode.message}
                   </p>
                 )}
-              </div>
+              </div> */}
               <div>
                 <Label className="text-sm font-medium text-gray-700 dark:text-gray-400">
                   Status
@@ -896,7 +896,7 @@ export default function UserCreate({ data, id, master }: any) {
                     disabled={Object.keys(errors).length > 0}
                   >
                     <Eye className="w-4 h-4 mr-2" />
-                    Activate User
+                    Create User
                   </Button>
                 </div>
               )}
