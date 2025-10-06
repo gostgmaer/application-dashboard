@@ -20,6 +20,17 @@ export interface SessionData {
   expiresAt: number;
 }
 
+
+export interface permissionList {
+  _id: string;
+  name: string;
+  category: string;
+  action: string;
+  isDefault: string;
+  isActive: string;
+  description: string;
+}
+
 // Common actions in your system
 export type ActionType = 'read' | 'write' | 'modify' | 'delete' | 'export' | 'generate' | 'report' | 'full' | 'manage';
 

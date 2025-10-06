@@ -29,7 +29,8 @@ export function useApiSWR<T = any>(
   
 
   return useSWR<T>(key, key ? fetcher : null, {
-    refreshInterval: options?.refreshInterval ?? 100000,
+    refreshInterval: options?.refreshInterval ?? 0,
     revalidateOnFocus: options?.revalidateOnFocus ?? true,
+    revalidateIfStale: true,
   });
 }

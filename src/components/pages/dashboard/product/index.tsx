@@ -72,9 +72,9 @@ export default function DashboardPage(token: any) {
     token,
     undefined,
     undefined,
-    undefined
+    undefined,
+    { refreshInterval: 0 }
   );
-
   // Simulate loading state
   useEffect(() => {
     const timer = setTimeout(() => {

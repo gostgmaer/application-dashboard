@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,16 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Plus, X, Save, Eye, Trash2 } from "lucide-react";
 import roleServices from "@/lib/http/roleServices";
 import { useToast } from "@/hooks/useToast";
-import { useDialog } from "@/hooks/use-dialog";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSession } from "next-auth/react";
+import { useModal } from "@/contexts/modal-context";
 
 // Predefined roles
 const PREDEFINED_ROLES = [
@@ -79,14 +78,31 @@ interface RoleData {
   isActive: boolean;
 }
 
-export default function RoleForm({ initialData, id, permissionData }: any) {
-  console.log(permissionData);
-  
+export default function RoleForm({ id, permissionData = [] }: any) {
   const { data: session } = useSession();
+    const { showConfirm, showAlert, showCustom,closeModal } = useModal();
   const { toast } = useToast();
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+  const [role, setRole] = useState<RoleData | null>(null);
+  const singleRecord = async () => {
+    if (id) {
+      const res = await roleServices.getSingle(id, session?.accessToken);
+      setRole(res.data);
+      reset({
+        name: res.data.name || "",
+        description: res.data.description || "",
+        permissions: res.data.permissions || [],
+        isDefault: res.data.isDefault ?? false,
+        isActive: res.data.isActive ?? true,
+      });
+    }
+  };
+  useEffect(() => {
+    singleRecord();
+  }, [id]);
+
   const {
     register,
+    reset,
     control,
     handleSubmit,
     formState: { errors },
@@ -95,14 +111,13 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
   } = useForm<RoleData>({
     resolver: zodResolver(roleSchema),
     defaultValues: {
-      name: initialData.name || "",
-      description: initialData.description || "",
-      permissions: initialData.per || [],
-      isDefault: initialData.isDefault || false,
-      isActive: initialData.isActive || true,
+      name: "",
+      description: "",
+      permissions: [],
+      isDefault: false,
+      isActive: true,
     },
   });
-
   const onSubmit = async (
     data: RoleData,
     status: "draft" | "published" | "update"
@@ -137,11 +152,11 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
           variant: "destructive",
         });
       } else {
-        closeDialog();
         toast({
           title: res.status,
           description: res.message,
         });
+        closeModal();
       }
     } catch (error) {
       console.log(error);
@@ -149,15 +164,9 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
   };
 
   return (
-    <div className=" bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div className=" bg-gray-100 dark:bg-gray-900 transition-colors h-auto duration-300">
       <div className="max-w-4xl mx-auto ">
         <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg ">
-          <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b-gray-200 dark:border-b-gray-700 pb-0">
-            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white ">
-              <div className="w-2 h-6 bg-blue-400 rounded-full"></div>
-              Role Information
-            </CardTitle>
-          </CardHeader>
           <CardContent className="space-y-6 p-6">
             <div>
               <Label
@@ -244,7 +253,7 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
                 control={control}
                 render={({ field }) => (
                   <div className=" space-y-2 mt-2">
-                    {permissionData.map((p:any) => (
+                    {permissionData?.map((p: any) => (
                       <div
                         key={p.category}
                         className="space-y-1 flex justify-between"
@@ -253,7 +262,7 @@ export default function RoleForm({ initialData, id, permissionData }: any) {
                           {p.category}
                         </h3>
                         <div className="grid grid-cols-5 gap-3">
-                          {p.action.map((a:any) => (
+                          {p.action.map((a: any) => (
                             <div
                               key={a.id}
                               className="flex items-center space-x-2"

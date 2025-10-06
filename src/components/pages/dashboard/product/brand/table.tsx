@@ -216,7 +216,7 @@ export default function Table({ props }: any) {
   ];
   return (
     <>
-      <Breadcrumbs btn={{ event: handleCreate }}></Breadcrumbs>
+      <Breadcrumbs btn={{ event: ()=>handleCreate }}></Breadcrumbs>
 
       <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
         <DataTable

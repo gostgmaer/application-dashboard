@@ -5,6 +5,7 @@ import permissionServices from "@/lib/http/permissionServices";
 import PrivateLayout from "@/components/layout/dashboard";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/authOptions";
+import { PermissionDataTable } from "@/components/pages/dashboard/users/permission/tableClient";
 
 export default async function Page(props: any) {
   const query = await props.searchParams;
@@ -14,9 +15,9 @@ export default async function Page(props: any) {
   return (
     <PrivateLayout>
       {" "}
-      <div className="container mx-auto py-2">
+      <div className=" py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <Table props={{ ...data }} />
+          <PermissionDataTable />
         </Suspense>
       </div>
     </PrivateLayout>

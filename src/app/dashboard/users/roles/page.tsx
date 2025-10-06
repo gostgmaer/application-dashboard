@@ -15,7 +15,6 @@ const Page = async (props: any) => {
     session?.accessToken
   );
 
-  
   const p = await permissionServices.getPermissionsGrouped(
     query,
     session?.accessToken
@@ -24,17 +23,15 @@ const Page = async (props: any) => {
     <PrivateLayout>
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
-          <Breadcrumbs
-            heading={"Role Dashboard"}
-            desc={
-              "Manage user roles, permissions, and access control across your organization"
-            }
-            btn={{ show: false }}
-          ></Breadcrumbs>
+         
 
           <div className="rounded-md  shadow-sm overflow-auto ">
             <RolesPage
-              props={{  permissions: p.data, stats: stats.data,token:session.accessToken }}
+              props={{
+                permissions: p.data,
+                stats: stats.data,
+                token: session.accessToken,
+              }}
             ></RolesPage>
           </div>
         </Suspense>

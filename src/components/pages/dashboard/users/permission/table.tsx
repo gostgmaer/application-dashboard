@@ -15,8 +15,6 @@ import {
 
 import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
-import { useDialog } from "@/hooks/use-dialog";
-import { CustomDialog } from "@/components/layout/dialog";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import PermissionForm from "./form";
 import permissionServices from "@/lib/http/permissionServices";
@@ -39,7 +37,6 @@ export default function Table({ props }: any) {
 
   console.log(props);
   
-  // const { openDialog, closeDialog, confirm,monfirmModal, alert, options } = useDialog();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { data: session } = useSession();
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
@@ -54,12 +51,12 @@ export default function Table({ props }: any) {
     showCustom({
       title: `Edit Permission: ${data.name}`,
       content: <PermissionForm p={data} id={data._id} />,
-      footer: (
-        <>
-          <Button variant="outline">Cancel</Button>
-          <Button>Save Changes</Button>
-        </>
-      ),
+      // footer: (
+      //   <>
+      //     <Button variant="outline">Cancel</Button>
+      //     <Button>Save Changes</Button>
+      //   </>
+      // ),
     });
   };
 
@@ -89,35 +86,7 @@ export default function Table({ props }: any) {
     }
   };
 
-  const handleDeleteNew = async (data: any) => {
-    // const confirmed = await confirm({
-    //   title: "Delete Item",
-    //   description: "This action cannot be undone. Are you sure?",
-    //   confirmText: "Delete",
-    //   cancelText: "Cancel",
-    //   variant: "destructive",
-    // });
-    // if (confirmed) {
-    //   try {
-    //     // Your API call
-    //     const res = await permissionServices.delete(
-    //       data._id,
-    //       session?.accessToken
-    //     );
-    //     if (res.status!="OK") throw new Error("Failed to delete");
-    //      toast({
-    //       title: "Deleted",
-    //       description: "The item has been deleted successfully."
-    //     });
-    //   } catch (err: any) {
-    //      toast({
-    //       title: "Error",
-    //       description: err.message,
-    //       variant:'destructive'
-    //     });
-    //   }
-    // }
-  };
+ 
 
   const handleCreate = (data: any) => {
     showCustom({
@@ -342,7 +311,7 @@ export default function Table({ props }: any) {
     <>
       <Breadcrumbs
         heading={"All Permissions"}
-        btn={{ event: handleCreate, show: true }}
+        btn={{ event: ()=>handleCreate, show: true }}
       ></Breadcrumbs>
 
       <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">

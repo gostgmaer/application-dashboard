@@ -7,7 +7,7 @@ import { SessionProviderWrapper } from "@/components/Sessionproviders";
 import { DialogProvider } from "@/hooks/use-dialog";
 import { ReusableDialog } from "@/components/layout/dialog";
 import { ModalProvider } from "@/contexts/modal-context";
-import ModalManager from "@/components/layout/modals/modal-manager";
+import ModalManager from "@/components/ui/modals/modal-manager";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/authOptions";

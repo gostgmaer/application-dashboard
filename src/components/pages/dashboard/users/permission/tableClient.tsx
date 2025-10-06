@@ -21,8 +21,11 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import userServices from "@/lib/http/userService";
 import { useModal } from "@/contexts/modal-context";
-import { Product } from "@/types/product";
-import productService from "@/lib/http/ProductServices";
+import { permissionCategory } from "./mock";
+import permissionServices from "@/lib/http/permissionServices";
+import { Permission, permissionList } from "@/types/permissions";
+import PermissionForm from "./form";
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
 export type User = {
   id: string;
@@ -35,46 +38,19 @@ export type User = {
 
 const filters: DataTableFilter[] = [
   {
-    id: "status",
-    label: "Status",
+    id: "category",
+    label: "Category",
     type: "select",
-    options: [
-      { label: "Active", value: "active" },
-      { label: "Inactive", value: "inactive" },
-      { label: "Pending", value: "pending" },
-      { label: "Banned", value: "banned" },
-      { label: "Deleted", value: "deleted" },
-      { label: "Archived", value: "archived" },
-      { label: "Draft", value: "draft" },
-    ],
-  },
-  {
-    id: "role",
-    label: "Role",
-    type: "select",
-    options: [
-      { label: "Admin", value: "68cad41d910cd01177761561" },
-      { label: "Customer", value: "68c6d03c29eec30453bd0f54" },
-      { label: "Super Admin", value: "68c6af5c9258bead9173e84b" },
-    ],
-  },
-  {
-    id: "email",
-    label: "Email",
-    type: "input",
-    placeholder: "Filter by email...",
-  },
+    options: permissionCategory,
+  }
 ];
 
-export function ProductsTable() {
+export function PermissionDataTable() {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
-  const handleDeleteRow = (rows: Product[]) => {
-    // console.log("Deleting users:", rows);
-    alert(`Deleting ${rows.length} user(s)`);
-  };
+
   const deleteRequest = async (id: any) => {
-    return await productService.remove(id, session?.accessToken);
+    return await permissionServices.delete(id, session?.accessToken);
   };
   const handleDelete = async (data: any) => {
     const confirmed = await showConfirm({
@@ -97,83 +73,80 @@ export function ProductsTable() {
     }
   };
 
-  const handleExport = (rows: Product[]) => {
+  const handleUpdate: any = async (p: any) => {
+    showCustom({
+      title: `Edit Permission: ${p.name}`,
+      content: <PermissionForm p={p} id={p._id} />,
+    });
+  };
+
+  function handleCreate(): void {
+    showCustom({
+      title: `Create New Permission`,
+      content: <PermissionForm />,
+    });
+  }
+
+  const handleExport = (rows: permissionList[]) => {
     console.log("Exporting users:", rows);
   };
 
-  const columns: ColumnDef<Product>[] = [
+  const columns: ColumnDef<permissionList>[] = [
     {
-      accessorKey: "title",
+      accessorKey: "name",
       header: "Name",
       cell: ({ row }) => (
-        //  <div className="font-medium">{user.fullName}</div>
-        <div className="font-medium">
-          <Link href={`/dashboard/products/${row.original["_id"]}`}>
-            {row.getValue("title")}
-          </Link>
-        </div>
+        <div className="font-medium">{row.getValue("name")}</div>
       ),
     },
     {
-      accessorKey: "sku",
-      header: "SKU",
+      accessorKey: "description",
+      header: "Description",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-muted-foreground" />
-          <span>{row.getValue("sku")}</span>
+          {row.getValue("description")}
         </div>
       ),
     },
     {
       accessorKey: "category",
-      header: "Category",
-      cell: ({ row }) => {
-        const category:any = row.getValue("category");
-        return <div>{category.title}</div>;
-      },
-    },
-  
-    {
-      accessorKey: "finalPrice",
-      header: "Price",
-      cell: ({ row }) => {
-        const finalPrice = row.getValue("finalPrice") as string;
-        return <div>{finalPrice}</div>;
-      },
-    },
-      {
-      accessorKey: "inventory",
-      header: "Stock",
-      cell: ({ row }) => {
-        const inventory = row.getValue("inventory") as string;
-        return <div>{inventory}</div>;
-      },
+      header: "Module",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          {row.getValue("category")}
+        </div>
+      ),
     },
     {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        return (
-          <Badge
-            variant={
-              status === "active"
-                ? "default"
-                : status === "inactive"
-                ? "secondary"
-                : "outline"
-            }
-          >
-            {status}
-          </Badge>
-        );
-      },
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">{row.getValue("action")}</div>
+      ),
     },
     {
-      accessorKey: "createdAt",
-      header: "Created",
+      accessorKey: "isActive",
+      header: "Is Active",
+      cell: ({ row }) => (
+        <div className="text-muted-foreground">
+          {row.getValue("isActive") ? "Yes" : "No"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "isDefault",
+      header: "Is Default",
+      cell: ({ row }) => (
+        <div className="text-muted-foreground">
+          {row.getValue("isDefault") ? "Yes" : "No"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "updatedAt",
+      header: "Last Updated",
       cell: ({ row }) => {
-        const date = new Date(row.getValue("createdAt"));
+        const date = new Date(row.getValue("updatedAt"));
         return <div>{date.toLocaleString()}</div>;
       },
     },
@@ -194,16 +167,14 @@ export function ProductsTable() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(p.id)}
+                onClick={() => navigator.clipboard.writeText(p._id)}
               >
-                Copy Product ID
+                Copy ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem>
-                <Link href={`/dashboard/products/${p["id"]}/update`}>
-                  Edit{" "} 
-                </Link>
+              <DropdownMenuItem onClick={() => handleUpdate(p)}>
+                Update
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-red-500"
@@ -217,20 +188,27 @@ export function ProductsTable() {
       },
     },
   ];
+
   return (
-    <div className="container mx-auto py-10">
+    <div className=" mx-auto py-4">
+      <Breadcrumbs
+        heading={"All Permissions"}
+        btn={{ event: handleCreate, show: true }}
+      ></Breadcrumbs>
       <div className="space-y-4">
         <DataTable
           columns={columns}
-          endpoint="/products"
+          endpoint="/permission"
           token={session?.accessToken}
           filters={filters}
           enableRowSelection={true}
           enableMultiRowSelection={true}
           onDelete={handleDelete}
           onExport={handleExport}
-          searchPlaceholder="Search users by name, email..."
-          emptyMessage="No users found."
+          //   pageSize={10}
+          refreshInterval={3000000}
+          searchPlaceholder="Search Permission name..."
+          emptyMessage="No Permission found."
         />
       </div>
     </div>

@@ -51,7 +51,7 @@ export interface DataTableFilter {
   id: string;
   label: string;
   type: "select" | "input";
-  options?: { label: string; value: string }[];
+  options?: { label: string; value: string,description?:string }[];
   placeholder?: string;
 }
 

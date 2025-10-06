@@ -32,16 +32,15 @@ interface categorys {
   image?: string;
 }
 
-export default function Table({ props }:any) {
+export default function Table({ props }: any) {
   const { openDialog, closeDialog, confirm, alert, options } = useDialog();
-    const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
+  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.data || [],
       totalCount: props.total || 0,
       pageCount: props.totalPages,
     };
   };
-
 
   const handleUpdate = (category: any) => {
     openDialog(
@@ -53,8 +52,8 @@ export default function Table({ props }:any) {
       {
         size: "lg",
         showCloseButton: true,
-         closeOnOverlayClick: false,
-        closeOnEscape: true
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
       }
     );
   };
@@ -69,8 +68,8 @@ export default function Table({ props }:any) {
       {
         size: "lg",
         showCloseButton: true,
-          closeOnOverlayClick: false,
-        closeOnEscape: true
+        closeOnOverlayClick: false,
+        closeOnEscape: true,
       }
     );
   };
@@ -125,7 +124,7 @@ export default function Table({ props }:any) {
         );
       },
     },
-     {
+    {
       accessorKey: "slug",
       header: ({ column }) => (
         <div className="flex items-center space-x-2">
@@ -145,7 +144,7 @@ export default function Table({ props }:any) {
 
         return (
           <div className="flex items-center space-x-3">
-             <div className="font-medium">{slug}</div>
+            <div className="font-medium">{slug}</div>
           </div>
         );
       },
@@ -254,9 +253,7 @@ export default function Table({ props }:any) {
               >
                 Copy ID
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleUpdate(category)}
-              >
+              <DropdownMenuItem onClick={() => handleUpdate(category)}>
                 View
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -267,7 +264,9 @@ export default function Table({ props }:any) {
   ];
   return (
     <>
-      <Breadcrumbs btn={{show:true, event: handleCreate }} ></Breadcrumbs>
+      <Breadcrumbs
+        btn={{ show: true, event: () => handleCreate }}
+      ></Breadcrumbs>
 
       <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
         <DataTable

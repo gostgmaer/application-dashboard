@@ -12,18 +12,24 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, description, link }: StatCardProps) {
   const content = (
-    <Card className="p-6 bg-white hover:shadow-md transition-shadow cursor-pointer">
+    <Card className="p-6 bg-white dark:bg-gray-900 hover:shadow-lg dark:hover:shadow-gray-800 transition-shadow cursor-pointer border border-gray-200 dark:border-gray-800">
       <div className="flex items-start justify-between">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-3xl font-bold text-gray-900">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            {title}
+          </p>
+          <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">
             {value.toLocaleString()}
           </p>
           {description && (
-            <p className="text-xs text-gray-500">{description}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-500">
+              {description}
+            </p>
           )}
         </div>
-        <div className="p-3 bg-blue-50 rounded-2xl">{icon}</div>
+        <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-2xl">
+          {icon}
+        </div>
       </div>
     </Card>
   );
@@ -47,22 +53,22 @@ export function StatCards({
       <StatCard
         title="Total Roles"
         value={totalRoles}
-        icon={<Shield className="w-6 h-6 text-blue-600" />}
+        icon={<Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
         description="Active role definitions"
       />
       <StatCard
         title="Total Users Assigned"
         value={totalUsers}
-        icon={<Users className="w-6 h-6 text-blue-600" />}
+        icon={<Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
         description="Across all roles"
         link={"/dashboard/users"}
       />
       <StatCard
         title="Total Permissions"
         value={totalPermissions}
-        icon={<Lock className="w-6 h-6 text-blue-600" />}
+        icon={<Lock className="w-6 h-6 text-blue-600 dark:text-blue-400" />}
         description="System-wide permissions"
-          link={"/dashboard/users/permissions"}
+        link={"/dashboard/users/permissions"}
       />
     </div>
   );

@@ -347,7 +347,7 @@ export default function Table({ props }: any) {
     <>
       <Breadcrumbs
         heading={"All Roles"}
-        btn={{ event: handleCreate, show: true }}
+        btn={{ event: ()=>handleCreate, show: true }}
       ></Breadcrumbs>
 
       <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">
