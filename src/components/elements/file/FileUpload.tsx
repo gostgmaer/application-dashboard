@@ -17,6 +17,7 @@ import { toast } from "@/hooks/useToast";
 interface FileUploadProps {
   multiple?: boolean;
   accept?: string;
+  inifile?: File;
   maxSize?: number;
   maxFiles?: number;
   onUpload?: (files: File[]) => Promise<void>;
@@ -45,6 +46,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   maxSize = 10 * 1024 * 1024,
   maxFiles = multiple ? 10 : 1,
   onUpload,
+  inifile,
   onFilesChange,
   disabled = false,
   className = "",

@@ -119,7 +119,7 @@ export function DataTableExample() {
 
           <div className="font-medium">
             <Link href={`/dashboard/users/${row.original["id"]}`} className="flex items-center gap-2">
-              {image.url && (
+              {image?.url && (
                 <Image
                   src={image.url}
                   alt={row.getValue("fullName")}

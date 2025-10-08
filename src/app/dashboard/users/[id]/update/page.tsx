@@ -13,7 +13,7 @@ const Page = async (url: any) => {
   const data = await userServices.getSingle(id, session?.accessToken);
   const roles = await roleServices.getAll({}, session?.accessToken);
 
-  console.log(roles);
+
 
   return (
     <PrivateLayout>
@@ -26,7 +26,7 @@ const Page = async (url: any) => {
 
           <div className="rounded-md  shadow-sm overflow-auto ">
             <UserCreate
-              data={data.data}
+              u={data.data}
               id={id}
               master={{ roles: roles.data }}
             ></UserCreate>

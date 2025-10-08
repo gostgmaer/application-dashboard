@@ -144,10 +144,9 @@ const deliveryMethods = ["standard", "express"];
 const paymentMethodTypes = ["credit_card", "paypal", "bank_transfer"];
 const subscriptionTypes = ["free", "premium", "enterprise"];
 
-export default function UserCreate({ data, id, master }: any) {
+export default function UserCreate({ u, id, master }: any) {
   const { data: session } = useSession();
-  console.log(master);
-
+ 
   const route = useRouter();
   const { toast } = useToast();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -229,19 +228,19 @@ export default function UserCreate({ data, id, master }: any) {
   } = useForm<UserData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      username: data?.username || "",
-      email: data?.email || "",
-      firstName: data?.firstName || "",
-      lastName: data?.lastName || "",
-      isVerified: data?.isVerified || false,
-      phoneNumber: data?.phoneNumber || "",
-      gender: data?.gender || "",
-      referralCode: data?.referralCode || "",
-      dateOfBirth: data?.dateOfBirth
-        ? new Date(data.dateOfBirth).toISOString().split("T")[0]
+      username: u?.username || "",
+      email: u?.email || "",
+      firstName: u?.firstName || "",
+      lastName: u?.lastName || "",
+      isVerified: u?.isVerified || false,
+      phoneNumber: u?.phoneNumber || "",
+      gender: u?.gender || "",
+      referralCode: u?.referralCode || "",
+      dateOfBirth: u?.dateOfBirth
+        ? new Date(u.dateOfBirth).toISOString().split("T")[0]
         : "",
-      role: data?.role || "",
-      status: data?.status || "draft",
+      role: u?.role || "",
+      status: u?.status || "draft",
       // socialMedia: data?.socialMedia || {
       //   facebook: null,
       //   twitter: null,
@@ -251,11 +250,11 @@ export default function UserCreate({ data, id, master }: any) {
       //   pinterest: null,
       // },
       preferences: {
-        newsletter: data?.newsletter || true,
-        notifications: data?.notifications || true,
-        language: data?.language || "en",
-        currency: data?.currency || "USD",
-        theme: data?.theme || "light",
+        newsletter: u?.newsletter || true,
+        notifications: u?.notifications || true,
+        language: u?.language || "en",
+        currency: u?.currency || "USD",
+        theme: u?.theme || "light",
       },
       // loyaltyPoints: data?.loyaltyPoints || 0,
       // subscriptionType: data?.subscriptionType || "free",
@@ -471,6 +470,7 @@ export default function UserCreate({ data, id, master }: any) {
 
           <FileUpload
             // multiple={uploadMode === 'multiple'}
+            inifile={u?.profilePicture}
             accept="image/*"
             maxSize={5 * 1024 * 1024} // 5MB
             maxFiles={1}

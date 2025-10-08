@@ -34,8 +34,66 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
   const [previewImage, setPreviewImage] = useState<string>(
     user.profilePicture || ""
   );
- const { data: session } = useSession();
+  const { data: session } = useSession();
+  const [currentImageUrl, setCurrentImageUrl] = useState<string>(
+    "/api/placeholder/150/150"
+  );
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  const handleImageUpload = async (file: File) => {
+    try {
+      // Simulate API call
+      console.log(file);
+      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Create a mock URL for demonstration
+      const newImageUrl = URL.createObjectURL(file);
+      setCurrentImageUrl(newImageUrl);
+
+      return { url: newImageUrl };
+    } catch (error) {
+      throw new Error("Failed to upload image");
+    }
+  };
+
+  const handleImageRemove = async () => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Clean up the URL
+      if (currentImageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(currentImageUrl);
+      }
+      setCurrentImageUrl("");
+    } catch (error) {
+      throw new Error("Failed to remove image");
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setIsUpdating(true);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Handle success
+    } catch (error) {
+      // Handle error
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCallback = async (data: any) => {
+    try {
+      console.log("Profile picture callback:", data);
+      // Handle any additional logic after profile picture operations
+      // For example, you could update user state, refresh data, etc.
+    } catch (error) {
+      console.error("Callback error:", error);
+    }
+  };
   const {
     register,
     handleSubmit,
@@ -54,7 +112,6 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
         ? new Date(user.dateOfBirth).toISOString().split("T")[0]
         : "",
       gender: user.gender || "",
-     
     },
   });
 
@@ -79,8 +136,7 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
     try {
       // Simulate API call
       console.log(session);
-      
-    
+
       await authService.updateProfile(data, session?.accessToken);
       toast.success("Personal details updated successfully!");
     } catch (error) {
@@ -100,12 +156,16 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Profile Picture */}
       <div className="flex items-center space-x-4">
-      <ProfilePictureUploader
-        authToken={session?.accessToken || ""}
-        firstName={user.firstName}
-        lastName={user.lastName}
-        initialFile={user.profilePicture || null}
-      />
+        <ProfilePictureUploader
+          currentImageUrl={currentImageUrl}
+          onUpload={() => handleImageUpload}
+          onRemove={handleImageRemove}
+          onCallback={handleCallback}
+          maxSize={5 * 1024 * 1024} // 5MB
+          createEndpoint="/api/profile/create"
+          updateEndpoint="/api/profile/update"
+          callbackEndpoint="/api/profile/callback"
+        />
       </div>
 
       {/* Basic Information */}
