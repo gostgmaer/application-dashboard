@@ -55,37 +55,36 @@ const socialMediaFields = {
 };
 
 // Zod schema based on the provided Mongoose schema
-const userSchema = z
-  .object({
-    username: z
-      .string()
-      .min(3, "Username must be at least 3 characters")
-      .max(30, "Username cannot exceed 30 characters")
-      .trim(),
-    email: z.string().email("Invalid email address"),
-    firstName: z.string().min(1, "First name is required").trim(),
-    status: z.string().min(1, "Status is Required").trim(),
-    lastName: z.string().min(1, "Last name is required").trim(),
-    role: z.string().min(1, "Role is required").trim(),
-    dateOfBirth: z.string().optional().nullable().or(z.literal("")),
-    gender: z
-      .enum(["male", "female", "other", "prefer_not_to_say"])
-      .optional()
-      .nullable(),
-    phoneNumber: z
-      .string()
-      .regex(/^[0-9]{10}$/, "Phone number must be 10 digits")
-      .optional(),
-    preferences: z
-      .object({
-        newsletter: z.boolean(),
-        notifications: z.boolean(),
-        language: z.string(),
-        currency: z.string(),
-        theme: z.enum(["light", "dark"]),
-      })
-      .optional(),
-  })
+const userSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username cannot exceed 30 characters")
+    .trim(),
+  email: z.string().email("Invalid email address"),
+  firstName: z.string().min(1, "First name is required").trim(),
+  status: z.string().min(1, "Status is Required").trim(),
+  lastName: z.string().min(1, "Last name is required").trim(),
+  role: z.string().min(1, "Role is required").trim(),
+  dateOfBirth: z.string().optional().nullable().or(z.literal("")),
+  gender: z
+    .enum(["male", "female", "other", "prefer_not_to_say"])
+    .optional()
+    .nullable(),
+  phoneNumber: z
+    .string()
+    .regex(/^[0-9]{10}$/, "Phone number must be 10 digits")
+    .optional(),
+  preferences: z
+    .object({
+      newsletter: z.boolean(),
+      notifications: z.boolean(),
+      language: z.string(),
+      currency: z.string(),
+      theme: z.enum(["light", "dark"]),
+    })
+    .optional(),
+});
 
 interface UserData {
   username: string;
@@ -146,7 +145,7 @@ const subscriptionTypes = ["free", "premium", "enterprise"];
 
 export default function UserCreate({ u, id, master }: any) {
   const { data: session } = useSession();
- 
+
   const route = useRouter();
   const { toast } = useToast();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -470,7 +469,7 @@ export default function UserCreate({ u, id, master }: any) {
 
           <FileUpload
             // multiple={uploadMode === 'multiple'}
-            inifile={u?.profilePicture}
+            initialFiles={u?.profilePicture}
             accept="image/*"
             maxSize={5 * 1024 * 1024} // 5MB
             maxFiles={1}
