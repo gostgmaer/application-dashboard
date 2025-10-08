@@ -75,14 +75,6 @@ export default function DashboardPage(token: any) {
     undefined,
     { refreshInterval: 0 }
   );
-  // Simulate loading state
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      // setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
   // Memoize filtered data and calculations
   const filteredProducts = useMemo(
     () => filterProducts(mockProducts, filters),

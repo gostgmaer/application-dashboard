@@ -9,7 +9,7 @@ const attachmentService = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
 
-    return safeApiCall(() => requests.post("/files", FormData, token, headers));
+    return safeApiCall(() => requests.post("/files/upload", FormData, token, headers));
   },
 
   viewFile: async (

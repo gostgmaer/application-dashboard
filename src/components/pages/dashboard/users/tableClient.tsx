@@ -4,7 +4,13 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoveHorizontal as MoreHorizontal, Mail, Copy, Pencil, Trash2 } from "lucide-react";
+import {
+  MoveHorizontal as MoreHorizontal,
+  Mail,
+  Copy,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,11 +27,13 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import userServices from "@/lib/http/userService";
 import { useModal } from "@/contexts/modal-context";
+import Image from "next/image";
 
 export type User = {
   id: string;
   name: string;
   email: string;
+  profilePicture: any;
   status: "active" | "inactive" | "pending";
   role: "admin" | "user" | "moderator";
   createdAt: string;
@@ -103,14 +111,28 @@ export function DataTableExample() {
     {
       accessorKey: "fullName",
       header: "Name",
-      cell: ({ row }) => (
-        //  <div className="font-medium">{user.fullName}</div>
-        <div className="font-medium">
-          <Link href={`/dashboard/users/${row.original["id"]}`}>
-            {row.getValue("fullName")}
-          </Link>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const image: any = row.original.profilePicture;
+
+        return (
+          //  <div className="font-medium">{user.fullName}</div>
+
+          <div className="font-medium">
+            <Link href={`/dashboard/users/${row.original["id"]}`} className="flex items-center gap-2">
+              {image.url && (
+                <Image
+                  src={image.url}
+                  alt={row.getValue("fullName")}
+                  width={40}
+                  height={40}
+                  className="rounded-full object-contain w-10 h-10 border"
+                ></Image>
+              )}
+              {row.getValue("fullName")}
+            </Link>
+          </div>
+        );
+      },
     },
     {
       accessorKey: "email",
@@ -191,8 +213,11 @@ export function DataTableExample() {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem>
-                <Link href={`/dashboard/users/${user["id"]}/update`} className="flex items-center">
-                 <Pencil className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <Link
+                  href={`/dashboard/users/${user["id"]}/update`}
+                  className="flex items-center"
+                >
+                  <Pencil className="mr-2 h-4 w-4 text-blue-600 dark:text-blue-400" />
                   Edit
                 </Link>
               </DropdownMenuItem>
@@ -200,7 +225,7 @@ export function DataTableExample() {
                 className="text-red-500"
                 onClick={() => handleDelete(user)}
               >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 className="mr-2 h-4 w-4" />
                 Remove
               </DropdownMenuItem>
             </DropdownMenuContent>

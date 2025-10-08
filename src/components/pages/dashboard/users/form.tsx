@@ -36,6 +36,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import userServices from "@/lib/http/userService";
 import FileUploader, { Attachment } from "@/components/elements/uploader";
+import FileUpload from "@/components/elements/file/FileUpload";
 
 interface Role {
   _id: string;
@@ -61,12 +62,12 @@ const userSchema = z
       .min(3, "Username must be at least 3 characters")
       .max(30, "Username cannot exceed 30 characters")
       .trim(),
-    email: z.string().email("Invalid email address").toLowerCase(),
+    email: z.string().email("Invalid email address"),
     firstName: z.string().min(1, "First name is required").trim(),
     status: z.string().min(1, "Status is Required").trim(),
     lastName: z.string().min(1, "Last name is required").trim(),
     role: z.string().min(1, "Role is required").trim(),
-    dateOfBirth: z.string().optional().nullable(),
+    dateOfBirth: z.string().optional().nullable().or(z.literal("")),
     gender: z
       .enum(["male", "female", "other", "prefer_not_to_say"])
       .optional()
@@ -75,32 +76,16 @@ const userSchema = z
       .string()
       .regex(/^[0-9]{10}$/, "Phone number must be 10 digits")
       .optional(),
-    profilePicture: z.string().optional().nullable(),
-    isVerified: z.boolean(),
-    // socialMedia: z
-    //   .object({
-    //     facebook: z.string().optional().nullable(),
-    //     twitter: z.string().optional().nullable(),
-    //     instagram: z.string().optional().nullable(),
-    //     linkedin: z.string().optional().nullable(),
-    //     google: z.string().optional().nullable(),
-    //     pinterest: z.string().optional().nullable(),
-    //   })
-    //   .optional(),
-    preferences: z.object({
-      newsletter: z.boolean(),
-      notifications: z.boolean(),
-      language: z.string(),
-      currency: z.string(),
-      theme: z.enum(["light", "dark"]),
-    }),
-    // loyaltyPoints: z.coerce
-    //   .number()
-    //   .min(0, "Loyalty points cannot be negative"),
-    // referralCode: z.string().optional(),
-    // subscriptionType: z.enum(["free", "premium", "enterprise"]),
+    preferences: z
+      .object({
+        newsletter: z.boolean(),
+        notifications: z.boolean(),
+        language: z.string(),
+        currency: z.string(),
+        theme: z.enum(["light", "dark"]),
+      })
+      .optional(),
   })
-  .strict();
 
 interface UserData {
   username: string;
@@ -165,9 +150,18 @@ export default function UserCreate({ data, id, master }: any) {
 
   const route = useRouter();
   const { toast } = useToast();
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [uploadedFile, setUploadedFile] = useState<Attachment | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
+  const handleUpload = async (files: File[]) => {
+    console.log("Files uploaded successfully:", files);
+    setUploadedFiles(files);
+    // Handle successful upload (e.g., show notification, refresh file list)
+  };
+
+  const handleFilesChange = (files: File[]) => {
+    setUploadedFiles(files);
+    console.log("Files changed:", files);
+  };
   const generateReferralCode = () => {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   };
@@ -175,13 +169,11 @@ export default function UserCreate({ data, id, master }: any) {
     values: UserData,
     s: "draft" | "published" | "update"
   ) => {
-    console.log(uploadedFile);
-
     const updatedUser = {
       ...values,
       status: s === "draft" ? "draft" : values?.status,
       referralCode: values?.referralCode || generateReferralCode(),
-      profilePicture: uploadedFile,
+      profilePicture: uploadedFiles[0],
     };
     let res: any = {};
 
@@ -476,55 +468,16 @@ export default function UserCreate({ data, id, master }: any) {
               </div>
             </CardContent>
           </Card>
-          <FileUploader
-            title="Upload Gallery Images"
-            // allowedTypes={["image/jpeg", "image/png"]}
-            maxFileSize={5 * 1024 * 1024}
-            fileTypeLabel="PNG, JPG up to 5MB"
-            apiEndpoint="/files"
-            authToken={session?.accessToken || ""}
-            multiple={false}
-            onFileChange={(files: any) => console.log(files)}
-          />
 
-          {/* Social Media & Interests */}
-          {/* <Card className="">
-            <CardHeader className="">
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-2 h-6 bg-purple-400 rounded-full"></div>
-                Social Media & Interests
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(socialMediaFields).map(
-                  ([platform, displayName]) => (
-                    <div key={platform}>
-                      <Label
-                        htmlFor={platform}
-                        className="text-sm font-medium text-gray-700 dark:text-gray-400"
-                      >
-                        {displayName}
-                      </Label>
-                      <Input
-                        id={platform}
-                        {...register(`socialMedia.${platform}` as any)}
-                        className="mt-1"
-                        placeholder={`Enter ${displayName} profile URL`}
-                      />
-                      <p className="text-red-500 text-xs mt-1">
-                        {getErrorMessage(
-                          errors.socialMedia?.[
-                            platform as keyof typeof errors.socialMedia
-                          ]
-                        )}
-                      </p>
-                    </div>
-                  )
-                )}
-              </div>
-            </CardContent>
-          </Card> */}
+          <FileUpload
+            // multiple={uploadMode === 'multiple'}
+            accept="image/*"
+            maxSize={5 * 1024 * 1024} // 5MB
+            maxFiles={1}
+            onUpload={handleUpload}
+            onFilesChange={handleFilesChange}
+            apiEndpoint="http://localhost:3500/api/files/upload"
+          />
         </div>
 
         {/* Sidebar */}

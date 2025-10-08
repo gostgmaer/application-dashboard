@@ -5,27 +5,14 @@ import axios from "axios";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
 import { toast } from "@/hooks/useToast";
-import attachmentService from "@/lib/http/attachments";
-import authService from "@/lib/http/authService";
 
 // Define interfaces
 interface Attachment {
   _id: string;
-  tenant: string;
   fileName: string;
   fileType: string;
   fileSize: number;
   fileUrl: string;
-  storageType: string;
-  bucketName: string | null;
-  storagePath: string;
-  extension: string;
-  category: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
   signedUrl?: string;
 }
 
@@ -45,35 +32,29 @@ interface Errors {
   file?: { message: string };
 }
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
-
 const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
   title = "Profile Picture",
   allowedTypes = ["image/jpeg", "image/png"],
-  maxFileSize = 5 * 1024 * 1024, // 5MB default
+  maxFileSize = 5 * 1024 * 1024, // 5MB
   fileTypeLabel = "PNG, JPG up to 5MB",
   initialFile = null,
-  apiEndpoint = "/files",
+  apiEndpoint = "http://localhost:3500/api/files/upload",
   authToken,
   firstName = "",
   lastName = "",
 }) => {
   const [fileData, setFileData] = useState<Attachment | null>(initialFile);
-  const [previewUrl, setPreviewUrl] = useState<string | string>(
-    initialFile?.fileUrl || ""
-  );
+  const [previewUrl, setPreviewUrl] = useState<string>(initialFile?.fileUrl || "");
   const [errors, setErrors] = useState<Errors>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get initials for AvatarFallback
-  const getInitials = (first: string, last: string): string => {
+  const getInitials = (first: string, last: string) => {
     const firstInitial = first ? first[0].toUpperCase() : "";
     const lastInitial = last ? last[0].toUpperCase() : "";
     return `${firstInitial}${lastInitial}`;
   };
 
-  // Handle file selection and validation
+  // Unified upload/update
   const handleImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -101,61 +82,29 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
       });
       return;
     }
-
     setErrors({});
     setPreviewUrl(URL.createObjectURL(file));
 
-    if (fileData?._id) {
-      // Update existing file
-      const img: any = await updateFile(file);
-      const data = {
-        url: img["fileUrl"],
-      };
-      await authService.updateProfilePicture(data, authToken);
-    } else {
-      // Upload new file
-
-      const img: any = await uploadFile(file);
-      const data = {
-        url: img["fileUrl"],
-      };
-      await authService.updateProfilePicture(data, authToken);
-    }
-  };
-
-  // Upload new file
-  const uploadFile = async (file: File) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await attachmentService.uploadFile(formData, authToken);
-      console.log(response);
 
-      setFileData(response.data);
-      setPreviewUrl(response.data.signedUrl || response.data.fileUrl);
-      toast({
-        title: "Success",
-        description: "Profile picture uploaded successfully",
+      let uploadUrl = apiEndpoint;
+      let method: "post" | "patch" = "post";
+      if (fileData?._id) {
+        uploadUrl = `${apiEndpoint}/${fileData._id}`;
+        method = "patch";
+      }
+
+      const response = await axios.request({
+        url: uploadUrl,
+        method,
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+        data: formData,
       });
-      return response.data;
-    } catch (error: any) {
-      const message = error.response?.data?.error || "Failed to upload file";
-      setErrors({ file: { message } });
-      toast({ title: "Error", description: message });
-    }
-  };
-
-  // Update existing file
-  const updateFile = async (file: File) => {
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const id: string = fileData?._id as string;
-      const response = await attachmentService.updateFile(
-        id,
-        formData,
-        authToken
-      );
 
       setFileData(response.data);
       setPreviewUrl(response.data.signedUrl || response.data.fileUrl);
@@ -163,9 +112,9 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
         title: "Success",
         description: "Profile picture updated successfully",
       });
-      return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.error || "Failed to update file";
+      const message =
+        error?.response?.data?.error || "Failed to upload/update file";
       setErrors({ file: { message } });
       toast({ title: "Error", description: message });
     }
@@ -197,8 +146,7 @@ const ProfilePictureUploader: React.FC<ProfilePictureUploaderProps> = ({
       <div>
         <h4 className="font-medium">{title}</h4>
         <p className="text-sm text-muted-foreground">
-          Click the camera icon to {fileData ? "update" : "upload"} your profile
-          picture
+          Click the camera icon to {fileData ? "update" : "upload"} your profile picture
         </p>
         {errors.file && (
           <p className="text-red-500 text-xs mt-1">{errors.file.message}</p>
