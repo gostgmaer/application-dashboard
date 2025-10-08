@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import {
   Upload,
   X,
@@ -17,7 +17,13 @@ import { toast } from "@/hooks/useToast";
 interface FileUploadProps {
   multiple?: boolean;
   accept?: string;
-  inifile?: File;
+  initialFiles?: {
+    id?: string;
+    url: string;
+    name: string;
+    size?: number;
+    type?: string;
+  }[];
   maxSize?: number;
   maxFiles?: number;
   onUpload?: (files: File[]) => Promise<void>;
@@ -43,10 +49,10 @@ interface UploadedFile {
 const FileUpload: React.FC<FileUploadProps> = ({
   multiple = false,
   accept = "*/*",
+  initialFiles,
   maxSize = 10 * 1024 * 1024,
   maxFiles = multiple ? 10 : 1,
   onUpload,
-  inifile,
   onFilesChange,
   disabled = false,
   className = "",
@@ -68,9 +74,34 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // -- Utility functions
+
+  useEffect(() => {
+    if (initialFiles && initialFiles.length > 0) {
+      const mapped = initialFiles.map((f) => {
+        const browserFile =
+          typeof window !== "undefined"
+            ? new window.File([], f.name, {
+                type: f.type || "application/octet-stream",
+              })
+            : ({} as File);
+
+        return {
+          file: browserFile,
+          id: f.id || Math.random().toString(36).substr(2, 9),
+          serverId: f.id,
+          url: f.url,
+          name: f.name,
+          progress: 100,
+          status: "success" as const,
+        };
+      });
+      setUploadedFiles(mapped);
+    }
+  }, [initialFiles]);
+
   const getFileIcon = (file: File) => {
     console.log(file);
-    
+
     const type = file.type.toLowerCase();
     if (type.startsWith("image/"))
       return <Image className="w-5 h-5 text-blue-500" />;
@@ -184,13 +215,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
               : f
           )
         );
-    
-       
-        
+
         if (onUpload) await onUpload(result?.data || result);
-          toast({ title: "Success", description: "File Upload SuccessFul!" });
+        toast({ title: "Success", description: "File Upload SuccessFul!" });
       } else {
-         toast({ title: "Failed", description: "File Upload failed!",variant:"destructive" });
+        toast({
+          title: "Failed",
+          description: "File Upload failed!",
+          variant: "destructive",
+        });
         throw new Error(result.message || "Upload failed");
       }
     } catch (error) {
@@ -427,7 +460,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
                   {getFileIcon(uploadedFile.file)}
-                
+
                   <div className="flex-1 min-w-0">
                     {renamingId === uploadedFile.id ? (
                       <form
