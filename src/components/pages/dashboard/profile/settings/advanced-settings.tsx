@@ -166,7 +166,7 @@ export function AdvancedSettings() {
                   <AlertDialogTitle>Sign Out All Devices?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will sign you out from all devices and sessions. 
-                    You'll need to sign in again on all devices.
+                    You&apos;ll need to sign in again on all devices.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

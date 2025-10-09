@@ -90,7 +90,7 @@ export function PreferencesSettings() {
   const { preferences, loading, updatePreferences } = useUserPreferences();
   const { theme, setTheme } = useTheme();
 
-  const handleToggle = async (key: keyof typeof preferences, value: boolean) => {
+  const handleToggle = async (key: string, value: boolean) => {
     if (!preferences) return;
     await updatePreferences({ [key]: value });
   };
@@ -113,7 +113,7 @@ export function PreferencesSettings() {
       </div>
 
       <div className="space-y-6">
-        {preferenceGroups.map((group, groupIndex) => {
+        {preferenceGroups.map((group:any, groupIndex) => {
           const GroupIcon = group.icon;
           
           return (
@@ -187,9 +187,10 @@ export function PreferencesSettings() {
                     </div>
                   ) : (
                   <div className="space-y-6">
-                    {group.preferences.map((preference, index) => {
+                    {group?.preferences.map((preference:any, index:number) => {
                       const PreferenceIcon = preference.icon;
-                      const isEnabled = preferences[preference.key];
+                      // const isEnabled = preferences[preference.key]|| false;
+                          const isEnabled =  false;
                       
                       return (
                         <div key={preference.key}>
@@ -213,11 +214,11 @@ export function PreferencesSettings() {
                             <Switch
                               id={preference.key}
                               checked={isEnabled}
-                              onCheckedChange={(checked) => handleToggle(preference.key, checked)}
+                              onCheckedChange={(checked) => handleToggle(preference?.key, checked)}
                             />
                           </div>
                           
-                          {index < group.preferences.length - 1 && (
+                          {index < group.preferences?.length - 1 && (
                             <Separator className="mt-6" />
                           )}
                         </div>
@@ -245,7 +246,7 @@ export function PreferencesSettings() {
               </h3>
               <p className="text-sm text-green-800 dark:text-green-200">
                 We respect your privacy and give you complete control over your data. 
-                You can change these preferences at any time, and we'll never share 
+                You can change these preferences at any time, and we&apos;ll never share 
                 your information without your explicit consent.
               </p>
             </div>

@@ -10,30 +10,7 @@ interface ApiResponse<T = any> {
 // Mock API functions - replace with actual API calls
 export const userApi = {
   // User data
-  getUser: async (): Promise<ApiResponse<User>> => {
-    // Mock data
-    return {
-      success: true,
-      data: {
-        id: '1',
-        firstName: 'John',
-        lastName: 'Doe',
-        username: 'johndoe',
-        email: 'john@example.com',
-        phone: '+1234567890',
-        gender: 'male',
-        dateOfBirth: '1990-05-15',
-        avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150',
-        emailVerified: false,
-        phoneVerified: false,
-        profileVerified: false,
-        identityVerified: false,
-        totpEnabled: false,
-        createdAt: '2024-01-01T00:00:00Z',
-        updatedAt: '2024-01-01T00:00:00Z'
-      }
-    };
-  },
+
 
   updateUser: async (data: Partial<User>): Promise<ApiResponse> => {
     console.log('Updating user:', data);
@@ -119,18 +96,7 @@ export const userApi = {
     };
   },
 
-  // Devices
-  getDevices: async (): Promise<ApiResponse<Device[]>> => {
-    console.log('Fetching devices');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      success: true,
-      data: [
-        { id: '1', name: 'Chrome on Windows', ip: '192.168.1.1', os: 'Windows 10', browser: 'Chrome', location: 'New York, USA', lastLogin: '2024-01-01T10:00:00Z', trusted: true, current: true },
-        { id: '2', name: 'Safari on iPhone', ip: '192.168.1.2', os: 'iOS 17', browser: 'Safari', location: 'New York, USA', lastLogin: '2024-01-01T08:00:00Z', trusted: false, current: false }
-      ]
-    };
-  },
+
 
   logoutDevice: async (deviceId: string): Promise<ApiResponse> => {
     console.log('Logging out device:', deviceId);

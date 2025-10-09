@@ -9,7 +9,6 @@ export const personalDetailsSchema = z.object({
   phoneNumber: z.string().regex(/^[0-9]{10}$/, 'Phone number must be 10 digits').optional().or(z.literal('')),
   dateOfBirth: z.string().optional().or(z.literal('')),
   gender: z.enum(['male', 'female', 'other', 'prefer_not_to_say']).optional().or(z.literal('')),
-  profilePicture: z.string().url('Invalid image URL').optional().or(z.literal(''))
 })
 
 // Security Schema

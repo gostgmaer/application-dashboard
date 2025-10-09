@@ -346,7 +346,7 @@ export function AddressesSettings() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Address?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete "{address.label}"? 
+                                Are you sure you want to delete &quot;{address.label}&quot;? 
                                 This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>

@@ -124,7 +124,7 @@ export function SettingsLayout({ children, activeSection, onSectionChange }: Set
 
         {/* Main Content */}
         <main className="flex-1 min-h-screen">
-          <div className="max-w-4xl mx-auto p-6 lg:p-8">
+          <div className=" mx-auto p-6 lg:p-8">
             <motion.div
               key={activeSection}
               initial={{ opacity: 0, y: 20 }}

@@ -42,6 +42,7 @@ const socialProviders = {
 export function SocialSettings() {
   const { connections, loading, connectSocial, disconnectSocial } = useSocialConnections();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+console.log(connections);
 
   const handleConnect = async (provider: string) => {
     setActionLoading(`connect-${provider}`);

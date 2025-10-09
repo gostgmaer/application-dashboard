@@ -81,7 +81,7 @@ export function DevicesSettings() {
                   <AlertDialogTitle>Logout All Devices?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will sign you out of all devices except the current one. 
-                    You'll need to sign in again on other devices.
+                    You&apos;ll need to sign in again on other devices.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -161,7 +161,7 @@ export function DevicesSettings() {
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Logout Device?</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                      This will sign out "{device.name}" and require re-authentication 
+                                      This will sign out &quot;{device.name}&quot; and require re-authentication 
                                       to access your account from this device.
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>

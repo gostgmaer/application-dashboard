@@ -1,5 +1,5 @@
 import requests from "./index";
-import {  safeApiCall } from "./apiUtils";
+import { safeApiCall } from "./apiUtils";
 import { ApiResponse } from "@/types/global";
 
 const authService = {
@@ -22,7 +22,9 @@ const authService = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
-    safeApiCall(() => requests.post("/auth/mfa/verify-login-otp", body, token, headers)),
+    safeApiCall(() =>
+      requests.post("/auth/mfa/verify-login-otp", body, token, headers)
+    ),
 
   resendOTP: (
     body: any,
@@ -34,7 +36,7 @@ const authService = {
   socialLogin: (
     body: any,
     token?: string,
-    headers?: Record<string, string>    
+    headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() => requests.post("/auth/social-auth", body, token, headers)),
 
@@ -177,7 +179,9 @@ const authService = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
-    safeApiCall(() => requests.post("/auth/mfa/setup/verify", body, token, headers)),
+    safeApiCall(() =>
+      requests.post("/auth/mfa/setup/verify", body, token, headers)
+    ),
 
   enableMFA: (
     body: any,
@@ -192,7 +196,6 @@ const authService = {
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() => requests.post("/auth/mfa/disable", body, token, headers)),
-
 
   confirmMFA: (
     body: any,
@@ -254,7 +257,9 @@ const authService = {
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete("/auth/devices/remove",body, token,undefined, headers)),
+    safeApiCall(() =>
+      requests.delete("/auth/devices/remove", body, token, undefined, headers)
+    ),
 
   getActiveSessions: (
     token?: string,
@@ -383,7 +388,11 @@ const authService = {
     safeApiCall(() =>
       requests.patch(`/auth/phone/${id}`, body, token, headers)
     ),
-
+  getLinkedAccounts: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() => requests.get(`/auth/social/accounts`, token, headers)),
   linkSocialAccount: (
     id: string,
     body: any,
@@ -410,7 +419,13 @@ const authService = {
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() =>
-      requests.delete(`/auth/social/clear/${id}`,undefined, token,undefined, headers)
+      requests.delete(
+        `/auth/social/clear/${id}`,
+        undefined,
+        token,
+        undefined,
+        headers
+      )
     ),
 
   getOTPAnalytics: (
@@ -440,6 +455,59 @@ const authService = {
         headers
       )
     ),
+
+  getTrustedDevices: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get(
+        "/auth/trusted-devices",
+        token,
+        undefined,
+        undefined,
+        headers
+      )
+    ),
+
+  getSecurityLogs: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get("/auth/security-logs", token, undefined, undefined, headers)
+    ),
+
+  getAllLoginHistory: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get("/auth/login-history", token, undefined, undefined, headers)
+    ),
+
+  getAllActiveSessions: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get(
+        "/auth/active-sessions",
+        token,
+        undefined,
+        undefined,
+        headers
+      )
+    ),
+
+  getKnownDevices: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get("/auth/known-devices", token, undefined, undefined, headers)
+    ),
+
   getRoutesDocumentation: (headers?: Record<string, any>) =>
     safeApiCall(() =>
       requests.get(`/auth/docs/routes`, undefined, undefined, headers)

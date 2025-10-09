@@ -46,6 +46,9 @@ import {
 import { ActivitySettings } from "./activity-settings";
 import { SocialSettings } from "./social-settings";
 import { DevicesSettings } from "./devices-settings";
+import Image from "next/image";
+import authService from "@/lib/http/authService";
+import { useSession } from "next-auth/react";
 
 const passwordSchema = z
   .object({
@@ -80,7 +83,7 @@ export function SecuritySettings() {
     new: false,
     confirm: false,
   });
-
+  const { data: session } = useSession();
   // TOTP States
   const [totpSetup, setTotpSetup] = useState<any>(null);
   const [totpSetupStep, setTotpSetupStep] = useState<
@@ -114,7 +117,7 @@ export function SecuritySettings() {
   const phoneForm = useForm<PhoneForm>({
     resolver: zodResolver(phoneSchema),
     defaultValues: {
-      phoneNumber: user?.phone || "",
+      phoneNumber: user?.phoneNumber || "",
     },
   });
 
@@ -140,9 +143,9 @@ export function SecuritySettings() {
   const onPasswordSubmit = async (data: PasswordForm) => {
     setActionLoading("password");
     try {
-      const response = await userApi.changePassword(
-        data.currentPassword,
-        data.newPassword
+      const response = await authService.changePassword(
+        data,
+        session?.accessToken
       );
       if (response.success) {
         toast.success("Password changed successfully");
@@ -225,7 +228,7 @@ export function SecuritySettings() {
   };
 
   const enableSmsOtp = async () => {
-    if (!user?.phone) {
+    if (!user?.phoneNumber) {
       setSmsSetupDialog(true);
       return;
     }
@@ -324,7 +327,8 @@ export function SecuritySettings() {
 
     setActionLoading("otp-resend");
     try {
-      const contact = currentOtpType === "sms" ? user?.phone : user?.email;
+      const contact =
+        currentOtpType === "sms" ? user?.phoneNumber : user?.email;
       // const response = await userApi.sendOtp(currentOtpType, contact);
       // if (response.success) {
       //   setResendCooldown(60);
@@ -521,10 +525,21 @@ export function SecuritySettings() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={user.totpEnabled ? "default" : "secondary"}>
-                {user.totpEnabled ? "Enabled" : "Disabled"}
+              <Badge
+                variant={
+                  user.otpSettings?.enabled &&
+                  user.otpSettings?.preferredMethod == "totp"
+                    ? "default"
+                    : "secondary"
+                }
+              >
+                {user.otpSettings?.enabled &&
+                user.otpSettings?.preferredMethod == "totp"
+                  ? "Enabled"
+                  : "Disabled"}
               </Badge>
-              {user.totpEnabled ? (
+              {user.otpSettings?.enabled &&
+              user.otpSettings?.preferredMethod == "totp" ? (
                 <Button
                   variant="destructive"
                   size="sm"
@@ -566,8 +581,10 @@ export function SecuritySettings() {
                           <>
                             <div className="flex justify-center">
                               <div className="p-4 bg-white rounded-lg">
-                                <img
+                                <Image
                                   src={totpSetup.qrCode}
+                                  width={200}
+                                  height={200}
                                   alt="QR Code"
                                   className="w-48 h-48"
                                 />
@@ -661,17 +678,28 @@ export function SecuritySettings() {
               <div>
                 <p className="font-medium">SMS Authentication</p>
                 <p className="text-sm text-muted-foreground">
-                  {user.phone
-                    ? `Receive OTP codes at ${user.phone}`
+                  {user.phoneNumber
+                    ? `Receive OTP codes at ${user.phoneNumber}`
                     : "Receive OTP codes via SMS"}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={user.smsOtpEnabled ? "default" : "secondary"}>
-                {user.smsOtpEnabled ? "Enabled" : "Disabled"}
+              <Badge
+                variant={
+                  user.otpSettings?.enabled &&
+                  user.otpSettings?.preferredMethod == "sms"
+                    ? "default"
+                    : "secondary"
+                }
+              >
+                {user.otpSettings?.enabled &&
+                user.otpSettings?.preferredMethod == "sms"
+                  ? "Enabled"
+                  : "Disabled"}
               </Badge>
-              {user.smsOtpEnabled ? (
+              {user.otpSettings?.enabled &&
+              user.otpSettings?.preferredMethod == "sms" ? (
                 <Button
                   variant="destructive"
                   size="sm"
@@ -718,10 +746,21 @@ export function SecuritySettings() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={user.emailOtpEnabled ? "default" : "secondary"}>
-                {user.emailOtpEnabled ? "Enabled" : "Disabled"}
+              <Badge
+                variant={
+                  user.otpSettings?.enabled &&
+                  user.otpSettings?.preferredMethod == "email"
+                    ? "default"
+                    : "secondary"
+                }
+              >
+                {user.otpSettings?.enabled &&
+                user.otpSettings?.preferredMethod == "email"
+                  ? "Enabled"
+                  : "Disabled"}
               </Badge>
-              {user.emailOtpEnabled ? (
+              {user.otpSettings?.enabled &&
+              user.otpSettings?.preferredMethod == "email" ? (
                 <Button
                   variant="destructive"
                   size="sm"
@@ -749,9 +788,6 @@ export function SecuritySettings() {
           </div>
         </CardContent>
       </Card>
-
-   
-
 
       <SocialSettings></SocialSettings>
       <DevicesSettings></DevicesSettings>

@@ -5,7 +5,6 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { Suspense } from "react";
 import { authOptions } from "@/app/api/auth/authOptions";
 import PrivateLayout from "@/components/layout/dashboard";
-import AccountPage from "@/components/pages/dashboard/profile/account";
 import authService from "@/lib/http/authService";
 import addressServices from "@/lib/http/address";
 import { SettingsDashboard } from "@/components/pages/dashboard/profile/settings/settings-dashboard";
