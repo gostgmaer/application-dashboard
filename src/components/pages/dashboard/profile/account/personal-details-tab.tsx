@@ -20,80 +20,118 @@ import {
   PersonalDetailsFormData,
 } from "@/lib/validation/account";
 import { User } from "@/types/user";
-import { toast } from "sonner";
-import ProfilePictureUploader from "@/components/elements/profilePhoto";
+
+import ProfileImage from "@/components/elements/profilePhoto";
 import { useSession } from "next-auth/react";
 import authService from "@/lib/http/authService";
+import { toast } from "@/hooks/useToast";
 
 interface PersonalDetailsTabProps {
   user: User;
 }
 
 export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
+  const [profileImage, setProfileImage] = useState<any | null>(
+    user.profilePicture.url
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState<string>(
-    user.profilePicture || ""
-  );
-  const { data: session } = useSession();
-  const [currentImageUrl, setCurrentImageUrl] = useState<string>(
-    "/api/placeholder/150/150"
-  );
-  const [isUpdating, setIsUpdating] = useState(false);
+  const handleUpload = async (file: File, isReplace = false) => {
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("files", file);
+      const response = await fetch("http://localhost:3500/api/files/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+      const { data } = await response.json();
+      if (response.ok) {
+        setProfileImage(data?.[0]?.url);
 
-  const handleImageUpload = async (file: File) => {
+        const body = {
+          id: data[0].id,
+          url: data[0].url,
+          name: data[0].originalName,
+          size: data[0].size,
+          type: data[0].mimeType,
+        };
+
+        await authService.updateProfilePicture(body, session?.accessToken);
+
+        toast({ title: "Success", description: "File Upload SuccessFul!" });
+        return data?.[0]?.url;
+      } else {
+        toast({
+          title: "Failed",
+          description: "File Upload failed!",
+          variant: "destructive",
+        });
+        throw new Error(data.message || "Upload failed");
+      }
+    } catch (error) {
+      // setUploadedFiles((prev) =>
+      //   prev.map((f) =>
+      //     fileObjects.find((fo) => fo.id === f.id)
+      //       ? { ...f, status: "error", error: (error as Error).message }
+      //       : f
+      //   )
+      // );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  const handleReplace = async (file: File): Promise<string> => {
+    setIsLoading(true);
     try {
       // Simulate API call
-      console.log(file);
-      
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Create a mock URL for demonstration
-      const newImageUrl = URL.createObjectURL(file);
-      setCurrentImageUrl(newImageUrl);
+      // Revoke old URL if it exists
+      if (profileImage) {
+        URL.revokeObjectURL(profileImage);
+      }
 
-      return { url: newImageUrl };
+      // Create new URL
+      const imageUrl = URL.createObjectURL(file);
+      setProfileImage(imageUrl);
+
+      console.log("File replaced:", file.name);
+      return imageUrl;
     } catch (error) {
-      throw new Error("Failed to upload image");
+      console.error("Replace failed:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleImageRemove = async () => {
+  const handleRemove = async (): Promise<void> => {
+    setIsLoading(true);
     try {
-      // Simulate API call
+    
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Clean up the URL
-      if (currentImageUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(currentImageUrl);
+      // Revoke URL if it exists
+      if (profileImage) {
+        URL.revokeObjectURL(profileImage);
       }
-      setCurrentImageUrl("");
-    } catch (error) {
-      throw new Error("Failed to remove image");
-    }
-  };
 
-  const handleSaveProfile = async () => {
-    setIsUpdating(true);
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      // Handle success
+      setProfileImage(null);
+      console.log("Profile image removed");
     } catch (error) {
-      // Handle error
+      console.error("Remove failed:", error);
+      throw error;
     } finally {
-      setIsUpdating(false);
+      setIsLoading(false);
     }
   };
+  const { data: session } = useSession();
 
-  const handleCallback = async (data: any) => {
-    try {
-      console.log("Profile picture callback:", data);
-      // Handle any additional logic after profile picture operations
-      // For example, you could update user state, refresh data, etc.
-    } catch (error) {
-      console.error("Callback error:", error);
-    }
-  };
   const {
     register,
     handleSubmit,
@@ -117,20 +155,6 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
 
   const watchedGender = watch("gender");
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // In a real app, you'd upload this to your server/cloud storage
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setPreviewImage(result);
-        setValue("profilePicture", result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const onSubmit = async (data: PersonalDetailsFormData) => {
     setIsLoading(true);
     try {
@@ -138,9 +162,16 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
       console.log(session);
 
       await authService.updateProfile(data, session?.accessToken);
-      toast.success("Personal details updated successfully!");
+      toast({
+        title: "Success",
+        description: "Personal details updated successfully!",
+      });
     } catch (error) {
-      toast.error("Failed to update personal details. Please try again.");
+      toast({
+        title: "Failed",
+        description: "Failed to update personal details. Please try again!",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -156,16 +187,16 @@ export default function PersonalDetailsTab({ user }: PersonalDetailsTabProps) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Profile Picture */}
       <div className="flex items-center space-x-4">
-        <ProfilePictureUploader
-          currentImageUrl={currentImageUrl}
-          onUpload={() => handleImageUpload}
-          onRemove={handleImageRemove}
-          onCallback={handleCallback}
-          maxSize={5 * 1024 * 1024} // 5MB
-          createEndpoint="/api/profile/create"
-          updateEndpoint="/api/profile/update"
-          callbackEndpoint="/api/profile/callback"
-        />
+        <div className="flex justify-center">
+          <ProfileImage
+            size="md"
+            currentImage={profileImage}
+            onUpload={handleUpload}
+            onReplace={handleReplace}
+            onRemove={handleRemove}
+            apiEndpoint="http://localhost:3500/api/files/upload"
+          />
+        </div>
       </div>
 
       {/* Basic Information */}

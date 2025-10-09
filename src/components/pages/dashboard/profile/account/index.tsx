@@ -17,7 +17,6 @@ import ProfileHeader from './profile-header'
 
 
 export default function AccountPage({user}:any) {
-console.log(user);
 
   const [activeTab, setActiveTab] = useState('personal')
 

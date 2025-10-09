@@ -7,7 +7,7 @@ export interface User {
   phoneNumber?: string
   dateOfBirth?: string
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say'
-  profilePicture?: null
+  profilePicture?: any
   role?: string
   isVerified: boolean
   phoneVerified: boolean
@@ -84,16 +84,7 @@ export interface User {
   }
 }
 
-export interface Address {
-  id: string
-  label: 'home' | 'work' | 'other'
-  addressLine1: string
-  city: string
-  state: string
-  postalCode: string
-  country: string
-  isDefault: boolean
-}
+
 
 export interface PaymentMethod {
   id: string
@@ -140,4 +131,59 @@ export interface SecurityEvent {
   timestamp: string
   ipAddress?: string
   userAgent?: string
+}
+
+export interface UserPreferences {
+  notifications: boolean;
+  newsletter: boolean;
+  privacyMode: boolean;
+  securityAlerts: boolean;
+  theme: 'light' | 'dark' | 'system';
+}
+
+export interface Address {
+  id: string;
+  label: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  state?: string;
+  postalCode: string;
+  country: string;
+  phone?: string;
+  isDefault: boolean;
+}
+
+export interface Device {
+  id: string;
+  name: string;
+  ip: string;
+  os: string;
+  browser: string;
+  location: string;
+  lastLogin: string;
+  trusted: boolean;
+  current: boolean;
+}
+
+export interface ActivityLog {
+  id: string;
+  action: string;
+  device: string;
+  ip: string;
+  timestamp: string;
+  status: 'success' | 'failed' | 'warning';
+}
+
+export interface SocialConnection {
+  provider: 'google' | 'github' | 'facebook' | 'twitter';
+  connected: boolean;
+  email?: string;
+  connectedAt?: string;
+}
+
+export interface TOTPSetup {
+  secret: string;
+  qrCode: string;
+  backupCodes: string[];
 }

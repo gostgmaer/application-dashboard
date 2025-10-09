@@ -8,6 +8,7 @@ import PrivateLayout from "@/components/layout/dashboard";
 import AccountPage from "@/components/pages/dashboard/profile/account";
 import authService from "@/lib/http/authService";
 import addressServices from "@/lib/http/address";
+import { SettingsDashboard } from "@/components/pages/dashboard/profile/settings/settings-dashboard";
 // Adjust path based on your project structure
 
 export default async function Page() {
@@ -25,9 +26,11 @@ export default async function Page() {
             btn={{ show: false }}
           />
           <div className="rounded-md   shadow-sm overflow-auto ">
-            <AccountPage
+            {/* <AccountPage
               user={{ ...userData.data, address: address.data }}
-            ></AccountPage>
+            ></AccountPage> */}
+
+            <SettingsDashboard />;
           </div>
         </Suspense>
       </div>
