@@ -31,7 +31,7 @@ const addressServices = {
     );
   },
 
-  getUser: async (
+  getUserAddress: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {

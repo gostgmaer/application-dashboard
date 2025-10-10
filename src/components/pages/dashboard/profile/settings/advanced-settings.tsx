@@ -14,6 +14,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { userApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { TriangleAlert as AlertTriangle, Trash2, UserX, LogOut, Download, Shield, Loader as Loader2, Key, Eye, EyeOff } from 'lucide-react';
+import authService from '@/lib/http/authService';
+import { useSession } from 'next-auth/react';
 
 const passwordSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters')
@@ -24,6 +26,7 @@ type PasswordConfirmation = z.infer<typeof passwordSchema>;
 export function AdvancedSettings() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+ const { data: session } = useSession()
 
   const passwordForm = useForm<PasswordConfirmation>({
     resolver: zodResolver(passwordSchema),
@@ -35,7 +38,7 @@ export function AdvancedSettings() {
   const handleLogout = async () => {
     setActionLoading('logout');
     try {
-      const response = await userApi.logout();
+      const response = await authService.logout(session?.accessToken);
       if (response.success) {
         toast.success('Logged out successfully');
         // Redirect to login page
@@ -51,7 +54,7 @@ export function AdvancedSettings() {
   const handleLogoutAll = async () => {
     setActionLoading('logout-all');
     try {
-      const response = await userApi.logoutAllDevices();
+      const response = await authService.logoutAll({},session?.accessToken);
       if (response.success) {
         toast.success('Logged out from all devices');
         // Redirect to login page

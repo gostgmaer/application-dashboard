@@ -66,8 +66,6 @@ export function ProfileSettings() {
   });
 
   const getSetting = async () => {
-    // const res = await authService.getAccountSetting(session?.accessToken);
-    // setUser(res.data);
     form.reset({
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",

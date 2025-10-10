@@ -6,14 +6,13 @@ import { User, Address, Device, ActivityLog, SocialConnection, UserPreferences }
 import { toast } from 'sonner';
 import authService from '@/lib/http/authService';
 import { useSession } from 'next-auth/react';
+import addressServices from '@/lib/http/address';
 
 export function useUserData() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession()
-  useEffect(() => {
-    fetchUser();
-  }, []);
+
 
   const fetchUser = async () => {
     try {
@@ -27,7 +26,9 @@ export function useUserData() {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    fetchUser();
+  }, []);
   const updateUser = async (data: Partial<User>) => {
 
     try {
@@ -50,6 +51,7 @@ export function useUserData() {
 export function useAddresses() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: session } = useSession()
 
   useEffect(() => {
     fetchAddresses();
@@ -57,7 +59,7 @@ export function useAddresses() {
 
   const fetchAddresses = async () => {
     try {
-      const response = await userApi.getAddresses();
+      const response = await addressServices.getUserAddress(session?.accessToken);
       if (response.success && response.data) {
         setAddresses(response.data);
       }

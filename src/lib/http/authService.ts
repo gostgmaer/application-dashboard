@@ -508,6 +508,15 @@ const authService = {
       requests.get("/auth/known-devices", token, undefined, undefined, headers)
     ),
 
+
+    getAddresses: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get("/auth/all-addresses", token, undefined, undefined, headers)
+    ),
+
   getRoutesDocumentation: (headers?: Record<string, any>) =>
     safeApiCall(() =>
       requests.get(`/auth/docs/routes`, undefined, undefined, headers)
