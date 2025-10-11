@@ -52,9 +52,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const fetchUser = async () => {
       setLoading(true);
       try {
-        const { data } = await authService.getProfile(session.accessToken);
+        const { data } = session && await authService.getProfile(session.accessToken);
         setUser(data);
-        sessionStorage.setItem("user", JSON.stringify(data));
+        sessionStorage.setItem("user", JSON.stringify({role: data.role, permissions: data.permissions, name: data.fullName, email: data.email}));
       } catch {
         setUser(null);
         sessionStorage.removeItem("user");
