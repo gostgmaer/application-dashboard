@@ -24,6 +24,7 @@ import roleServices from "@/lib/http/roleServices";
 import { useSession } from "next-auth/react";
 import { useModal } from "@/contexts/modal-context";
 import RoleForm from "../form";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface RoleTableProps {
   roles: Role[];
@@ -34,12 +35,13 @@ interface RoleTableProps {
 export function RoleTable({ roles, onViewRole, permissions }: RoleTableProps) {
   const { showConfirm, showAlert, showCustom } = useModal();
   const { data: session } = useSession();
-
+  const { hasPermission } = usePermissions();
   const handleUpdate: any = async (role: any) => {
-    showCustom({
-      title: `Edit Role: ${role.name}`,
-      content: <RoleForm permissionData={permissions} id={role._id} />,
-    });
+    hasPermission("role:update") &&
+      showCustom({
+        title: `Edit Role: ${role.name}`,
+        content: <RoleForm permissionData={permissions} id={role._id} />,
+      });
   };
 
   return (

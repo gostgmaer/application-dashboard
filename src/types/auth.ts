@@ -1,9 +1,18 @@
 import { User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 
+
+
+
+
+export type Permission = string; // Dynamic permission strings from backend
+export type Role = string; // Dynamic role strings from backend
+
 export interface LoginResponse {
   success: boolean;
   message: string;
+    permissions: Permission[];
+  avatar?: string;
   user?: {
     id: string;
     email: string;
@@ -86,4 +95,37 @@ export interface CustomUser extends User {
   otp_method?: string;
   "2fa_required"?: boolean;
   "2fa_verified"?: boolean;
+}
+
+export interface AuthContextValue {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  hasPermission: (permission: Permission | Permission[], operator?: 'AND' | 'OR') => boolean;
+  hasRole: (role: Role | Role[]) => boolean;
+  isSpecialRole: (role: 'super_admin' | 'admin') => boolean;
+}
+
+export interface ProtectedComponentProps {
+  children: React.ReactNode;
+  permission?: Permission | Permission[];
+  role?: Role | Role[];
+  operator?: 'AND' | 'OR';
+  fallback?: React.ReactNode;
+  showError?: boolean;
+  showModal?: boolean;
+  modalTitle?: string;
+  modalDescription?: string;
+  onModalClose?: () => void;
+}
+
+export interface UserP {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  permissions: Permission[];
+  avatar?: string;
+  createdAt: string;
+  lastLogin?: string;
 }

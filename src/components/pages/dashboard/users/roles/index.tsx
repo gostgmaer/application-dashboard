@@ -14,6 +14,7 @@ import { useSession } from "next-auth/react";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { useModal } from "@/contexts/modal-context";
 import RoleForm from "./form";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export default function RolesPage({ props }: any) {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -21,7 +22,7 @@ export default function RolesPage({ props }: any) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { data: session } = useSession();
   const { showCustom } = useModal();
-
+  const { hasPermission } = usePermissions();
   const { data, error, isLoading } = useApiSWR(
     "/roles",
     props.token,
@@ -90,7 +91,10 @@ export default function RolesPage({ props }: any) {
       <Breadcrumbs
         heading="Role Dashboard"
         desc="Manage user roles, permissions, and access control across your organization"
-        btn={{ event: handleCreate, show: true }}
+        btn={{
+          event: handleCreate,
+          show: hasPermission("role:create") && true,
+        }}
       />
 
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">

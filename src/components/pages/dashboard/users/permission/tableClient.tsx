@@ -26,6 +26,7 @@ import permissionServices from "@/lib/http/permissionServices";
 import { Permission, permissionList } from "@/types/permissions";
 import PermissionForm from "./form";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type User = {
   id: string;
@@ -42,13 +43,13 @@ const filters: DataTableFilter[] = [
     label: "Category",
     type: "select",
     options: permissionCategory,
-  }
+  },
 ];
 
 export function PermissionDataTable() {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
-
+  const { hasPermission } = usePermissions();
   const deleteRequest = async (id: any) => {
     return await permissionServices.delete(id, session?.accessToken);
   };
@@ -97,6 +98,13 @@ export function PermissionDataTable() {
       header: "Name",
       cell: ({ row }) => (
         <div className="font-medium">{row.getValue("name")}</div>
+      ),
+    },
+    {
+      accessorKey: "key",
+      header: "Permission key",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.getValue("key")}</div>
       ),
     },
     {
@@ -173,15 +181,19 @@ export function PermissionDataTable() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem onClick={() => handleUpdate(p)}>
-                Update
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-500"
-                onClick={() => handleDelete(p)}
-              >
-                Remove
-              </DropdownMenuItem>
+              {hasPermission("permission:update") && (
+                <DropdownMenuItem onClick={() => handleUpdate(p)}>
+                  Update
+                </DropdownMenuItem>
+              )}
+              {hasPermission("permission:delete") && (
+                <DropdownMenuItem
+                  className="text-red-500"
+                  onClick={() => handleDelete(p)}
+                >
+                  Remove
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -190,10 +202,13 @@ export function PermissionDataTable() {
   ];
 
   return (
-    <div className=" mx-auto py-4">
+    <div className=" mx-auto px-2 py-4">
       <Breadcrumbs
         heading={"All Permissions"}
-        btn={{ event: handleCreate, show: true }}
+        btn={{
+          event: handleCreate,
+          show: hasPermission("permission:create") && true,
+        }}
       ></Breadcrumbs>
       <div className="space-y-4">
         <DataTable

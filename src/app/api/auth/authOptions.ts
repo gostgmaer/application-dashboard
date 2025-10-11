@@ -283,7 +283,7 @@ export const authOptions: AuthOptions = {
       // if (process.env.NODE_ENV === "development") {
       //   console.log("🔧 JWT Callback:", {
       //     trigger,
-      //     hasToken: !!token,
+      //     hasToken: !!token, 
       //     hasUser: !!user,
       //     hasSession: !!session,
       //     sessionKeys: session ? Object.keys(session) : [],
@@ -293,8 +293,11 @@ export const authOptions: AuthOptions = {
       // Initial sign-in
       if (user) {
         const customUser = user as CustomUser;
-        console.log("👤 Setting initial user data in token");
+        const profile = await authService.getProfile(user.accessToken);
 
+
+
+        console.log("👤 Setting initial user data in token");
         customToken.accessToken = customUser.accessToken;
         customToken.refreshToken = customUser.refreshToken;
         customToken.token_type = customUser.token_type;

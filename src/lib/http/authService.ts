@@ -393,14 +393,15 @@ const authService = {
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() => requests.get(`/auth/social/accounts`, token, headers)),
+
   linkSocialAccount: (
-    id: string,
     body: any,
+   
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() =>
-      requests.post(`/auth/social/link/${id}`, body, token, headers)
+      requests.post(`/social-accounts/link`, body, token, headers)
     ),
 
   unlinkSocialAccount: (

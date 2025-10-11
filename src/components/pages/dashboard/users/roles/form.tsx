@@ -261,7 +261,7 @@ export default function RoleForm({ id, permissionData = [] }: any) {
                         <h3 className="text-sm  text-gray-800 dark:text-gray-200">
                           {p.category}
                         </h3>
-                        <div className="grid grid-cols-5 gap-3">
+                        <div className="grid grid-cols-6 gap-3">
                           {p.action.map((a: any) => (
                             <div
                               key={a.id}

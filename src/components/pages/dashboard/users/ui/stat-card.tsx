@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import React from "react";
 
 interface StatCardProps {
@@ -6,10 +7,17 @@ interface StatCardProps {
   value: string | number;
   icon: React.ComponentType<{ className?: string }>;
   description?: string;
+  link?: string;
 }
 
-export function StatCard({ title, value, icon: Icon, description }: StatCardProps) {
-  return (
+export function StatCard({
+  title,
+  value,
+  icon: Icon,
+  description,
+  link,
+}: StatCardProps) {
+  const content = (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -23,4 +31,6 @@ export function StatCard({ title, value, icon: Icon, description }: StatCardProp
       </CardContent>
     </Card>
   );
+
+  return link ? <Link href={link}>{content}</Link> : content;
 }

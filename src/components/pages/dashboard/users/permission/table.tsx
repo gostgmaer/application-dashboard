@@ -22,6 +22,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "@/hooks/useToast";
 import { useModal } from "@/contexts/modal-context";
 import { Checkbox } from "@/components/ui/checkbox";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface permission {
   _id: string;
@@ -34,11 +35,11 @@ interface permission {
 }
 
 export default function Table({ props }: any) {
-
   console.log(props);
-  
+
   const { showConfirm, showAlert, showCustom } = useModal();
   const { data: session } = useSession();
+  const { hasPermission } = usePermissions();
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.data || [],
@@ -85,8 +86,6 @@ export default function Table({ props }: any) {
       });
     }
   };
-
- 
 
   const handleCreate = (data: any) => {
     showCustom({
@@ -295,12 +294,16 @@ export default function Table({ props }: any) {
               >
                 Copy ID
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleUpdate(permission)}>
-                View
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDelete(permission)}>
-                Remove
-              </DropdownMenuItem>
+              {hasPermission("permission:update") && (
+                <DropdownMenuItem onClick={() => handleUpdate(permission)}>
+                  View
+                </DropdownMenuItem>
+              )}
+              {hasPermission("permission:delete") && (
+                <DropdownMenuItem onClick={() => handleDelete(permission)}>
+                  Remove
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -311,7 +314,7 @@ export default function Table({ props }: any) {
     <>
       <Breadcrumbs
         heading={"All Permissions"}
-        btn={{ event: ()=>handleCreate, show: true }}
+        btn={{ event: () => handleCreate, show: true }}
       ></Breadcrumbs>
 
       <div className="rounded-md border  p-4   shadow-sm overflow-auto max-h-screen">

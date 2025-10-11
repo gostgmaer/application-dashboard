@@ -267,7 +267,8 @@ export function useSocialConnections() {
 
   const connectSocial = async (provider: string) => {
     try {
-      const response = await userApi.connectSocial(provider);
+      // const response = await userApi.connectSocial(provider);
+        const response = await authService.linkSocialAccount({"provider": "google",accessToken: session?.accessToken},session?.accessToken);
       if (response.success) {
         toast.success(`Connected to ${provider} successfully`);
         fetchConnections();

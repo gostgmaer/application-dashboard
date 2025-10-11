@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Mail,
   Package,
+  LockKeyholeIcon,
 } from "lucide-react";
 import {
   PieChart,
@@ -33,6 +34,7 @@ import UsersTable from "./table";
 import { DataTableExample } from "./tableClient";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { useApiSWR } from "@/hooks/useApiSWR";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const usersByRole = [
   { name: "Admin", value: 5, fill: "#3b82f6" },
@@ -46,85 +48,19 @@ const usersByDevice = [
   { device: "Tablet", users: 42 },
 ];
 
-const mockUsers: User[] = [
-  {
-    id: 1,
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "Customer",
-    status: "Active",
-    lastActive: "2025-09-28",
-  },
-  {
-    id: 2,
-    name: "Bob Smith",
-    email: "bob@example.com",
-    role: "Admin",
-    status: "Inactive",
-    lastActive: "2025-09-20",
-  },
-  {
-    id: 3,
-    name: "Charlie Brown",
-    email: "charlie@example.com",
-    role: "Vendor",
-    status: "Active",
-    lastActive: "2025-09-29",
-  },
-  {
-    id: 4,
-    name: "Diana Prince",
-    email: "diana@example.com",
-    role: "Customer",
-    status: "Active",
-    lastActive: "2025-09-30",
-  },
-  {
-    id: 5,
-    name: "Edward Norton",
-    email: "edward@example.com",
-    role: "Customer",
-    status: "Inactive",
-    lastActive: "2025-09-15",
-  },
-  {
-    id: 6,
-    name: "Fiona Gallagher",
-    email: "fiona@example.com",
-    role: "Vendor",
-    status: "Active",
-    lastActive: "2025-09-29",
-  },
-  {
-    id: 7,
-    name: "George Miller",
-    email: "george@example.com",
-    role: "Customer",
-    status: "Active",
-    lastActive: "2025-09-28",
-  },
-  {
-    id: 8,
-    name: "Hannah Montana",
-    email: "hannah@example.com",
-    role: "Admin",
-    status: "Active",
-    lastActive: "2025-10-01",
-  },
-];
+
 
 export default function UserDashboard(token: any) {
+  const { hasPermission } = usePermissions();
+  const { data, error, isLoading, mutate } = useApiSWR(
+    "/users/stats-data",
+    token,
+    undefined,
+    undefined,
+    undefined
+  );
 
-    const { data, error, isLoading, mutate } = useApiSWR(
-      "/users/stats-data",
-      token,
-      undefined,
-      undefined,
-      undefined
-    );
-
-
-     if (isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <div className="text-center">
@@ -165,7 +101,7 @@ export default function UserDashboard(token: any) {
     <>
       <Breadcrumbs
         heading={"User Dashboard"}
-        btn={{ show: true }}
+        btn={{ show: hasPermission("user:create") && true }}
       ></Breadcrumbs>
 
       <div className="rounded-md    shadow-sm overflow-auto ">
@@ -173,34 +109,42 @@ export default function UserDashboard(token: any) {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Total Users"
-              value={data?.totalUsers||0}
+              value={data?.totalUsers || 0}
               icon={Users}
               description="All registered users"
+              link="#user-table"
             />
             <StatCard
               title="Active Users"
-              value={data?.activeUsers||0}
+              value={data?.activeUsers || 0}
               icon={UserCheck}
               description="Currently active"
             />
             <StatCard
               title="Inactive Users"
-              value={data?.inactiveUsers||0}
+              value={data?.inactiveUsers || 0}
               icon={UserX}
               description="No recent activity"
             />
             <StatCard
               title="New Users Today"
-              value={data?.newUsersToday||0}
+              value={data?.newUsersToday || 0}
               icon={UserPlus}
               description="Registered today"
+            />
+             <StatCard
+              title="Total Active Roles"
+              value={data?.totalActiveRole || 0}
+              icon={LockKeyholeIcon}
+              description="Total Role Assigned"
+              link="/dashboard/users/roles"
             />
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard
               title="Growth Rate"
-                value={data?.weeklyGrowthRate||0}
+              value={data?.weeklyGrowthRate || 0}
               icon={TrendingUp}
               description="User growth this month"
             />
@@ -218,7 +162,7 @@ export default function UserDashboard(token: any) {
             />
             <StatCard
               title="Email Verified"
-              value={data?.emailVerifiedCount||0}
+              value={data?.emailVerifiedCount || 0}
               icon={Mail}
               description="96.6% verification rate"
             />
@@ -230,7 +174,7 @@ export default function UserDashboard(token: any) {
             />
             <StatCard
               title="2FA Enabled"
-              value={data?.twoFactorEnabledCount||0}
+              value={data?.twoFactorEnabledCount || 0}
               icon={ShieldCheck}
               description="57.9% security adoption"
             />
@@ -241,7 +185,7 @@ export default function UserDashboard(token: any) {
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
-                    data={data?.usersByRole||[]}
+                    data={data?.usersByRole || []}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
@@ -262,7 +206,7 @@ export default function UserDashboard(token: any) {
 
             <ChartCard title="Users by Device">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={data?.usersByDevice||[]}>
+                <BarChart data={data?.usersByDevice || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
@@ -273,7 +217,7 @@ export default function UserDashboard(token: any) {
             </ChartCard>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-4" id="user-table">
             <div className="space-y-2">
               <h2 className="text-2xl font-semibold tracking-tight">Users</h2>
               <p className="text-sm text-muted-foreground">

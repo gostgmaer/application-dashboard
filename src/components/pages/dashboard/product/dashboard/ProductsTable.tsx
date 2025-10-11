@@ -23,6 +23,7 @@ import userServices from "@/lib/http/userService";
 import { useModal } from "@/contexts/modal-context";
 import { Product } from "@/types/product";
 import productService from "@/lib/http/ProductServices";
+import { usePermissions } from "@/hooks/usePermissions";
 
 export type User = {
   id: string;
@@ -69,6 +70,7 @@ const filters: DataTableFilter[] = [
 export function ProductsTable() {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
+  const { hasPermission } = usePermissions();
   const handleDeleteRow = (rows: Product[]) => {
     // console.log("Deleting users:", rows);
     alert(`Deleting ${rows.length} user(s)`);
@@ -106,12 +108,18 @@ export function ProductsTable() {
       accessorKey: "title",
       header: "Name",
       cell: ({ row }) => (
+        <>
+          {hasPermission("product:view") ? (
+            <div className="font-medium">
+              <Link href={`/dashboard/products/${row.original["id"]}`}>
+                {row.getValue("title")}
+              </Link>
+            </div>
+          ) : (
+            <div className="font-medium">{row.getValue("title")}</div>
+          )}
+        </>
         //  <div className="font-medium">{user.fullName}</div>
-        <div className="font-medium">
-          <Link href={`/dashboard/products/${row.original["_id"]}`}>
-            {row.getValue("title")}
-          </Link>
-        </div>
       ),
     },
     {
@@ -128,11 +136,11 @@ export function ProductsTable() {
       accessorKey: "category",
       header: "Category",
       cell: ({ row }) => {
-        const category:any = row.getValue("category");
+        const category: any = row.getValue("category");
         return <div>{category.title}</div>;
       },
     },
-  
+
     {
       accessorKey: "finalPrice",
       header: "Price",
@@ -141,7 +149,7 @@ export function ProductsTable() {
         return <div>{finalPrice}</div>;
       },
     },
-      {
+    {
       accessorKey: "inventory",
       header: "Stock",
       cell: ({ row }) => {
@@ -200,17 +208,21 @@ export function ProductsTable() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
-              <DropdownMenuItem>
-                <Link href={`/dashboard/products/${p["id"]}/update`}>
-                  Edit{" "} 
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-red-500"
-                onClick={() => handleDelete(p)}
-              >
-                Remove
-              </DropdownMenuItem>
+              {hasPermission("product:update") && (
+                <DropdownMenuItem>
+                  <Link href={`/dashboard/products/${p["id"]}/update`}>
+                    Edit{" "}
+                  </Link>
+                </DropdownMenuItem>
+              )}
+              {hasPermission("product:delete") && (
+                <DropdownMenuItem
+                  className="text-red-500"
+                  onClick={() => handleDelete(p)}
+                >
+                  Remove
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );

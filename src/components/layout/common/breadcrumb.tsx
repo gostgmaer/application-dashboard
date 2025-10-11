@@ -11,7 +11,7 @@ export default function Breadcrumbs({
   desc,
   btnComp,
 }: {
-  btn?: { show?: boolean; event?: () => void; label?: string };
+  btn?: { show?: boolean; cond?: boolean; event?: () => void; label?: string };
   heading?: string;
   desc?: string;
   btnComp?: React.ReactNode;
