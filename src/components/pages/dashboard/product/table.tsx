@@ -48,8 +48,8 @@ export default function Table({ props }: any) {
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.products || [],
-      totalCount: props.pagination.totalProducts || 0,
-      pageCount: props.pagination.totalPages,
+      totalCount: props.pagination?.totalProducts || 0,
+      pageCount: props.pagination?.totalPages,
     };
   };
 

@@ -12,7 +12,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   const statsData = [
     {
       title: 'Total Products',
-      value: stats.totalProducts,
+      value: stats?.totalProducts||0,
       change: '+12.5%',
       trend: 'up' as const,
       icon: Package,
@@ -21,7 +21,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'Active Products',
-      value: stats.activeProducts,
+      value: stats?.activeProducts||0,
       change: '+8.2%',
       trend: 'up' as const,
       icon: CheckCircle,
@@ -30,7 +30,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'Out of Stock',
-      value: stats.outOfStockCount,
+      value: stats?.outOfStockCount,
       change: '-15.3%',
       trend: 'down' as const,
       icon: XCircle,
@@ -39,7 +39,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'Products on Sale',
-      value: stats.productsOnSale,
+      value: stats?.productsOnSale,
       change: '+23.1%',
       trend: 'up' as const,
       icon: Tag,
@@ -48,7 +48,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: 'Average Price',
-      value: `$${stats.avgBasePrice?.toFixed(2)}`,
+      value: `$${stats?.avgBasePrice?.toFixed(2)}`,
       change: '+5.7%',
       trend: 'up' as const,
       icon: DollarSign,

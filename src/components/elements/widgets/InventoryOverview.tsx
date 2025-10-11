@@ -77,22 +77,22 @@ export default function InventoryOverview() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-3 bg-blue-50 rounded-lg">
             <Package className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-blue-600">{inventoryStats.totalProducts}</div>
+            <div className="text-2xl font-bold text-blue-600">{inventoryStats?.totalProducts||0}</div>
             <div className="text-xs text-gray-600">Total Products</div>
           </div>
           <div className="text-center p-3 bg-yellow-50 rounded-lg">
             <AlertTriangle className="h-6 w-6 text-yellow-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-yellow-600">{inventoryStats.lowStock}</div>
+            <div className="text-2xl font-bold text-yellow-600">{inventoryStats?.lowStock||0}</div>
             <div className="text-xs text-gray-600">Low Stock</div>
           </div>
           <div className="text-center p-3 bg-red-50 rounded-lg">
             <ShoppingCart className="h-6 w-6 text-red-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-red-600">{inventoryStats.outOfStock}</div>
+            <div className="text-2xl font-bold text-red-600">{inventoryStats?.outOfStock||0}</div>
             <div className="text-xs text-gray-600">Out of Stock</div>
           </div>
           <div className="text-center p-3 bg-green-50 rounded-lg">
             <BarChart3 className="h-6 w-6 text-green-600 mx-auto mb-2" />
-            <div className="text-2xl font-bold text-green-600">{inventoryStats.monthlyTurnover}%</div>
+            <div className="text-2xl font-bold text-green-600">{inventoryStats.monthlyTurnover||0}%</div>
             <div className="text-xs text-gray-600">Turnover Rate</div>
           </div>
         </div>

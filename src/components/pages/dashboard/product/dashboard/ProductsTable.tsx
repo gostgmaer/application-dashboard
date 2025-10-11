@@ -145,8 +145,16 @@ export function ProductsTable() {
       accessorKey: "finalPrice",
       header: "Price",
       cell: ({ row }) => {
-        const finalPrice = row.getValue("finalPrice") as string;
-        return <div>{finalPrice}</div>;
+        const finalPrice = row.getValue("finalPrice") as number;
+        return <div>${finalPrice.toFixed(2)} </div>;
+      },
+    },
+      {
+      accessorKey: "basePrice",
+      header: "Listing",
+      cell: ({ row }) => {
+        const basePrice = row.getValue("basePrice") as number;
+        return <div>${basePrice.toFixed(2)} </div>;
       },
     },
     {
