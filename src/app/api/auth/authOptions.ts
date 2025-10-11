@@ -293,10 +293,6 @@ export const authOptions: AuthOptions = {
       // Initial sign-in
       if (user) {
         const customUser = user as CustomUser;
-        const profile = await authService.getProfile(user.accessToken);
-
-
-
         console.log("👤 Setting initial user data in token");
         customToken.accessToken = customUser.accessToken;
         customToken.refreshToken = customUser.refreshToken;

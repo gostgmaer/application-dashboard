@@ -13,7 +13,7 @@ export default async function Page() {
   const session = await getServerSession(authOptions);
 
   const userData = await userServices.getProfile(session?.accessToken);
-  const address = await addressServices.getUser(session?.accessToken);
+  const address = await addressServices.getUserAddress(session?.accessToken);
   return (
     <PrivateLayout>
       <div className="mx-auto py-2 overflow-hidden">
