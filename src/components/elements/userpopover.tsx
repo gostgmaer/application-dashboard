@@ -54,7 +54,7 @@ export function UserStatus({data}:any) {
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8">
               <AvatarImage
-                src="https://images.pexels.com/photos/2269872/pexels-photo-2269872.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                src={session.user?.image || ""}
                 alt={session.user?.name || ""}
               />
               <AvatarFallback>
@@ -67,7 +67,7 @@ export function UserStatus({data}:any) {
           <div className="flex items-center gap-2 border-b pb-4">
             <Avatar className="h-10 w-10">
               <AvatarImage
-                src="https://images.pexels.com/photos/2269872/pexels-photo-2269872.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+              src={session.user?.image || ""}
                 alt={session.user?.name || ""}
               />
               <AvatarFallback>
