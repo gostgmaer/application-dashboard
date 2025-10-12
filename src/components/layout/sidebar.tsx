@@ -31,6 +31,7 @@ import {
   MailPlus,
   MailOpen,
   ShieldCheck,
+  TicketPercent,
 } from "lucide-react";
 
 interface NavItem {
@@ -64,6 +65,7 @@ const navigationItems: NavItem[] = [
         icon: ShoppingCart,
       },
       { title: "Orders", href: "/dashboard/ecommerce/orders", icon: Calendar },
+       { title: "Discount Rules", href: "/dashboard/ecommerce/discounts", icon: TicketPercent },
     ],
   },
     {
