@@ -13,8 +13,7 @@ export default async function UsersPage(props: any) {
     undefined,
     session?.accessToken
   );
-  console.log(category);
-  
+
   category = category?.data?.map((r: any) => ({
     label: r.title
       .split("_")
