@@ -33,6 +33,7 @@ reactStrictMode: true,
       static: 60 * 60 * 24, // 24 hours
       dynamic: 60, // 1 minute
     },
+       authInterrupts: true,
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
   // compiler: {

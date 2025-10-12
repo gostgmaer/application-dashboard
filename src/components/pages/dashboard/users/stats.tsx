@@ -48,9 +48,7 @@ const usersByDevice = [
   { device: "Tablet", users: 42 },
 ];
 
-
-
-export default function UserDashboard(token: any) {
+export default function UserDashboard({ token, props }: any) {
   const { hasPermission } = usePermissions();
   const { data, error, isLoading, mutate } = useApiSWR(
     "/users/stats-data",
@@ -132,7 +130,7 @@ export default function UserDashboard(token: any) {
               icon={UserPlus}
               description="Registered today"
             />
-             <StatCard
+            <StatCard
               title="Total Active Roles"
               value={data?.totalActiveRole || 0}
               icon={LockKeyholeIcon}
@@ -224,7 +222,7 @@ export default function UserDashboard(token: any) {
                 A comprehensive list of all users in the system
               </p>
             </div>
-            <DataTableExample />
+            <DataTableExample props={props} />
           </div>
         </div>
       </div>

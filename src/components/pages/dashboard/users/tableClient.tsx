@@ -41,43 +41,40 @@ export type User = {
   createdAt: string;
 };
 
-const filters: DataTableFilter[] = [
-  {
-    id: "status",
-    label: "Status",
-    type: "select",
-    options: [
-      { label: "Active", value: "active" },
-      { label: "Inactive", value: "inactive" },
-      { label: "Pending", value: "pending" },
-      { label: "Banned", value: "banned" },
-      { label: "Deleted", value: "deleted" },
-      { label: "Archived", value: "archived" },
-      { label: "Draft", value: "draft" },
-    ],
-  },
-  {
-    id: "role",
-    label: "Role",
-    type: "select",
-    options: [
-      { label: "Admin", value: "68cad41d910cd01177761561" },
-      { label: "Customer", value: "68c6d03c29eec30453bd0f54" },
-      { label: "Super Admin", value: "68c6af5c9258bead9173e84b" },
-    ],
-  },
-  {
-    id: "email",
-    label: "Email",
-    type: "input",
-    placeholder: "Filter by email...",
-  },
-];
-
-export function DataTableExample() {
+export function DataTableExample(props: any) {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
+
+  const filters: DataTableFilter[] = [
+    {
+      id: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+        { label: "Pending", value: "pending" },
+        { label: "Banned", value: "banned" },
+        { label: "Deleted", value: "deleted" },
+        { label: "Archived", value: "archived" },
+        { label: "Draft", value: "draft" },
+      ],
+    },
+    {
+      id: "role",
+      label: "Role",
+      type: "select",
+      options: props?.props,
+    },
+    {
+      id: "email",
+      label: "Email",
+      type: "input",
+      placeholder: "Filter by email...",
+    },
+  ];
+
   const deleteRequest = async (id: any) => {
     return await userServices.remove(id, session?.accessToken);
   };
@@ -177,7 +174,10 @@ export function DataTableExample() {
       header: "Email",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Link href={`mailto:${row.getValue("email")}`} className="flex items-center gap-2">
+          <Link
+            href={`mailto:${row.getValue("email")}`}
+            className="flex items-center gap-2"
+          >
             <Mail className="h-4 w-4 text-muted-foreground" />
             <span>{row.getValue("email")}</span>
           </Link>
@@ -263,7 +263,7 @@ export function DataTableExample() {
                   </Link>
                 </DropdownMenuItem>
               )}
-              {hasPermission("user:update") && (
+              {/* {hasPermission("user:update") && (
                 <DropdownMenuItem
                   className=""
                   onClick={() => handleAssignRole(user)}
@@ -271,7 +271,7 @@ export function DataTableExample() {
                   <Lock className="mr-2 h-4 w-4" />
                   Assign Role
                 </DropdownMenuItem>
-              )}
+              )} */}
 
               {hasPermission("user:delete") && (
                 <DropdownMenuItem

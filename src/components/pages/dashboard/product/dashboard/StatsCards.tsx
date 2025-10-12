@@ -132,11 +132,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
                     <span className="text-xs text-muted-foreground">vs last month</span>
                   </div>
                 
-                {/* {stat.trend === 'up' && (
-                  <Badge variant="secondary" className="text-xs">
-                    {stat.change}
-                  </Badge>
-                )} */}
+              
               </div>
             </CardContent>
           </Card>
