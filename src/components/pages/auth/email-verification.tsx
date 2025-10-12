@@ -13,6 +13,7 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 //   verifyEmailFailure,
 // } from "@/store/slices/authSlice";
 import { useSearchParams } from "next/navigation";
+import authService from "@/lib/http/authService";
 interface EmailVerificationProps {
   token?: string;
 }
@@ -40,7 +41,10 @@ export function EmailVerification() {
 
       try {
         // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        await authService.verifyEmail(token);
+
 
         // For demo purposes, let's say the verification is successful
         // dispatch(verifyEmailSuccess());
