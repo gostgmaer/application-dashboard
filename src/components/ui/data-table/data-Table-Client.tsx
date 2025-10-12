@@ -165,8 +165,6 @@ export function DataTable<TData>({
     { refreshInterval, revalidateOnFocus }
   );
 
-  // console.log("Server Response:", data);
-  // console.log("Query Params:", serverQueryParams);
 
   const tableData = useMemo(() => {
     if (!data?.result) return [];

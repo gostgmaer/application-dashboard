@@ -1,10 +1,11 @@
 export interface Discount {
-  id: string;
+  _id: string;
   name: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   status: 'active' | 'inactive';
   isActive?: boolean;
+  in_use?:boolean;
   startDate?: string;
   endDate?: string;
   createdAt: string;

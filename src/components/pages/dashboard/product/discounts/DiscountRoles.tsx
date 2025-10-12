@@ -2,7 +2,12 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoveHorizontal as MoreHorizontal, Mail, Play } from "lucide-react";
+import {
+  MoveHorizontal as MoreHorizontal,
+  Mail,
+  Play,
+  Loader2,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +27,7 @@ import discountServices from "@/lib/http/discountServices";
 import { toast } from "@/hooks/useToast";
 import { Discount } from "@/types/discount";
 import { DiscountForm } from "./DiscountForm";
+import { useState } from "react";
 
 const filters: DataTableFilter[] = [
   {
@@ -39,11 +45,26 @@ export function DiscountRulesTable() {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
+  const [loading, setLoading] = useState(false);
 
   const deleteRequest = async (id: any) => {
-    const res = await discountServices.removeDiscountRule(id, session?.accessToken);
-    toast({ title: "Success", description: "Deleted SuccessFul!" });
-    return res;
+    setLoading(true);
+    try {
+      const res = await discountServices.removeDiscountRule(
+        id,
+        session?.accessToken
+      );
+      toast({ title: "Success", description: "Deleted SuccessFul!" });
+      return res;
+    } catch (error) {
+      toast({
+        title: "Failed",
+        description: "Deleted Failed!",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   const handleDelete = async (data: any) => {
     await showConfirm({
@@ -59,33 +80,33 @@ export function DiscountRulesTable() {
     });
   };
 
-
-    const handleUpdate: any = async (discount: any) => {
-      hasPermission("discount:update") &&
-        showCustom({
-          title: `Update Discount Rule: ${discount.name}`,
-          content: <DiscountForm discount={discount} />,
-        });
-    };
-
-
+  const handleUpdate: any = async (discount: any) => {
+    hasPermission("discount:update") &&
+      showCustom({
+        title: `Update Discount Rule: ${discount.name}`,
+        content: <DiscountForm discount={discount} />,
+      });
+  };
 
   const handleExport = (rows: Discount[]) => {
     console.log("Exporting users:", rows);
   };
 
-  const handleApplyRule = async (discount: Discount) => {
+  const handleApplyRule:any = async (discount: Discount) => {
+    setLoading(true);
     try {
       const response = await discountServices.applyDiscountRule(
-        discount.id,
+        discount._id,
         session?.accessToken
       );
+        toast({ title: "Success", description: response.message });
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
           : "Failed to apply discount rule";
     } finally {
+      setLoading(false);
     }
   };
 
@@ -109,7 +130,9 @@ export function DiscountRulesTable() {
       accessorKey: "discountType",
       header: "Type",
       cell: ({ row }) => (
-        <div className="flex items-center gap-2">{row.getValue("discountType")}</div>
+        <div className="flex items-center gap-2">
+          {row.getValue("discountType")}
+        </div>
       ),
     },
     {
@@ -170,16 +193,19 @@ export function DiscountRulesTable() {
 
         return (
           <div>
-            {" "}
             <Button
               size="sm"
               variant="outline"
               onClick={() => handleApplyRule(d)}
-              disabled={d.isActive}
+              disabled={d.in_use || loading}
               className="text-blue-600 border-blue-200 hover:bg-blue-50"
             >
-              <Play className="h-3 w-3 mr-1" />
-              Apply Rule
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Play className="h-3 w-3 mr-1" />
+              )}
+              {loading ? "Applying..." : "Apply Rule"}
             </Button>
           </div>
         );
@@ -202,14 +228,14 @@ export function DiscountRulesTable() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(p.id)}
+                onClick={() => navigator.clipboard.writeText(p._id)}
               >
                 Copy Discount ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
 
               {hasPermission("discount:update") && (
-                <DropdownMenuItem onClick={()=>handleUpdate(p)}>
+                <DropdownMenuItem onClick={() => handleUpdate(p)}>
                   Edit
                 </DropdownMenuItem>
               )}

@@ -37,7 +37,7 @@ type LoginForm = z.infer<typeof loginSchema>;
 interface OTPVerificationResponse {
   success: boolean;
   message?: string;
-  error_code?: 
+  error_code?:
     | "INVALID_OTP"
     | "EXPIRED_OTP"
     | "MAX_ATTEMPTS_EXCEEDED"
@@ -64,7 +64,7 @@ interface OTPVerificationResponse {
 interface ResendOTPResponse {
   success: boolean;
   message?: string;
-  error_code?: 
+  error_code?:
     | "RATE_LIMITED"
     | "MAX_DAILY_LIMIT"
     | "SESSION_EXPIRED"
@@ -77,12 +77,12 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const router = useRouter();
-  
+
   // Component state
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  
+
   // OTP Modal state
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otpMethod, setOtpMethod] = useState<"totp" | "sms" | "email">("totp");
@@ -140,21 +140,19 @@ export default function LoginPage() {
   }, []);
 
   const onSubmit = async (data: LoginForm) => {
-
     if (!mounted.current) return;
-  
+
     setIsLoading(true);
     setError("");
 
     try {
       console.log("🔐 Attempting login...");
-      
+
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
       });
-
 
       if (result?.error) {
         console.error("❌ Login failed:", result.error);
@@ -164,21 +162,22 @@ export default function LoginPage() {
 
       if (result?.ok) {
         console.log("✅ Login successful, checking session...");
-        
+
         // Get the updated session to check 2FA requirement
         const session = await getSession();
         console.log("📋 Session data:", {
           "2fa_required": session?.["2fa_required"],
-          "otp_method": session?.otp_method,
+          otp_method: session?.otp_method,
         });
 
         if (!mounted.current) return;
 
         if (session?.["2fa_required"]) {
           console.log("🔐 2FA required, showing OTP modal");
-          
+
           // Show OTP modal
-          safeSetState(setOtpMethod, 
+          safeSetState(
+            setOtpMethod,
             (session.otp_method as "totp" | "sms" | "email") || "totp"
           );
 
@@ -208,13 +207,13 @@ export default function LoginPage() {
 
   const handleOTPVerify = async (otp: string): Promise<void> => {
     if (!mounted.current) return;
-    
+
     setIsOTPLoading(true);
     setOtpError("");
     setIsUpdatingSession(false);
 
     const controller = new AbortController();
-    
+
     // Set timeout for the request
     timeoutRef.current = setTimeout(() => {
       controller.abort();
@@ -222,7 +221,7 @@ export default function LoginPage() {
 
     try {
       console.log("🔐 Verifying OTP...");
-      
+
       const response = await fetch("/api/verify-otp", {
         method: "POST",
         headers: {
@@ -246,19 +245,24 @@ export default function LoginPage() {
 
       if (!apiResponse.success) {
         console.error("❌ OTP verification failed:", apiResponse.error_code);
-        
+
         // Handle specific error cases with user-friendly messages
         const errorMessages = {
           INVALID_OTP: "Invalid verification code. Please check and try again.",
-          EXPIRED_OTP: "Verification code has expired. Please request a new one.",
-          MAX_ATTEMPTS_EXCEEDED: "Too many failed attempts. Account temporarily locked.",
-          RATE_LIMITED: "Too many verification attempts. Please wait before trying again.",
-          SESSION_EXPIRED: "Your session has expired. Please close this dialog and log in again.",
-          NETWORK_ERROR: "Network error. Please check your connection and try again.",
+          EXPIRED_OTP:
+            "Verification code has expired. Please request a new one.",
+          MAX_ATTEMPTS_EXCEEDED:
+            "Too many failed attempts. Account temporarily locked.",
+          RATE_LIMITED:
+            "Too many verification attempts. Please wait before trying again.",
+          SESSION_EXPIRED:
+            "Your session has expired. Please close this dialog and log in again.",
+          NETWORK_ERROR:
+            "Network error. Please check your connection and try again.",
         };
 
-        const errorMessage = apiResponse.error_code 
-          ? errorMessages[apiResponse.error_code] 
+        const errorMessage = apiResponse.error_code
+          ? errorMessages[apiResponse.error_code]
           : apiResponse.message || "Verification failed. Please try again.";
 
         safeSetState(setOtpError, errorMessage);
@@ -278,13 +282,13 @@ export default function LoginPage() {
 
       // ✅ SUCCESS - Handle successful OTP verification
       console.log("✅ OTP verified successfully");
-      
+
       if (!apiResponse.data) {
         throw new Error("Invalid response format: missing data");
       }
 
       const { data } = apiResponse;
-      
+
       console.log("🔄 Updating session with new tokens...");
       setIsUpdatingSession(true);
 
@@ -313,7 +317,7 @@ export default function LoginPage() {
 
         // Close modal and redirect
         safeSetState(setShowOTPModal, false);
-        
+
         // Small delay to ensure session is fully updated
         setTimeout(() => {
           if (mounted.current) {
@@ -321,14 +325,15 @@ export default function LoginPage() {
             router.push(callbackUrl);
           }
         }, 100);
-
       } catch (sessionError) {
         console.error("❌ Session update failed:", sessionError);
-        safeSetState(setOtpError, "Failed to update session. Please try again.");
+        safeSetState(
+          setOtpError,
+          "Failed to update session. Please try again."
+        );
         return;
       }
-
-    } catch (error:any) {
+    } catch (error: any) {
       console.error("❌ OTP verification error:", error);
       if (mounted.current) {
         if (error.name === "AbortError") {
@@ -350,10 +355,10 @@ export default function LoginPage() {
 
   const handleOTPResend = async (): Promise<void> => {
     if (!mounted.current) return;
-    
+
     try {
       console.log("📤 Resending OTP...");
-      
+
       const response = await fetch("/api/resend-otp", {
         method: "POST",
         headers: {
@@ -369,12 +374,15 @@ export default function LoginPage() {
       if (!apiResponse.success) {
         // Handle specific resend error cases
         const errorMessages = {
-          RATE_LIMITED: apiResponse.wait_seconds 
+          RATE_LIMITED: apiResponse.wait_seconds
             ? `Please wait ${apiResponse.wait_seconds} seconds before requesting another code.`
             : "Please wait before requesting another code.",
-          MAX_DAILY_LIMIT: "Daily resend limit reached. Please try again tomorrow.",
-          SESSION_EXPIRED: "Your session has expired. Please close this dialog and log in again.",
-          NETWORK_ERROR: "Network error. Please check your connection and try again.",
+          MAX_DAILY_LIMIT:
+            "Daily resend limit reached. Please try again tomorrow.",
+          SESSION_EXPIRED:
+            "Your session has expired. Please close this dialog and log in again.",
+          NETWORK_ERROR:
+            "Network error. Please check your connection and try again.",
         };
 
         const errorMessage = apiResponse.error_code
@@ -438,10 +446,17 @@ export default function LoginPage() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6"
+            noValidate
+          >
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Email address
               </label>
               <div className="relative">
@@ -472,7 +487,10 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
@@ -506,14 +524,14 @@ export default function LoginPage() {
                 </button>
               </div>
               {/* Forgot Password Link */}
-  <div className="mt-2 text-right">
-    <Link
-      href="/auth/forgot-password"
-      className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-    >
-      Forgot password?
-    </Link>
-  </div>
+              <div className="mt-2 text-right">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
                   <AlertCircle className="h-4 w-4" />
@@ -535,9 +553,7 @@ export default function LoginPage() {
                 "disabled:cursor-not-allowed disabled:transform-none"
               )}
             >
-              {isLoading && (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              )}
+              {isLoading && <Loader2 className="h-5 w-5 animate-spin" />}
               {isLoading ? "Signing in..." : "Sign in"}
             </button>
           </form>

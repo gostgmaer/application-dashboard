@@ -77,7 +77,7 @@ const {data:session}=useSession()
       setLoading(true);
       
       if (isEditMode && discount) {
-        const response = await discountServices.updateRule(discount.id, data,session?.accessToken);
+        const response = await discountServices.updateRule(discount._id, data,session?.accessToken);
         toast.success(response.message || 'Discount updated successfully');
       } else {
         const response = await discountServices.createOrUpdateRule(data,session?.accessToken);
