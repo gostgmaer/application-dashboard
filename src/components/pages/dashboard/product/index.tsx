@@ -19,7 +19,7 @@ import { TopLists } from "./dashboard/TopLists";
 import { ProductsTable } from "./dashboard/ProductsTable";
 import { useApiSWR } from "@/hooks/useApiSWR";
 
-export default function DashboardPage(token: any, props: any) {
+export default function DashboardPage({token, category}: any) {
   const [filters, setFilters] = useState<DashboardFilters>({
     dateRange: "month",
     category: "all",
@@ -115,7 +115,7 @@ export default function DashboardPage(token: any, props: any) {
         <TopLists topLists={topLists} />
 
         {/* Products Table */}
-        <ProductsTable />
+        <ProductsTable category={category} />
       </div>
     </div>
   );

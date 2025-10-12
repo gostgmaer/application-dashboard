@@ -141,6 +141,7 @@ export function DataTable<TData>({
       if (value && value.trim()) {
         params[key] = value.trim();
       }
+      
     });
 
     return params;

@@ -34,7 +34,15 @@ export type User = {
   createdAt: string;
 };
 
-const filters: DataTableFilter[] = [
+
+
+export function ProductsTable({ category }: any) {
+  const { data: session } = useSession();
+  const { showConfirm, showAlert, showCustom } = useModal();
+  const { hasPermission } = usePermissions();
+
+
+  const filters: DataTableFilter[] = [
   {
     id: "status",
     label: "Status",
@@ -44,33 +52,25 @@ const filters: DataTableFilter[] = [
       { label: "Inactive", value: "inactive" },
       { label: "Pending", value: "pending" },
       { label: "Banned", value: "banned" },
-      { label: "Deleted", value: "deleted" },
+      { label: "Published", value: "published" },
       { label: "Archived", value: "archived" },
       { label: "Draft", value: "draft" },
     ],
   },
   {
-    id: "role",
-    label: "Role",
+    id: "category",
+    label: "Category",
     type: "select",
-    options: [
-      { label: "Admin", value: "68cad41d910cd01177761561" },
-      { label: "Customer", value: "68c6d03c29eec30453bd0f54" },
-      { label: "Super Admin", value: "68c6af5c9258bead9173e84b" },
-    ],
+    options: category
   },
   {
-    id: "email",
-    label: "Email",
+    id: "title",
+    label: "Title",
     type: "input",
-    placeholder: "Filter by email...",
+    placeholder: "Filter by title...",
   },
 ];
 
-export function ProductsTable() {
-  const { data: session } = useSession();
-  const { showConfirm, showAlert, showCustom } = useModal();
-  const { hasPermission } = usePermissions();
   const handleDeleteRow = (rows: Product[]) => {
     // console.log("Deleting users:", rows);
     alert(`Deleting ${rows.length} user(s)`);
@@ -127,7 +127,6 @@ export function ProductsTable() {
       header: "SKU",
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-muted-foreground" />
           <span>{row.getValue("sku")}</span>
         </div>
       ),
@@ -149,7 +148,7 @@ export function ProductsTable() {
         return <div>${finalPrice.toFixed(2)} </div>;
       },
     },
-      {
+    {
       accessorKey: "basePrice",
       header: "Listing",
       cell: ({ row }) => {
@@ -249,8 +248,8 @@ export function ProductsTable() {
           enableMultiRowSelection={true}
           onDelete={handleDelete}
           onExport={handleExport}
-          searchPlaceholder="Search users by name, email..."
-          emptyMessage="No users found."
+          searchPlaceholder="Search title, sku, category..."
+          emptyMessage="No products found."
         />
       </div>
     </div>
