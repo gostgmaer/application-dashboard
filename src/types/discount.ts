@@ -5,8 +5,12 @@ export interface Discount {
   discountValue: number;
   status: 'active' | 'inactive';
   isActive?: boolean;
-  in_use?:boolean;
+  in_use?: boolean;
   startDate?: string;
+  categoryIds?: string[];
+  brandIds?: string[];
+  productIds?: string[];
+  tags?: string[];
   endDate?: string;
   createdAt: string;
   updatedAt: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Discount, CreateDiscountInput } from "@/types/discount";
-
+import { Discount } from "@/types/discount";
 import { toast } from "sonner";
 import discountServices from "@/lib/http/discountServices";
 import { useSession } from "next-auth/react";
@@ -38,40 +37,37 @@ const discountSchema = z.object({
     .min(0, "Value must be positive")
     .max(100000, "Value is too large"),
   isActive: z.boolean(),
+  categoryIds: z.array(z.string()).optional(),
+  brandIds: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 type DiscountFormData = z.infer<typeof discountSchema>;
 
 interface DiscountFormProps {
+  statics: {
+    categories: SearchResult[];
+    brands: SearchResult[];
+    tags: SearchResult[];
+  };
   discount?: Discount | null;
 }
 
-export function DiscountForm({ statics, discount }: any) {
+export function DiscountForm({ statics, discount }: DiscountFormProps) {
   const [loading, setLoading] = useState(false);
   const [tags, setTags] = useState<SearchResult[]>([]);
-  const [brand, setBrand] = useState<SearchResult[]>([]);
-  const [category, setCategory] = useState<SearchResult[]>([]);
+  const [brands, setBrands] = useState<SearchResult[]>([]);
+  const [categories, setCategories] = useState<SearchResult[]>([]);
+
   const isEditMode = !!discount;
   const { data: session } = useSession();
-  console.log(statics);
-
-  const handleTags = (results: SearchResult | SearchResult[]) => {
-    setTags(Array.isArray(results) ? results : [results]);
-  };
-
-  const handleCategory = (results: SearchResult | SearchResult[]) => {
-    setCategory(Array.isArray(results) ? results : [results]);
-  };
-
-  const handlebrands = (results: SearchResult | SearchResult[]) => {
-    setBrand(Array.isArray(results) ? results : [results]);
-  };
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     setValue,
+    control,
     watch,
     reset,
   } = useForm<DiscountFormData>({
@@ -80,14 +76,16 @@ export function DiscountForm({ statics, discount }: any) {
       name: "",
       discountType: "percentage",
       discountValue: 0,
-      isActive:false,
+      isActive: false,
+      categoryIds: [],
+      brandIds: [],
+      tags: [],
     },
   });
 
   const selectedType = watch("discountType");
   const selectedStatus = watch("isActive");
 
-  // Reset form when modal opens/closes or discount changes
   useEffect(() => {
     if (discount) {
       reset({
@@ -96,214 +94,253 @@ export function DiscountForm({ statics, discount }: any) {
         discountValue: discount.discountValue,
         isActive: discount.isActive,
         startDate: discount.startDate,
-        endDate: discount.endDate
+        endDate: discount.endDate,
+        categoryIds: discount.categoryIds || [],
+        brandIds: discount.brandIds || [],
+        tags: discount.tags || [],
       });
+      // Pre-select Autocomplete values
+      setCategories(
+        statics.categories.filter((c) => discount.categoryIds?.includes(c.id))
+      );
+      setBrands(
+        statics.brands.filter((b) => discount.brandIds?.includes(b.id))
+      );
+      setTags(statics.tags.filter((t) => discount.tags?.includes(t.id)));
     } else {
       reset({
         name: "",
         discountType: "percentage",
         discountValue: 0,
         isActive: false,
+        categoryIds: [],
+        brandIds: [],
+        tags: [],
       });
+      setCategories([]);
+      setBrands([]);
+      setTags([]);
     }
-  }, [discount, reset]);
+  }, [discount, reset, statics]);
 
   const onSubmit = async (data: DiscountFormData) => {
     try {
       setLoading(true);
+      const payload = {
+        ...data,
+        categoryIds: categories.map((c) => c.id),
+        brandIds: brands.map((b) => b.id),
+        tags: tags.map((t) => t.id),
+      };
 
       if (isEditMode && discount) {
         const response = await discountServices.updateRule(
           discount._id,
-          {...data,categoryIds:category.map((item:any) => item.id),brandIds:brand.map((item:any) => item.id),tags:tags.map((item:any) => item.id)},
+          payload,
           session?.accessToken
         );
         toast.success(response.message || "Discount updated successfully");
       } else {
         const response = await discountServices.createOrUpdateRule(
-              {...data,categoryIds:category.map((item:any) => item.id),brandIds:brand.map((item:any) => item.id),tags:tags.map((item:any) => item.id)},
+          payload,
           session?.accessToken
         );
         toast.success(response.message || "Discount created successfully");
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An error occurred";
-      toast.error(errorMessage);
+      toast.error(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Name Field */}
-        <div>
-          <Label htmlFor="name">Discount Name *</Label>
-          <Input
-            id="name"
-            {...register("name")}
-            placeholder="Enter discount name"
-            className="mt-1"
-            disabled={loading}
-          />
-          {errors.name && (
-            <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
-          )}
-        </div>
-        <div className=" grid grid-cols-2 gap-4">
-          {/* Type Field */}
-          <div className=" flex-1">
-            <Label htmlFor="discountType">Discount Type *</Label>
-            <Select
-              value={selectedType}
-              onValueChange={(value) =>
-                setValue("discountType", value as "percentage" | "fixed")
-              }
-              disabled={loading}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select discount type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="percentage">Percentage (%)</SelectItem>
-                <SelectItem value="fixed">Fixed Amount ($)</SelectItem>
-              </SelectContent>
-            </Select>
-            {errors.discountType && (
-              <p className="text-sm text-red-600 mt-1">
-                {errors.discountType.message}
-              </p>
-            )}
-          </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Name */}
+      <div>
+        <Label htmlFor="name">Discount Name *</Label>
+        <Input
+          {...register("name")}
+          id="name"
+          placeholder="Enter discount name"
+          disabled={loading}
+        />
+        {errors.name && (
+          <p className="text-red-600 text-sm mt-1">{errors.name.message}</p>
+        )}
+      </div>
 
-          {/* Value Field */}
-          <div>
-            <Label htmlFor="discountValue">
-              {selectedType === "percentage" ? "Percentage (%)" : "Amount ($)"}{" "}
-              *
-            </Label>
-            <Input
-              id="discountValue"
-              type="number"
-              step={selectedType === "percentage" ? "0.1" : "0.01"}
-              min="0"
-              max={selectedType === "percentage" ? "100" : "100000"}
-              {...register("discountValue", { valueAsNumber: true })}
-              placeholder={
-                selectedType === "percentage" ? "e.g., 25" : "e.g., 50.00"
-              }
-              className="mt-1"
-              disabled={loading}
-            />
-            {errors.discountValue && (
-              <p className="text-sm text-red-600 mt-1">
-                {errors.discountValue.message}
-              </p>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label
-              htmlFor="startDate"
-              className="text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              Start Date
-            </Label>
-            <Input
-              id="startDate"
-              type="date"
-              {...register("startDate")}
-              className={`mt-1  ${errors.startDate ? "border-red-500" : ""}`}
-            />
-            {errors.startDate && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.startDate.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <Label
-              htmlFor="endDate"
-              className="text-sm font-medium text-gray-700 dark:text-gray-400"
-            >
-              End Date
-            </Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              {...register("endDate")}
-              className={`mt-1  ${errors.endDate ? "border-red-500" : ""}`}
-            />
-            {errors.endDate && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.endDate.message}
-              </p>
-            )}
-          </div>
-        </div>
-
+      {/* Discount Type & Value */}
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <AutocompleteSearch
-            data={statics?.tags || []}
-            multiple={true}
-            placeholder="Search and select Tags..."
-            minChars={1}
-            onSelect={handleTags}
-            value={tags}
-            className="w-full"
-          />
-        </div>
-        <div>
-          <AutocompleteSearch
-            data={statics?.categories || []}
-            multiple={true}
-            placeholder="Search and select Ctagory..."
-            minChars={1}
-            onSelect={handleCategory}
-            value={tags}
-            className="w-full"
-          />
-        </div>
-        <div>
-          <AutocompleteSearch
-            data={statics?.brands || []}
-            multiple={true}
-            placeholder="Search and select Brands..."
-            minChars={1}
-            onSelect={handlebrands}
-            value={tags}
-            className="w-full"
-          />
-        </div>
-        {/* Status Field */}
-        <div className="flex items-center justify-between">
-          <Label htmlFor="status">Active Status</Label>
-          <Switch
-            id="status"
-            checked={selectedStatus}
-            onCheckedChange={(checked) =>
-              setValue("isActive", checked ? true : false)
+          <Label htmlFor="discountType">Discount Type *</Label>
+          <Select
+            value={selectedType}
+            onValueChange={(v) =>
+              setValue("discountType", v as "percentage" | "fixed")
             }
             disabled={loading}
-          />
+          >
+            <SelectTrigger className="mt-1">
+              <SelectValue placeholder="Select discount type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="percentage">Percentage (%)</SelectItem>
+              <SelectItem value="fixed">Fixed Amount ($)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-3 pt-6 border-t">
-          <Button type="submit" disabled={loading}>
-            {loading
-              ? "Saving..."
-              : isEditMode
-              ? "Update Discount"
-              : "Create Discount"}
-          </Button>
+        <div>
+          <Label htmlFor="discountValue">
+            {selectedType === "percentage" ? "Percentage (%)" : "Amount ($)"} *
+          </Label>
+          <Input
+            {...register("discountValue", { valueAsNumber: true })}
+            id="discountValue"
+            type="number"
+            step={selectedType === "percentage" ? 0.1 : 0.01}
+            min={0}
+            max={selectedType === "percentage" ? 100 : 100000}
+            disabled={loading}
+          />
         </div>
-      </form>
-    </div>
+      </div>
+
+      {/* Dates */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="startDate">Start Date</Label>
+          <Input {...register("startDate")} id="startDate" type="date" />
+        </div>
+        <div>
+          <Label htmlFor="endDate">End Date</Label>
+          <Input {...register("endDate")} id="endDate" type="date" />
+        </div>
+      </div>
+
+      {/* Autocomplete Multi-Selects */}
+      <div>
+        <Label>Tags</Label>
+        <Controller
+          name="tags"
+          control={control}
+          defaultValue={discount?.tags || []} // array of string IDs
+          render={({ field }) => {
+            // Ensure field.value is always an array
+            const currentValue = field.value ?? [];
+
+            // Convert IDs to SearchResult objects for AutocompleteSearch
+            const selectedObjects =
+              statics.tags?.filter((tag) => currentValue.includes(tag.id)) ||
+              [];
+
+            return (
+              <AutocompleteSearch
+                data={statics.tags || []}
+                multiple
+                placeholder="Search and select Tags..."
+                value={selectedObjects}
+                onSelect={(selected: SearchResult | SearchResult[]) => {
+                  const ids = Array.isArray(selected)
+                    ? selected.map((s) => s.id)
+                    : [selected.id];
+                  field.onChange(ids);
+                }}
+              />
+            );
+          }}
+        />
+      </div>
+
+      <div>
+        <Label>Categories</Label>
+        <Controller
+          name="categoryIds"
+          control={control}
+          defaultValue={discount?.categoryIds || []} // array of string IDs
+          render={({ field }) => {
+            // Ensure field.value is always an array
+            const currentValue = field.value ?? [];
+
+            // Convert IDs to SearchResult objects for AutocompleteSearch
+            const selectedObjects =
+              statics.categories?.filter((category) =>
+                currentValue.includes(category.id)
+              ) || [];
+
+            return (
+              <AutocompleteSearch
+                data={statics.categories || []}
+                multiple
+                placeholder="Search and select Categories..."
+                value={selectedObjects}
+                onSelect={(selected: SearchResult | SearchResult[]) => {
+                  const ids = Array.isArray(selected)
+                    ? selected.map((s) => s.id)
+                    : [selected.id];
+                  field.onChange(ids);
+                }}
+              />
+            );
+          }}
+        />
+      </div>
+
+      <div>
+        <Label>Brands</Label>
+        <Controller
+          name="brandIds"
+          control={control}
+          defaultValue={discount?.brandIds || []} // array of string IDs
+          render={({ field }) => {
+            // Ensure field.value is always an array
+            const currentValue = field.value ?? [];
+
+            // Convert IDs to SearchResult objects for AutocompleteSearch
+            const selectedObjects =
+              statics.brands?.filter((brand) =>
+                currentValue.includes(brand.id)
+              ) || [];
+
+            return (
+              <AutocompleteSearch
+                data={statics.brands || []}
+                multiple
+                placeholder="Search and select Brands..."
+                value={selectedObjects}
+                onSelect={(selected: SearchResult | SearchResult[]) => {
+                  const ids = Array.isArray(selected)
+                    ? selected.map((s) => s.id)
+                    : [selected.id];
+                  field.onChange(ids);
+                }}
+              />
+            );
+          }}
+        />
+      </div>
+
+      {/* Active Status */}
+      <div className="flex items-center gap-2">
+        <Label>Active Status</Label>
+        <Switch
+          checked={selectedStatus}
+          onCheckedChange={(checked) => setValue("isActive", checked)}
+          disabled={loading}
+        />
+      </div>
+
+      {/* Submit */}
+      <div className="flex justify-end pt-6 border-t">
+        <Button type="submit" disabled={loading}>
+          {loading
+            ? "Saving..."
+            : isEditMode
+            ? "Update Discount"
+            : "Create Discount"}
+        </Button>
+      </div>
+    </form>
   );
 }

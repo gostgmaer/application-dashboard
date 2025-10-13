@@ -85,7 +85,7 @@ export function DiscountRulesTable({statics}:any) {
     hasPermission("discount:update") &&
       showCustom({
         title: `Update Discount Rule: ${discount.name}`,
-        content: <DiscountForm discount={discount} />,
+        content: <DiscountForm discount={discount} statics={statics} />,
       });
   };
 
