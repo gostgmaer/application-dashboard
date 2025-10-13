@@ -10,6 +10,8 @@ import { WebSocketProvider } from "@/contexts/websocket-context";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ModalProvider } from "@/contexts/modal-context";
 import ModalManager from "./ui/modals/modal-manager";
+import { NotificationProviderCommunication } from "@/contexts/notification-context";
+import { MessagingProvider } from "@/contexts/messaging-context";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -18,22 +20,25 @@ interface ProvidersProps {
 export function Providers({ children }: ProvidersProps) {
   return (
     <SettingProvider>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <UserProvider>
-          <WebSocketProvider>
+      <WebSocketProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <UserProvider>
             <NotificationProvider>
-              <ReduxProvider store={store}>
-                <ModalProvider>
-                  {children}
-
-                  <Toaster />
-                  <ModalManager />
-                </ModalProvider>
-              </ReduxProvider>
+              <NotificationProviderCommunication>
+                <MessagingProvider>
+                  <ReduxProvider store={store}>
+                    <ModalProvider>
+                      {children}
+                      <Toaster />
+                      <ModalManager />
+                    </ModalProvider>
+                  </ReduxProvider>
+                </MessagingProvider>
+              </NotificationProviderCommunication>
             </NotificationProvider>
-          </WebSocketProvider>
-        </UserProvider>
-      </ThemeProvider>
+          </UserProvider>
+        </ThemeProvider>
+      </WebSocketProvider>
     </SettingProvider>
   );
 }

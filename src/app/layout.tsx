@@ -71,9 +71,7 @@ export default async function RootLayout({
       <body className={`${roboto.className} overflow-hidden`}>
         <SessionProviderWrapper>
           <Providers>
-            <NotificationProviderCommunication>
-              <MessagingProvider>{children}</MessagingProvider>
-            </NotificationProviderCommunication>
+           {children}
           </Providers>
         </SessionProviderWrapper>
       </body>
