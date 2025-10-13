@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { ServerResponse, TableState } from "@/types/table";
-import { useDialog } from "@/hooks/use-dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -37,7 +36,6 @@ interface order {
 }
 
 export default function Table({ props }: any) {
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
 const {data:session} = useSession()
   
 

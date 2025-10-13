@@ -15,8 +15,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
-import { useDialog } from "@/hooks/use-dialog";
-import { CustomDialog } from "@/components/layout/dialog";
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { CategoryCreate } from "./form";
@@ -33,7 +31,6 @@ interface categorys {
 }
 
 export default function Table({ props }: any) {
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
       data: props.data || [],
@@ -43,35 +40,11 @@ export default function Table({ props }: any) {
   };
 
   const handleUpdate = (category: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Update Category">
-          <CategoryCreate data={category} id={category._id} />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+      // <CategoryCreate data={category} id={category._id} />
   };
 
   const handleCreate = (category: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Create Category">
-          <CategoryCreate data={category} id={undefined} />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+      //  <CategoryCreate data={category} id={undefined} />
   };
   const columns: ColumnDef<categorys>[] = [
     {

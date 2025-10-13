@@ -20,7 +20,6 @@ import { Plus, X, Save, Eye, Trash2 } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { useToast } from "@/hooks/useToast";
-import { useDialog } from "@/hooks/use-dialog";
 import permissionServices from "@/lib/http/permissionServices";
 import { useSession } from "next-auth/react";
 import { permissionCategory } from "./mock";
@@ -65,11 +64,7 @@ interface permissionData {
 
 export default function PermissionForm({ p, id }: any) {
   const { data: session, status, update } = useSession();
-
-  console.log(p, id);
-
   const { toast } = useToast();
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const {
     register,
     control,
@@ -125,7 +120,6 @@ export default function PermissionForm({ p, id }: any) {
         variant: "destructive",
       });
     } else {
-      closeDialog();
       toast({
         title: res.status,
         description: res.message,

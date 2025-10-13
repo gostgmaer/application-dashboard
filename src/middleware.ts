@@ -6,34 +6,20 @@ import { secret } from "./config/setting";
 // Centralized route–permission map
 // Use :id or * for dynamic segments
 const routePermissions: Record<string, string[]> = {
-  "/dashboard/products": ["view:product"],
-  "/dashboard/products/create": ["create:product"],
-  "/dashboard/products/:id": ["view:product"],
-  "/dashboard/products/:id/edit": ["update:product"],
-  "/dashboard/products/:id/delete": ["delete:product"],
-
-  "/dashboard/categories": ["view:category"],
-  "/dashboard/categories/create": ["create:category"],
-  "/dashboard/categories/:id": ["view:category"],
-  "/dashboard/categories/:id/edit": ["update:category"],
-  "/dashboard/categories/:id/delete": ["delete:category"],
-
-  "/dashboard/brands": ["view:brand"],
-  "/dashboard/brands/create": ["create:brand"],
-  "/dashboard/brands/:id": ["view:brand"],
-  "/dashboard/brands/:id/edit": ["update:brand"],
-  "/dashboard/brands/:id/delete": ["delete:brand"],
-
-  "/dashboard/orders": ["view:order"],
-  "/dashboard/orders/:id": ["view:order"],
-  "/dashboard/orders/:id/update": ["update:order"],
-
-  "/dashboard/users": ["view:user"],
-  "/dashboard/users/:id": ["view:user"],
-  "/dashboard/users/:id/edit": ["update:user"],
-  "/dashboard/users/:id/delete": ["delete:user"],
-
-  "/dashboard/roles": ["manage:role"],
+  "/dashboard/ecommerce/products": ["read:product"],
+  "/dashboard/ecommerce/products/create": ["write:product"],
+  "/dashboard/ecommerce/products/:id": ["read:product"],
+  "/dashboard/ecommerce/products/:id/update": ["update:product"],
+  "/dashboard/ecommerce/products/categories": ["read:category"],
+  "/dashboard/ecommerce/products/brands": ["read:brand"],
+  "/dashboard/ecommerce/orders": ["read:order"],
+  "/dashboard/ecommerce/orders/:id": ["read:order"],
+  "/dashboard/users/create": ["write:user"],
+  "/dashboard/users": ["read:user"],
+  "/dashboard/users/:id": ["read:user"],
+  "/dashboard/users/:id/update": ["update:user"],
+  "/dashboard/users/roles": ["read:user"],
+  "/dashboard/users/permissions": ["read:user"],
   "/dashboard/settings": ["view:settings"],
 };
 

@@ -4,18 +4,9 @@ import "./globals.css";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { SessionProviderWrapper } from "@/components/Sessionproviders";
-import { DialogProvider } from "@/hooks/use-dialog";
-import { ReusableDialog } from "@/components/layout/dialog";
-import { ModalProvider } from "@/contexts/modal-context";
-import ModalManager from "@/components/ui/modals/modal-manager";
-import { NotificationProvider } from "@/contexts/NotificationContext";
-import { getServerSession } from "next-auth";
-import { authOptions } from "./api/auth/authOptions";
-import { SettingProvider } from "@/contexts/SettingContext";
 import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
 import { NotificationProviderCommunication } from "@/contexts/notification-context";
-import { WebSocketProvider } from "@/contexts/websocket-context";
 import { MessagingProvider } from "@/contexts/messaging-context";
 
 const roboto = Roboto({ subsets: ["latin"] });
@@ -80,23 +71,9 @@ export default async function RootLayout({
       <body className={`${roboto.className} overflow-hidden`}>
         <SessionProviderWrapper>
           <Providers>
-            <SettingProvider>
-              <WebSocketProvider>
-                <NotificationProvider>
-                  <NotificationProviderCommunication>
-                    <MessagingProvider>
-                      <DialogProvider>
-                        <ModalProvider>
-                          {children}
-                          <ReusableDialog />
-                          <ModalManager />
-                        </ModalProvider>
-                      </DialogProvider>
-                    </MessagingProvider>
-                  </NotificationProviderCommunication>
-                </NotificationProvider>
-              </WebSocketProvider>
-            </SettingProvider>
+            <NotificationProviderCommunication>
+              <MessagingProvider>{children}</MessagingProvider>
+            </NotificationProviderCommunication>
           </Providers>
         </SessionProviderWrapper>
       </body>

@@ -217,7 +217,7 @@ export function ProductsTable({ category }: any) {
 
               {hasPermission("product:update") && (
                 <DropdownMenuItem>
-                  <Link href={`/dashboard/products/${p["id"]}/update`}>
+                  <Link href={`/dashboard/ecommerce/products/${p["id"]}/update`}>
                     Edit{" "}
                   </Link>
                 </DropdownMenuItem>

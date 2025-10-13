@@ -19,7 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, X, Upload, Image as ImageIcon, Save, Eye } from "lucide-react";
 // import CategoryServices from "@/lib/http/CategoryServices";
-import { useDialog } from "@/hooks/use-dialog";
+
 import {  useToast } from "@/hooks/useToast";
 import { useSession } from "next-auth/react";
 import categoryServices from "@/lib/http/categoryService";
@@ -85,8 +85,7 @@ export function CategoryCreate({ data, id }: any) {
   // console.log(data);
    const { toast } = useToast()
    const { data: session } = useSession();
-   
-    const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+
 
   const {
     register,
@@ -202,9 +201,6 @@ export function CategoryCreate({ data, id }: any) {
         description: "We'll get back to you within 24 hours.",
         duration: 5000,
       })
-          closeDialog();
-
-
 
     // const jsonString = JSON.stringify(updatedCategory, null, 2);
     // setJsonOutput(jsonString);

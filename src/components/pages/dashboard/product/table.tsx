@@ -15,8 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
-import { useDialog } from "@/hooks/use-dialog";
-import { CustomDialog } from "@/components/layout/dialog";
+
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -42,8 +41,6 @@ interface products {
 }
 
 export default function Table({ props }: any) {
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
-  console.log(props);
 
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {

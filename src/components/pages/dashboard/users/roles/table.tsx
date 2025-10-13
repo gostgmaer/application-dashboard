@@ -15,8 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
-import { useDialog } from "@/hooks/use-dialog";
-import { CustomDialog } from "@/components/layout/dialog";
+
 import Link from "next/link";
 import RoleForm from "./form";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
@@ -39,8 +38,6 @@ export default function Table({ props }: any) {
 
 
   const { data: session } = useSession();
-
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const { showConfirm, showAlert, showCustom } = useModal();
 
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
@@ -52,23 +49,11 @@ export default function Table({ props }: any) {
   };
 
   const handleUpdate = (data: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Update Role">
-          <RoleForm
+   <RoleForm
             initialData={data}
             id={data._id}
             permissionData={props.permissions}
           />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
   };
 
   const deleteRequest = async (id: any) => {
@@ -98,43 +83,19 @@ export default function Table({ props }: any) {
   };
 
   const handlePermissionUI = (data: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Update Permissions">
-          <RolePermissionForm
-            initialData={data}
-            id={data._id}
-            permissionData={props.permissions}
-          />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+  //  <RolePermissionForm
+  //           initialData={data}
+  //           id={data._id}
+  //           permissionData={props.permissions}
+  //         />
   };
 
   const handleCreate = (data: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Create Role">
-          <RoleForm
-            initialData={data}
-            id={undefined}
-            permissionData={props.permissions}
-          />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+    // <RoleForm
+    //         initialData={data}
+    //         id={undefined}
+    //         permissionData={props.permissions}
+    //       />
   };
 
   const columns: ColumnDef<Roles>[] = [

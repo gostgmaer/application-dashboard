@@ -19,10 +19,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import BrandServices from "@/lib/http/brands";
-import { useDialog } from "@/hooks/use-dialog";
 import brandService from "@/lib/http/brands";
 import { useSession } from "next-auth/react";
 
@@ -108,7 +106,6 @@ export function BrandForm({ data, id }: any) {
   const { data: session } = useSession();
 
 
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
   const {
     register,
     control,
@@ -184,7 +181,6 @@ export function BrandForm({ data, id }: any) {
         }
         break;
     }
-    closeDialog();
   };
   return (
     <>

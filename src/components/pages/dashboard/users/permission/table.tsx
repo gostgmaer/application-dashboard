@@ -1,10 +1,8 @@
 "use client";
-import { Suspense } from "react";
 import { DataTable } from "@/components/ui/data-table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useCommonModal } from "@/components/layout/common/commonModal";
 import {
   DropdownMenu,
   DropdownMenuContent,

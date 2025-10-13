@@ -15,8 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ColumnFilter } from "@/components/ui/data-table/column-filter";
 import { TableState, ServerResponse } from "@/types/table";
-import { useDialog } from "@/hooks/use-dialog";
-import { CustomDialog } from "@/components/layout/dialog";
+
 import Link from "next/link";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { BrandForm } from "./form";
@@ -33,7 +32,7 @@ interface brands {
 }
 
 export default function Table({ props }: any) {
-  const { openDialog, closeDialog, confirm, alert, options } = useDialog();
+
 
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
@@ -44,35 +43,11 @@ export default function Table({ props }: any) {
   };
 
   const handleUpdate = (data: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Update Brand">
-          <BrandForm data={data} id={data._id} />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+  //  <BrandForm data={data} id={data._id} />
   };
 
   const handleCreate = (data: any) => {
-    openDialog(
-      <div>
-        <CustomDialog showHeader title="Create Brand">
-          <BrandForm data={data} id={undefined} />
-        </CustomDialog>
-      </div>,
-      {
-        size: "lg",
-        showCloseButton: true,
-        closeOnOverlayClick: false,
-        closeOnEscape: true,
-      }
-    );
+    //  <BrandForm data={data} id={undefined} />
   };
 
   const columns: ColumnDef<brands>[] = [
