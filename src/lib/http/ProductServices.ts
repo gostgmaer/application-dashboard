@@ -18,6 +18,8 @@ const productService = {
 
   update: async (id: string, body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.put(`/products/${id}`, body, token, headers)),
+  getActiveDealStatics: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
+    safeApiCall(() => requests.get(`/products/active-data`, token,)),
 
   remove: async (id: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.delete(`/products/${id}`, token, undefined, headers)),

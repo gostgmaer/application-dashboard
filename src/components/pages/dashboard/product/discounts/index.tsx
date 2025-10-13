@@ -18,7 +18,7 @@ import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { usePermissions } from "@/hooks/usePermissions";
 import { DiscountRulesTable } from "./DiscountRoles";
 
-export default function DiscountsPage() {
+export default function DiscountsPage({statics}:any) {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const { hasPermission } = usePermissions();
@@ -66,7 +66,7 @@ export default function DiscountsPage() {
   const handleCreate: any = async () => {
     showCustom({
       title: `Create New Discount Rule`,
-      content: <DiscountForm />,
+      content: <DiscountForm statics={statics} />,
     });
   };
 
@@ -144,7 +144,7 @@ export default function DiscountsPage() {
           </Card>
         </div> */}
       </div>
-      <DiscountRulesTable></DiscountRulesTable>
+      <DiscountRulesTable statics={statics}></DiscountRulesTable>
     </>
   );
 }

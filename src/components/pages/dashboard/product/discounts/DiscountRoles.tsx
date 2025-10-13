@@ -41,7 +41,8 @@ const filters: DataTableFilter[] = [
   },
 ];
 
-export function DiscountRulesTable() {
+export function DiscountRulesTable({statics}:any) {
+
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
