@@ -102,6 +102,11 @@ export interface TopListItem {
 export interface DashboardStats {
   totalProducts: number;
   activeProducts: number;
+  totalCategories: number;
+  totalBrands: number;
+  totalCustomers: number;
+  totalOrders: number;
+  totalSales: number;
   outOfStockCount: number;
   productsOnSale: number;
   avgBasePrice: number;

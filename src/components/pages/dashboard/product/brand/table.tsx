@@ -32,13 +32,14 @@ interface brands {
 }
 
 export default function Table({ props }: any) {
+console.log(props);
 
 
   const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
     return {
-      data: props.results || [],
-      totalCount: props.total || 0,
-      pageCount: Math.ceil(props.total / state.pagination["pageSize"]),
+      data: props.data.items || [],
+      totalCount: props.data.total || 0,
+      pageCount: props.data.pages,
     };
   };
 

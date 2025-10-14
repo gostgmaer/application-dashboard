@@ -1,8 +1,18 @@
-// import { DashboardStats } from '@/types/dashboard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, CircleCheck as CheckCircle, Circle as XCircle, Tag, DollarSign, TrendingUp, TriangleAlert as AlertTriangle, Trophy, Calendar, ChartBar as BarChart3, Archive, Percent, Users, ArrowUp, ArrowDown } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { DashboardStats } from '@/types/product';
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Package,
+  CircleCheck as CheckCircle,
+  Circle as XCircle,
+  Tag,
+  Percent,
+  ArrowUp,
+  ArrowDown,
+  Blocks,
+  Hexagon,
+  TriangleAlert as AlertTriangle,
+} from "lucide-react";
+import { DashboardStats } from "@/types/product";
 
 interface StatsCardsProps {
   stats: DashboardStats;
@@ -11,92 +21,94 @@ interface StatsCardsProps {
 export function StatsCards({ stats }: StatsCardsProps) {
   const statsData = [
     {
-      title: 'Total Products',
-      value: stats?.totalProducts||0,
-      change: '+12.5%',
-      trend: 'up' as const,
+      title: "Total Products",
+      value: stats?.totalProducts || 0,
+      change: "+12.5%",
+      trend: "up" as const,
       icon: Package,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50 dark:bg-blue-900/20',
+      color: "text-blue-600 dark:text-blue-400",
+      bgColor: "bg-blue-50 dark:bg-blue-900/20",
     },
     {
-      title: 'Active Products',
-      value: stats?.activeProducts||0,
-      change: '+8.2%',
-      trend: 'up' as const,
+      title: "Active Products",
+      value: stats?.activeProducts || 0,
+      change: "+8.2%",
+      trend: "up" as const,
       icon: CheckCircle,
-      color: 'text-green-600 dark:text-green-400',
-      bgColor: 'bg-green-50 dark:bg-green-900/20',
+      color: "text-green-600 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-900/20",
     },
     {
-      title: 'Out of Stock',
+      title: "Out of Stock",
       value: stats?.outOfStockCount,
-      change: '-15.3%',
-      trend: 'down' as const,
+      change: "-15.3%",
+      trend: "down" as const,
       icon: XCircle,
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-900/20',
+      color: "text-red-600 dark:text-red-400",
+      bgColor: "bg-red-50 dark:bg-red-900/20",
     },
     {
-      title: 'Products on Sale',
+      title: "Products on Sale",
       value: stats?.productsOnSale,
-      change: '+23.1%',
-      trend: 'up' as const,
+      change: "+23.1%",
+      trend: "up" as const,
       icon: Tag,
-      color: 'text-orange-600 dark:text-orange-400',
-      bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+      color: "text-orange-600 dark:text-orange-400",
+      bgColor: "bg-orange-50 dark:bg-orange-900/20",
     },
     {
-      title: 'Average Price',
-      value: `$${stats?.avgBasePrice?.toFixed(2)}`,
-      change: '+5.7%',
-      trend: 'up' as const,
-      icon: DollarSign,
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-50 dark:bg-purple-900/20',
-    },
- 
-    {
-      title: 'Low Stock Alerts',
+      title: "Low Stock Alerts",
       value: stats.lowStockProductsCount,
-      change: '-8.4%',
-      trend: 'down' as const,
+      change: "-8.4%",
+      trend: "down" as const,
       icon: AlertTriangle,
-      color: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-50 dark:bg-yellow-900/20',
+      color: "text-yellow-600 dark:text-yellow-400",
+      bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
     },
-
     {
-      title: 'Added This Month',
-      value: stats.thisMonthProducts,
-      change: '+34.2%',
-      trend: 'up' as const,
-      icon: Calendar,
-      color: 'text-teal-600 dark:text-teal-400',
-      bgColor: 'bg-teal-50 dark:bg-teal-900/20',
-    },
-
-    {
-      title: 'Discounted Products',
+      title: "Discounted Products",
       value: stats.topDiscountedProductsCount,
-      change: '+45.6%',
-      trend: 'up' as const,
+      change: "+45.6%",
+      trend: "up" as const,
       icon: Percent,
-      color: 'text-pink-600 dark:text-pink-400',
-      bgColor: 'bg-pink-50 dark:bg-pink-900/20',
+      color: "text-pink-600 dark:text-pink-400",
+      bgColor: "bg-pink-50 dark:bg-pink-900/20",
     },
- 
+    {
+      title: "Total Category",
+      value: stats?.totalCategories,
+      change: "+5.7%",
+      trend: "up" as const,
+      icon: Blocks,
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      url: "/dashboard/ecommerce/products/categories",
+    },
+    {
+      title: "Total Brands",
+      value: stats?.totalBrands,
+      change: "+5.7%",
+      trend: "up" as const,
+      icon: Hexagon,
+      color: "text-purple-600 dark:text-purple-400",
+      bgColor: "bg-purple-50 dark:bg-purple-900/20",
+      url: "/dashboard/ecommerce/products/brands",
+    },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8 animate-fade-in">
       {statsData.map((stat, index) => {
         const Icon = stat.icon;
-        const TrendIcon = stat.trend === 'up' ? ArrowUp : stat.trend === 'down' ? ArrowDown : null;
-        
-        return (
-          <Card 
-            key={index} 
+        const TrendIcon =
+          stat.trend === "up"
+            ? ArrowUp
+            : stat.trend === "down"
+            ? ArrowDown
+            : null;
+
+        const CardContentJSX = (
+          <Card
             className="stat-card group cursor-pointer animate-slide-up"
             style={{ animationDelay: `${index * 50}ms` }}
           >
@@ -104,38 +116,52 @@ export function StatsCards({ stats }: StatsCardsProps) {
               <CardTitle className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                 {stat.title}
               </CardTitle>
-              <div className={`${stat.bgColor} p-2.5 rounded-xl group-hover:scale-110 transition-transform duration-200`}>
+              <div
+                className={`${stat.bgColor} p-2.5 rounded-xl group-hover:scale-110 transition-transform duration-200`}
+              >
                 <Icon className={`h-5 w-5 ${stat.color}`} />
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <div className="text-2xl font-bold tracking-tight">{stat.value}</div>
-                
-                  <div className="flex items-center space-x-1">
-                    {TrendIcon && (
-                      <TrendIcon 
-                        className={`h-3 w-3 ${
-                          stat.trend === 'up' 
-                            ? 'text-green-600 dark:text-green-400' 
-                            : 'text-red-600 dark:text-red-400'
-                        }`} 
-                      />
-                    )}
-                    <span className={`text-xs font-medium ${
-                      stat.trend === 'up' 
-                        ? 'text-green-600 dark:text-green-400' 
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {stat.change}
-                    </span>
-                    <span className="text-xs text-muted-foreground">vs last month</span>
-                  </div>
-                
-              
+                <div className="text-2xl font-bold tracking-tight">
+                  {stat.value}
+                </div>
+                <div className="flex items-center space-x-1">
+                  {TrendIcon && (
+                    <TrendIcon
+                      className={`h-3 w-3 ${
+                        stat.trend === "up"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
+                    />
+                  )}
+                  <span
+                    className={`text-xs font-medium ${
+                      stat.trend === "up"
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    {stat.change}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    vs last month
+                  </span>
+                </div>
               </div>
             </CardContent>
           </Card>
+        );
+
+        // Wrap with Link if URL exists
+        return stat.url ? (
+          <Link key={index} href={stat.url} passHref>
+            {CardContentJSX}
+          </Link>
+        ) : (
+          <div key={index}>{CardContentJSX}</div>
         );
       })}
     </div>
