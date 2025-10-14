@@ -1,28 +1,43 @@
-import { Metadata } from 'next';
+import { Package } from "lucide-react";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Loading | NextApp',
-  description: 'Loading content, please wait'
+  title: "Loading | NextApp",
+  description: "Loading content, please wait",
 };
 
 export default function LoadingPage() {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 bg-opacity-95 dark:bg-gray-900 dark:bg-opacity-95 backdrop-blur-sm"
-      role="status"
-      aria-label="Loading"
-    >
-      <div className="flex flex-col items-center justify-center p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">
-          Loading...
-        </h1>
-        <p className="text-gray-500 dark:text-gray-300 mb-6 text-center">
-          Please wait while we load your content.
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      <div className="text-center">
+        <div className="relative">
+          <Package className="h-16 w-16 mx-auto mb-6 animate-spin text-primary" />
+          <div className="absolute inset-0 h-16 w-16 mx-auto animate-ping">
+            <Package className="h-16 w-16 text-primary/20" />
+          </div>
+        </div>
+        <h2 className="text-2xl font-bold mb-3 text-gradient">
+          Loading Dashboard
+        </h2>
+        <p className="text-muted-foreground text-lg">
+          Preparing your analytics and insights...
         </p>
-        <div
-          className="animate-spin rounded-full h-14 w-14 border-4 border-t-blue-600 border-blue-300 dark:border-t-blue-400 dark:border-blue-600"
-          aria-hidden="true"
-        ></div>
+        <div className="mt-6 flex justify-center">
+          <div className="flex space-x-1">
+            <div
+              className="w-2 h-2 bg-primary rounded-full animate-bounce"
+              style={{ animationDelay: "0ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-primary rounded-full animate-bounce"
+              style={{ animationDelay: "150ms" }}
+            ></div>
+            <div
+              className="w-2 h-2 bg-primary rounded-full animate-bounce"
+              style={{ animationDelay: "300ms" }}
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
   );
