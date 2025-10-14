@@ -6,7 +6,6 @@ import { useState, useEffect, useMemo } from "react";
 import { Package } from "lucide-react";
 import { DashboardFilters } from "@/types/product";
 import {
-  calculateStats,
   filterProducts,
   getChartData,
   getTopLists,
@@ -45,10 +44,6 @@ export default function DashboardPage({token, category}: any) {
     [filters]
   );
 
-  const dashboardStats = useMemo(
-    () => calculateStats(filteredProducts),
-    [filteredProducts]
-  );
 
   const chartData = useMemo(
     () => getChartData(filteredProducts),
