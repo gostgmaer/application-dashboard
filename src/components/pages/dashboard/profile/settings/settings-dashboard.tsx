@@ -15,12 +15,18 @@ interface SettingsDashboardProps {
 export function SettingsDashboard({
   defaultSection = "profile",
 }: SettingsDashboardProps) {
-  const [activeSection, setActiveSection] = useState(defaultSection);
+  const [activeSection, setActiveSection] = useState(
+    defaultSection || "profile"
+  );
 
-  const renderSection = () => {
+  useEffect(() => {
+    setActiveSection(defaultSection);
+  }, [defaultSection]);
+
+  const RenderSection = () => {
     switch (activeSection) {
       case "profile":
-        return <ProfileSettings  />;
+        return <ProfileSettings />;
       case "security":
         return <SecuritySettings />;
       case "addresses":
@@ -40,7 +46,7 @@ export function SettingsDashboard({
         activeSection={activeSection}
         onSectionChange={setActiveSection}
       >
-        {renderSection()}
+        <RenderSection />
       </SettingsLayout>
     </>
   );

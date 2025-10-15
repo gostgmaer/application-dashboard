@@ -7,6 +7,7 @@ import React, { Suspense } from "react";
 
 const Page = async () => {
   const setting = await settingServices.getBySiteKey(sitekey as string);
+  console.log(setting);
 
   return (
     <PrivateLayout>

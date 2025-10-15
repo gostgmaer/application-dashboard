@@ -6,8 +6,6 @@ import { Providers } from "@/components/providers";
 import { SessionProviderWrapper } from "@/components/Sessionproviders";
 import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
-import { NotificationProviderCommunication } from "@/contexts/notification-context";
-import { MessagingProvider } from "@/contexts/messaging-context";
 
 const roboto = Roboto({ subsets: ["latin"] });
 

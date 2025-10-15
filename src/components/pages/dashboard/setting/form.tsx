@@ -56,8 +56,6 @@ export default function SettingsPage({ settings }: SettingsPageProps) {
     resolver: zodResolver(settingsSchema),
     defaultValues: {
       siteName: settings?.siteName || "",
-      siteKey: settings?.siteKey || "",
-      isDeleted: settings?.isDeleted ?? false,
       name: settings?.name || "",
       isLive: settings?.isLive ?? true,
       maintenanceMode: settings?.maintenanceMode ?? false,
@@ -345,10 +343,7 @@ export default function SettingsPage({ settings }: SettingsPageProps) {
   return (
     <div className="">
       <Card>
-        <CardHeader>
-        
-          
-        </CardHeader>
+        <CardHeader></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -369,19 +364,7 @@ export default function SettingsPage({ settings }: SettingsPageProps) {
                       </p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="siteKey">Site Key</Label>
-                    <Input
-                      id="siteKey"
-                      {...register("siteKey")}
-                      placeholder="Enter site key"
-                    />
-                    {errors.siteKey && (
-                      <p className="text-sm text-destructive">
-                        {errors.siteKey.message}
-                      </p>
-                    )}
-                  </div>
+
                   <div className="flex items-center justify-between">
                     <Label htmlFor="isLive" className="cursor-pointer">
                       Site Live
@@ -401,10 +384,7 @@ export default function SettingsPage({ settings }: SettingsPageProps) {
                     )}
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="maintenanceMode"
-                      className="cursor-pointer"
-                    >
+                    <Label htmlFor="maintenanceMode" className="cursor-pointer">
                       Maintenance Mode
                     </Label>
                     <Switch

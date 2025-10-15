@@ -16,7 +16,7 @@ export function useUserData() {
 
   const fetchUser = async () => {
     try {
-      const response = await  authService.getAccountSetting(session?.accessToken);
+      const response = await authService.getAccountSetting(session?.accessToken);
       if (response.success && response.data) {
         setUser(response.data);
       }
@@ -27,12 +27,14 @@ export function useUserData() {
     }
   };
   useEffect(() => {
-    fetchUser();
-  }, []);
+    if (session) {
+      fetchUser();
+    }
+  }, [session]);
   const updateUser = async (data: Partial<User>) => {
 
     try {
-      const response = await authService.updateProfile(data,session?.accessToken);
+      const response = await authService.updateProfile(data, session?.accessToken);
       if (response.success) {
         setUser(prev => prev ? { ...prev, ...data } : null);
         toast.success('Profile updated successfully');
@@ -268,7 +270,7 @@ export function useSocialConnections() {
   const connectSocial = async (provider: string) => {
     try {
       // const response = await userApi.connectSocial(provider);
-        const response = await authService.linkSocialAccount({"provider": "google",accessToken: session?.accessToken},session?.accessToken);
+      const response = await authService.linkSocialAccount({ "provider": "google", accessToken: session?.accessToken }, session?.accessToken);
       if (response.success) {
         toast.success(`Connected to ${provider} successfully`);
         fetchConnections();
@@ -320,7 +322,7 @@ export function useUserPreferences() {
     }
   };
 
-  const updatePreferences:any = async (updates: Partial<UserPreferences>) => {
+  const updatePreferences: any = async (updates: Partial<UserPreferences>) => {
     try {
       const response = await userApi.updatePreferences(updates);
       if (response.success) {

@@ -1,19 +1,32 @@
 "use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils/utils';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { Settings, User, Shield, Activity, Smartphone, MapPin, Share2, Bell, TriangleAlert as AlertTriangle, Palette, Menu, X } from 'lucide-react';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils/utils";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import {
+  Settings,
+  User,
+  Shield,
+  Activity,
+  Smartphone,
+  MapPin,
+  Share2,
+  Bell,
+  TriangleAlert as AlertTriangle,
+  Palette,
+  Menu,
+  X,
+} from "lucide-react";
 
 const navigationItems = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'security', label: 'Security', icon: Shield },
-  { id: 'addresses', label: 'Addresses', icon: MapPin },
-  { id: 'preferences', label: 'Preferences', icon: Bell },
-  { id: 'advanced', label: 'Advanced', icon: AlertTriangle },
+  { id: "profile", label: "Profile", icon: User },
+  { id: "security", label: "Security", icon: Shield },
+  { id: "addresses", label: "Addresses", icon: MapPin },
+  { id: "preferences", label: "Preferences", icon: Bell },
+  { id: "advanced", label: "Advanced", icon: AlertTriangle },
 ];
 
 interface SettingsLayoutProps {
@@ -22,7 +35,11 @@ interface SettingsLayoutProps {
   onSectionChange: (section: string) => void;
 }
 
-export function SettingsLayout({ children, activeSection, onSectionChange }: SettingsLayoutProps) {
+export function SettingsLayout({
+  children,
+  activeSection,
+  onSectionChange,
+}: SettingsLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const sidebarContent = (
@@ -44,13 +61,13 @@ export function SettingsLayout({ children, activeSection, onSectionChange }: Set
           <X className="w-4 h-4" />
         </Button>
       </div>
-      
+
       <ScrollArea className="flex-1 px-4 py-6">
         <nav className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
-            
+
             return (
               <Button
                 key={item.id}
@@ -84,11 +101,7 @@ export function SettingsLayout({ children, activeSection, onSectionChange }: Set
           </div>
           <span className="font-semibold">Settings</span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSidebarOpen(true)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setSidebarOpen(true)}>
           <Menu className="w-4 h-4" />
         </Button>
       </div>
@@ -123,7 +136,7 @@ export function SettingsLayout({ children, activeSection, onSectionChange }: Set
         </AnimatePresence>
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen">
+        <div className="flex-1 min-h-screen">
           <div className=" mx-auto p-6 lg:p-8">
             <motion.div
               key={activeSection}
@@ -134,7 +147,7 @@ export function SettingsLayout({ children, activeSection, onSectionChange }: Set
               {children}
             </motion.div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

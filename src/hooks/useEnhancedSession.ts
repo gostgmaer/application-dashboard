@@ -75,7 +75,7 @@ export function useEnhancedSession(): EnhancedSessionReturn {
     if (updateError) {
       setUpdateError(null);
     }
-  }, [session]);
+  }, [session,updateError]);
 
   return {
     session,

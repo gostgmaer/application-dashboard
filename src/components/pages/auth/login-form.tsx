@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { motion } from "framer-motion";
+import { useApiService } from "@/hooks/useApiService";
 import {
   Eye,
   EyeOff,
@@ -77,6 +78,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const router = useRouter();
+  //  const { callApi, loading, error, data } = useApiService();
 
   // Component state
   const [isLoading, setIsLoading] = useState(false);
@@ -141,6 +143,10 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     if (!mounted.current) return;
+
+    // await callApi(() =>
+    //       authService.login({ email: "test@example.com", password: "123456" })
+    //     );
 
     setIsLoading(true);
     setError("");
