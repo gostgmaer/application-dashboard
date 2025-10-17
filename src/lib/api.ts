@@ -10,7 +10,7 @@ interface ApiResponse<T = any> {
 // Mock API functions - replace with actual API calls
 export const userApi = {
   // User data
- 
+
 
   updateUser: async (data: Partial<User>): Promise<ApiResponse> => {
     console.log('Updating user:', data);
@@ -78,22 +78,7 @@ export const userApi = {
     return { success: true };
   },
 
-  // Activity logs
-  getActivityLogs: async (page: number = 1): Promise<ApiResponse<{ logs: ActivityLog[], total: number }>> => {
-    console.log('Fetching activity logs, page:', page);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      success: true,
-      data: {
-        logs: [
-          { id: '1', action: 'Login', device: 'Chrome on Windows', ip: '192.168.1.1', timestamp: '2024-01-01T10:00:00Z', status: 'success' },
-          { id: '2', action: 'Profile Updated', device: 'Safari on macOS', ip: '192.168.1.2', timestamp: '2024-01-01T09:00:00Z', status: 'success' },
-          { id: '3', action: 'Failed Login', device: 'Firefox on Linux', ip: '192.168.1.3', timestamp: '2024-01-01T08:00:00Z', status: 'failed' }
-        ],
-        total: 25
-      }
-    };
-  },
+
 
   getSecurityLogs: async (page: number = 1): Promise<ApiResponse<{ logs: ActivityLog[], total: number }>> => {
     console.log('Fetching security logs, page:', page);
