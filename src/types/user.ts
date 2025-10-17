@@ -169,7 +169,9 @@ export interface Device {
 export interface ActivityLog {
   id: string;
   action: string;
-  device: string;
+  statusCode: number;
+  device: any;
+  deviceType: string;
   ip: string;
   timestamp: string;
   status: 'success' | 'failed' | 'warning';
@@ -177,7 +179,7 @@ export interface ActivityLog {
 
 export interface SocialConnection {
   provider: 'google' | 'github' | 'facebook' | 'twitter';
-  connected: boolean;
+  verified: boolean;
   email?: string;
   connectedAt?: string;
 }

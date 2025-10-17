@@ -31,6 +31,7 @@ import authService from "@/lib/http/authService";
 import { useModal } from "@/contexts/modal-context";
 import PrivacyPolicy from "@/components/elements/privacy";
 import TermsAndConditions from "@/components/elements/terms";
+import Link from "next/link";
 interface LoginFormData {
   email: string;
   password: string;
@@ -787,13 +788,13 @@ export function LoginCard() {
                     Remember me
                   </Label>
                 </div>
-                <button
+                <Link
                   type="button"
                   className="text-sm text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 font-medium transition-colors"
-                  onClick={() => console.log("Forgot password clicked")}
+                  href={"/auth/forgot-password"}
                 >
                   Forgot password?
-                </button>
+                </Link>
               </div>
             )}
 

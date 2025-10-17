@@ -198,14 +198,17 @@ export function useActivityLogs() {
   const [securityTotal, setSecurityTotal] = useState(0);
   const [activityLoading, setActivityLoading] = useState(true);
   const [securityLoading, setSecurityLoading] = useState(true);
+  const { data: session } = useSession()
+
+
 
   const fetchActivityLogs = async (page: number = 1) => {
     try {
       setActivityLoading(true);
-      const response = await userApi.getActivityLogs(page);
+      const response = await authService.getActivityLogs(session?.accessToken);
       if (response.success && response.data) {
         setActivityLogs(response.data.logs);
-        setActivityTotal(response.data.total);
+        setActivityTotal(response.data.pagination.total);
       }
     } catch (error) {
       toast.error('Failed to load activity logs');
@@ -258,7 +261,7 @@ export function useSocialConnections() {
     try {
       const response = await authService.getLinkedAccounts(session?.accessToken);
       if (response.success && response.data) {
-        setConnections(response.data);
+        setConnections(response.data.linkedAccounts);
       }
     } catch (error) {
       toast.error('Failed to load social connections');

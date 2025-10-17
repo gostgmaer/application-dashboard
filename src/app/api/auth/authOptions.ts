@@ -233,47 +233,55 @@ export const authOptions: AuthOptions = {
   },
 
   callbacks: {
-    async signIn({
-      user,
-      account,
-      profile,
-    }: {
-      user: CustomUser;
-      account: Account | null;
-      profile?: Profile;
-    }) {
-      // Handle social login
-      if (
-        (account?.provider === "github" ||
-          account?.provider === "linkedin" ||
-          account?.provider === "twitter" ||
-          account?.provider === "google") &&
-        profile?.email
-      ) {
-        try {
-          const data = await authService.socialLogin({
-            identifier: profile.email,
-            profileData: {
-              ...profile,
-              ...account,
-            },
-          });
+    async signIn({ user, account, profile }: { user: CustomUser; account: Account | null; profile?: Profile }) {
+      try {
+        if (
+          account &&
+          ["google", "github", "linkedin", "facebook", "twitter"].includes(account.provider)
+        ) {
+          console.log(`🌐 Handling ${account.provider} social login...`);
 
-          user.accessToken = data.data.accessToken;
-          user.refreshToken = data.data.refreshToken;
-          user.token_type = data.data.token_type;
-          user.role = data.data.role || "";
-          user.accessTokenExpires = Date.parse(data.data.expiresAt);
+          const payload = {
+            provider: account.provider,
+            identifier: profile?.email || user.email,
+            providerId: account.providerAccountId,
+            profile,
+          };
 
-          return true;
-        } catch (error) {
-          console.error(`❌ Error during ${account?.provider} sign-in:`, error);
-          return false;
+          const res = await authService.socialLogin(payload);
+
+          if (!res?.success) {
+            console.error(`❌ ${account.provider} login failed:`, res?.message);
+            return false;
+          }
+
+          const { user: backendUser, tokens } = res.data;
+
+          // ✅ Mutate user object — this will pass through to JWT callback
+          user.id = backendUser.id;
+          user.name = backendUser.fullName ?? backendUser.username ?? profile?.name ?? "";
+          user.email = backendUser.email ?? profile?.email ?? "";
+          user.image = backendUser.image ?? profile?.picture ?? "";
+          user.role = backendUser.role ?? "";
+          user.accessToken = tokens?.accessToken;
+          user.refreshToken = tokens?.refreshToken;
+          user.token_type = tokens?.token_type ?? "Bearer";
+          user.accessTokenExpires = tokens?.accessTokenExpiresAt
+            ? Date.parse(tokens.accessTokenExpiresAt)
+            : Date.now() + 3600 * 1000;
+
+          console.log(`✅ ${account.provider} login successful. Tokens mapped.`);
+          return true; // ✅ Return boolean to satisfy NextAuth typings
         }
-      }
 
-      return !!user?.accessToken;
+        // For credentials login
+        return true;
+      } catch (error) {
+        console.error(`❌ Error during ${account?.provider ?? "credentials"} sign-in:`, error);
+        return false;
+      }
     },
+
 
     // ✅ FIXED JWT CALLBACK - Production Ready
     async jwt({ token, user, account, profile, trigger, session }) {

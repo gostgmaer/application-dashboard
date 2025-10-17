@@ -1,16 +1,37 @@
 "use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useActivityLogs } from '@/hooks/use-user-settings';
-import { format } from 'date-fns';
-import { Activity, Shield, Download, Trash2, ChevronLeft, ChevronRight, Loader as Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils/utils';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useActivityLogs } from "@/hooks/use-user-settings";
+import { format } from "date-fns";
+import {
+  Activity,
+  Shield,
+  Download,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Loader as Loader2,
+} from "lucide-react";
+import { cn } from "@/lib/utils/utils";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -23,15 +44,16 @@ export function ActivitySettings() {
     activityLoading,
     securityLoading,
     fetchActivityLogs,
-    fetchSecurityLogs
+    fetchSecurityLogs,
   } = useActivityLogs();
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState('activity');
+  const [activeTab, setActiveTab] = useState("activity");
+  console.log(activityLogs);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    if (activeTab === 'activity') {
+    if (activeTab === "activity") {
       fetchActivityLogs(page);
     } else {
       fetchSecurityLogs(page);
@@ -40,26 +62,27 @@ export function ActivitySettings() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case 'failed':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
+      case "success":
+        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
+      case "failed":
+        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
+      case "warning":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400';
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
     }
   };
 
   const renderPagination = (total: number) => {
     const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
-    
+
     if (totalPages <= 1) return null;
 
     return (
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} entries
+          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+          {Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} entries
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -119,7 +142,11 @@ export function ActivitySettings() {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-4"
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="activity" className="flex items-center gap-2">
                 <Activity className="w-4 h-4" />
@@ -157,25 +184,32 @@ export function ActivitySettings() {
                             transition={{ delay: index * 0.05 }}
                             className="hover:bg-muted/50"
                           >
-                            <TableCell className="font-medium">{log.action}</TableCell>
+                            <TableCell className="font-medium">
+                              {log.action}
+                            </TableCell>
                             <TableCell>
                               <div>
-                                <p className="text-sm">{log.device}</p>
-                                <p className="text-xs text-muted-foreground">{log.ip}</p>
+                                <p className="text-sm">{log.deviceType}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {log.ip}
+                                </p>
                               </div>
                             </TableCell>
                             <TableCell>
-                              {format(new Date(log.timestamp), 'MMM dd, yyyy HH:mm')}
+                              {format(
+                                new Date(log.timestamp),
+                                "MMM dd, yyyy HH:mm a"
+                              )}
                             </TableCell>
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant="secondary"
                                 className={cn(
-                                  "capitalize",
-                                  getStatusColor(log.status)
+                                  "capitalize"
+                                  // getStatusColor(log.statusCode)
                                 )}
                               >
-                                {log.status}
+                                {/* {log.status} */}
                               </Badge>
                             </TableCell>
                           </motion.tr>
@@ -214,18 +248,25 @@ export function ActivitySettings() {
                             transition={{ delay: index * 0.05 }}
                             className="hover:bg-muted/50"
                           >
-                            <TableCell className="font-medium">{log.action}</TableCell>
+                            <TableCell className="font-medium">
+                              {log.action}
+                            </TableCell>
                             <TableCell>
                               <div>
                                 <p className="text-sm">{log.device}</p>
-                                <p className="text-xs text-muted-foreground">{log.ip}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {log.ip}
+                                </p>
                               </div>
                             </TableCell>
                             <TableCell>
-                              {format(new Date(log.timestamp), 'MMM dd, yyyy HH:mm')}
+                              {format(
+                                new Date(log.timestamp),
+                                "MMM dd, yyyy HH:mm"
+                              )}
                             </TableCell>
                             <TableCell>
-                              <Badge 
+                              <Badge
                                 variant="secondary"
                                 className={cn(
                                   "capitalize",

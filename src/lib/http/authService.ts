@@ -396,7 +396,7 @@ const authService = {
 
   linkSocialAccount: (
     body: any,
-   
+
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
@@ -479,6 +479,15 @@ const authService = {
       requests.get("/auth/security-logs", token, undefined, undefined, headers)
     ),
 
+  getActivityLogs: (
+    token?: string,
+    query?: any,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.get("/activity-logs/my-activities", token, query, undefined, headers)
+    ),
+
   getAllLoginHistory: (
     token?: string,
     headers?: Record<string, string>
@@ -510,7 +519,7 @@ const authService = {
     ),
 
 
-    getAddresses: (
+  getAddresses: (
     token?: string,
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
