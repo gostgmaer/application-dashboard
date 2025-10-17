@@ -87,8 +87,7 @@ export const userApi = {
       success: true,
       data: {
         logs: [
-          { id: '1', action: 'Password Changed', device: 'Chrome on Windows', ip: '192.168.1.1', timestamp: '2024-01-01T10:00:00Z', status: 'success' },
-          { id: '2', action: '2FA Enabled', device: 'Safari on macOS', ip: '192.168.1.2', timestamp: '2024-01-01T09:00:00Z', status: 'success' }
+
         ],
         total: 10
       }
@@ -153,10 +152,10 @@ export const userApi = {
     return {
       success: true,
       data: [
-        { provider: 'google', connected: true, email: 'john@gmail.com', connectedAt: '2024-01-01T00:00:00Z' },
-        { provider: 'github', connected: false },
-        { provider: 'facebook', connected: false },
-        { provider: 'twitter', connected: true, email: 'john@twitter.com', connectedAt: '2024-01-01T00:00:00Z' }
+        { provider: 'google', verified: true, email: 'john@gmail.com', connectedAt: '2024-01-01T00:00:00Z' },
+        { provider: 'github', verified: false },
+        { provider: 'facebook', verified: false },
+        { provider: 'twitter', verified: true, email: 'john@twitter.com', connectedAt: '2024-01-01T00:00:00Z' }
       ]
     };
   },
