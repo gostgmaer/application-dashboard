@@ -415,8 +415,6 @@ const robotsOptions = [
 ];
 
 export default function ProductCreate({ data }: { data?: ProductData }) {
-  console.log("Received data:", data);
-
   const isUpdateMode = !!data;
 
   const {
@@ -996,10 +994,16 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-700 mb-2 block">Tags</Label>
+                <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Tags
+                </Label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
                       {tag}
                       <button
                         type="button"
@@ -1016,13 +1020,19 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
                     value={tags}
                     onChange={(e) => addTag()}
                     placeholder="Add a tag"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    onKeyPress={(e) =>
+                      e.key === "Enter" && (e.preventDefault(), addTag())
+                    }
                   />
                   <Button type="button" onClick={addTag} variant="outline">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
-                {errors.tags && <p className="text-red-600 text-sm mt-1">{errors.tags.message}</p>}
+                {errors.tags && (
+                  <p className="text-red-600 text-sm mt-1">
+                    {errors.tags.message}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
