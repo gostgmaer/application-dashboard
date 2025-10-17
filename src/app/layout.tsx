@@ -66,11 +66,9 @@ export default async function RootLayout({
   // const session = await getServerSession(authOptions);
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${roboto.className} overflow-hidden`}>
+      <body className={`${roboto.className}`}>
         <SessionProviderWrapper>
-          <Providers>
-           {children}
-          </Providers>
+          <Providers>{children}</Providers>
         </SessionProviderWrapper>
       </body>
     </html>

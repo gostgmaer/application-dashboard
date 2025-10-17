@@ -97,7 +97,7 @@ interface UserData {
   phoneNumber?: string | null;
   address: Address[];
   favoriteProducts?: Product[];
-  profilePicture?: string | null;
+  image?: string | null;
   status:
     | "active"
     | "inactive"
@@ -328,7 +328,7 @@ export default function Profile({
   const selectedUser = otherUsers.find((user) => user.id === selectedUserId);
 
   console.log(userData);
-  
+
   return (
     <div className="w-full  space-y-4">
       <div className=" grid grid-cols-1  gap-8">
@@ -338,9 +338,9 @@ export default function Profile({
           <CardContent className="p-6 space-y-6">
             {error && <p className="text-red-600 text-sm">{error}</p>}
             <div className="flex  sm:flex-row items-start gap-6 border-b border-spacing-4">
-              {userData.profilePicture && (
+              {userData.image && (
                 <Image
-                  src={userData.profilePicture}
+                  src={userData.image}
                   width={128}
                   height={128}
                   alt="Profile"
@@ -664,8 +664,6 @@ export default function Profile({
             </div>
           </CardContent>
         </Card>
-
-      
       </div>
     </div>
   );

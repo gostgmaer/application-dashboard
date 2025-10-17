@@ -74,17 +74,13 @@ interface ResendOTPResponse {
 }
 
 export default function LoginPage() {
-  const { data: session, update, status } = useSession();
+  const { update } = useSession();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const router = useRouter();
-  //  const { callApi, loading, error, data } = useApiService();
-
-  // Component state
+  const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-
   // OTP Modal state
   const [showOTPModal, setShowOTPModal] = useState(false);
   const [otpMethod, setOtpMethod] = useState<"totp" | "sms" | "email">("totp");
