@@ -45,7 +45,6 @@ export function EmailVerification() {
 
         await authService.verifyEmail(token);
 
-
         // For demo purposes, let's say the verification is successful
         // dispatch(verifyEmailSuccess());
         setStatus("success");
@@ -96,7 +95,7 @@ export function EmailVerification() {
           <Button onClick={() => router.push("/register")}>
             Try Registering Again
           </Button>
-          <Button variant="outline" onClick={() => router.push("/login")}>
+          <Button variant="outline" onClick={() => router.push("/auth/login")}>
             Go to Login
           </Button>
         </div>
@@ -115,7 +114,7 @@ export function EmailVerification() {
         and enjoy all features.
       </p>
       <div className="flex flex-col sm:flex-row gap-4">
-        <Button onClick={() => router.push("/login")}>Go to Login</Button>
+        <Button onClick={() => router.push("/auth/login")}>Go to Login</Button>
         <Button variant="outline" onClick={() => router.push("/")}>
           Back to Home
         </Button>

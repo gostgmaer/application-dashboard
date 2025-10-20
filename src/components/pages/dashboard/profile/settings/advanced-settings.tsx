@@ -1,24 +1,51 @@
 "use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { userApi } from '@/lib/api';
-import { toast } from 'sonner';
-import { TriangleAlert as AlertTriangle, Trash2, UserX, LogOut, Download, Shield, Loader as Loader2, Key, Eye, EyeOff } from 'lucide-react';
-import authService from '@/lib/http/authService';
-import { useSession } from 'next-auth/react';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { userApi } from "@/lib/api";
+import { toast } from "sonner";
+import {
+  TriangleAlert as AlertTriangle,
+  Trash2,
+  UserX,
+  LogOut,
+  Download,
+  Shield,
+  Loader as Loader2,
+  Key,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import authService from "@/lib/http/authService";
+import { signOut, useSession } from "next-auth/react";
 
 const passwordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 type PasswordConfirmation = z.infer<typeof passwordSchema>;
@@ -26,82 +53,81 @@ type PasswordConfirmation = z.infer<typeof passwordSchema>;
 export function AdvancedSettings() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
- const { data: session } = useSession()
+  const { data: session } = useSession();
 
   const passwordForm = useForm<PasswordConfirmation>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      password: ''
-    }
+      password: "",
+    },
   });
 
   const handleLogout = async () => {
-    setActionLoading('logout');
+    setActionLoading("logout");
     try {
       const response = await authService.logout(session?.accessToken);
+
       if (response.success) {
-        toast.success('Logged out successfully');
-        // Redirect to login page
-        window.location.href = '/login';
+        toast.success("Logged out successfully");
+        await signOut();
       }
     } catch (error) {
-      toast.error('Failed to logout');
+      toast.error("Failed to logout");
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleLogoutAll = async () => {
-    setActionLoading('logout-all');
+    setActionLoading("logout-all");
     try {
-      const response = await authService.logoutAll({},session?.accessToken);
+      const response = await authService.logoutAll({}, session?.accessToken);
       if (response.success) {
-        toast.success('Logged out from all devices');
-        // Redirect to login page
-        window.location.href = '/login';
+        toast.success("Logged out from all devices");
+        await signOut();
       }
     } catch (error) {
-      toast.error('Failed to logout from all devices');
+      toast.error("Failed to logout from all devices");
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDeactivateAccount = async (data: PasswordConfirmation) => {
-    setActionLoading('deactivate');
+    setActionLoading("deactivate");
     try {
       const response = await userApi.deactivateAccount(data.password);
       if (response.success) {
-        toast.success('Account deactivated successfully');
-        window.location.href = '/login';
+        toast.success("Account deactivated successfully");
+        window.location.href = "/auth/login";
       }
     } catch (error) {
-      toast.error('Failed to deactivate account');
+      toast.error("Failed to deactivate account");
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDeleteAccount = async (data: PasswordConfirmation) => {
-    setActionLoading('delete');
+    setActionLoading("delete");
     try {
       const response = await userApi.deleteAccount(data.password);
       if (response.success) {
-        toast.success('Account deleted successfully');
-        window.location.href = '/';
+        toast.success("Account deleted successfully");
+        window.location.href = "/";
       }
     } catch (error) {
-      toast.error('Failed to delete account');
+      toast.error("Failed to delete account");
     } finally {
       setActionLoading(null);
     }
   };
 
   const exportData = async () => {
-    setActionLoading('export');
+    setActionLoading("export");
     // Simulate data export
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    toast.success('Data export started. You will receive an email when ready.');
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    toast.success("Data export started. You will receive an email when ready.");
     setActionLoading(null);
   };
 
@@ -136,9 +162,9 @@ export function AdvancedSettings() {
             <Button
               variant="outline"
               onClick={handleLogout}
-              disabled={actionLoading === 'logout'}
+              disabled={actionLoading === "logout"}
             >
-              {actionLoading === 'logout' && (
+              {actionLoading === "logout" && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
               Sign Out
@@ -156,9 +182,9 @@ export function AdvancedSettings() {
               <AlertDialogTrigger asChild>
                 <Button
                   variant="destructive"
-                  disabled={actionLoading === 'logout-all'}
+                  disabled={actionLoading === "logout-all"}
                 >
-                  {actionLoading === 'logout-all' && (
+                  {actionLoading === "logout-all" && (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
                   Sign Out All
@@ -168,7 +194,7 @@ export function AdvancedSettings() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Sign Out All Devices?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will sign you out from all devices and sessions. 
+                    This will sign you out from all devices and sessions.
                     You&apos;ll need to sign in again on all devices.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
@@ -209,9 +235,9 @@ export function AdvancedSettings() {
             <Button
               variant="outline"
               onClick={exportData}
-              disabled={actionLoading === 'export'}
+              disabled={actionLoading === "export"}
             >
-              {actionLoading === 'export' && (
+              {actionLoading === "export" && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
               <Download className="w-4 h-4 mr-2" />
@@ -236,7 +262,9 @@ export function AdvancedSettings() {
           {/* Deactivate Account */}
           <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-white/50 dark:bg-red-950/10">
             <div>
-              <h3 className="font-medium text-red-900 dark:text-red-100">Deactivate Account</h3>
+              <h3 className="font-medium text-red-900 dark:text-red-100">
+                Deactivate Account
+              </h3>
               <p className="text-sm text-red-700 dark:text-red-300">
                 Temporarily disable your account. You can reactivate anytime.
               </p>
@@ -255,12 +283,15 @@ export function AdvancedSettings() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Deactivate Account?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Your account will be temporarily disabled. You can reactivate 
-                    it by signing in again. Enter your password to confirm.
+                    Your account will be temporarily disabled. You can
+                    reactivate it by signing in again. Enter your password to
+                    confirm.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                
-                <form onSubmit={passwordForm.handleSubmit(handleDeactivateAccount)}>
+
+                <form
+                  onSubmit={passwordForm.handleSubmit(handleDeactivateAccount)}
+                >
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="password">Password</Label>
@@ -268,7 +299,7 @@ export function AdvancedSettings() {
                         <Input
                           id="password"
                           type={showPassword ? "text" : "password"}
-                          {...passwordForm.register('password')}
+                          {...passwordForm.register("password")}
                           placeholder="Enter your password"
                         />
                         <Button
@@ -292,15 +323,15 @@ export function AdvancedSettings() {
                       )}
                     </div>
                   </div>
-                  
+
                   <AlertDialogFooter className="mt-6">
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <Button
                       type="submit"
-                      disabled={actionLoading === 'deactivate'}
+                      disabled={actionLoading === "deactivate"}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      {actionLoading === 'deactivate' && (
+                      {actionLoading === "deactivate" && (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       )}
                       Deactivate Account
@@ -316,9 +347,12 @@ export function AdvancedSettings() {
           {/* Delete Account */}
           <div className="flex items-center justify-between p-4 border border-red-200 dark:border-red-800 rounded-lg bg-white/50 dark:bg-red-950/10">
             <div>
-              <h3 className="font-medium text-red-900 dark:text-red-100">Delete Account</h3>
+              <h3 className="font-medium text-red-900 dark:text-red-100">
+                Delete Account
+              </h3>
               <p className="text-sm text-red-700 dark:text-red-300">
-                Permanently delete your account and all data. This cannot be undone.
+                Permanently delete your account and all data. This cannot be
+                undone.
               </p>
             </div>
             <AlertDialog>
@@ -333,14 +367,16 @@ export function AdvancedSettings() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Account Permanently?</AlertDialogTitle>
+                  <AlertDialogTitle>
+                    Delete Account Permanently?
+                  </AlertDialogTitle>
                   <AlertDialogDescription>
-                    <strong>This action cannot be undone.</strong> This will permanently 
-                    delete your account and remove all your data from our servers. 
-                    Enter your password to confirm.
+                    <strong>This action cannot be undone.</strong> This will
+                    permanently delete your account and remove all your data
+                    from our servers. Enter your password to confirm.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                
+
                 <form onSubmit={passwordForm.handleSubmit(handleDeleteAccount)}>
                   <div className="space-y-4">
                     <div className="space-y-2">
@@ -349,7 +385,7 @@ export function AdvancedSettings() {
                         <Input
                           id="delete-password"
                           type={showPassword ? "text" : "password"}
-                          {...passwordForm.register('password')}
+                          {...passwordForm.register("password")}
                           placeholder="Enter your password"
                         />
                         <Button
@@ -372,7 +408,7 @@ export function AdvancedSettings() {
                         </p>
                       )}
                     </div>
-                    
+
                     <div className="p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
                       <div className="flex gap-2">
                         <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5" />
@@ -390,15 +426,15 @@ export function AdvancedSettings() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <AlertDialogFooter className="mt-6">
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <Button
                       type="submit"
-                      disabled={actionLoading === 'delete'}
+                      disabled={actionLoading === "delete"}
                       className="bg-red-700 text-white hover:bg-red-800"
                     >
-                      {actionLoading === 'delete' && (
+                      {actionLoading === "delete" && (
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       )}
                       Delete Account Permanently

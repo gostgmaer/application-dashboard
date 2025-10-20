@@ -485,7 +485,13 @@ const authService = {
     headers?: Record<string, string>
   ): Promise<ApiResponse> =>
     safeApiCall(() =>
-      requests.get("/activity-logs/my-activities", token, query, undefined, headers)
+      requests.get(
+        "/activity-logs/my-activities",
+        token,
+        query,
+        undefined,
+        headers
+      )
     ),
 
   getAllLoginHistory: (
@@ -518,7 +524,6 @@ const authService = {
       requests.get("/auth/known-devices", token, undefined, undefined, headers)
     ),
 
-
   getAddresses: (
     token?: string,
     headers?: Record<string, string>
@@ -526,6 +531,57 @@ const authService = {
     safeApiCall(() =>
       requests.get("/auth/all-addresses", token, undefined, undefined, headers)
     ),
+
+  addAddress: (
+    body: any,
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.post("/auth/addresses", body, token, headers)
+    ),
+
+  removeAddress: (
+    id: string,
+    token?: string,
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.delete(`/auth/addresses/${id}`, undefined, token, undefined, undefined)
+    ),
+
+  setDefaultAddress: (
+    id: string,
+    token?: string,
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.patch(`/auth/addresses/default/${id}`, undefined, token, undefined)
+    ),
+
+  setDefaultAddressPut: (
+    id: string,
+    token?: string,
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.put(`/auth/addresses/default/${id}`, undefined, token, undefined)
+    ),
+
+  updateAddress: (
+    id: string,
+    body: any,
+    token?: string,
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.patch(`/auth/addresses/${id}`, body, token, undefined)
+    ),
+
+  updateAddressPut: (
+    id: string,
+    token?: string,
+  ): Promise<ApiResponse> =>
+    safeApiCall(() =>
+      requests.put(`/auth/addresses/${id}`, undefined, token, undefined)
+    ),
+
 
   getRoutesDocumentation: (headers?: Record<string, any>) =>
     safeApiCall(() =>

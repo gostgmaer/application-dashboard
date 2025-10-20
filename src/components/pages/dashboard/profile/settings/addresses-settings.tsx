@@ -1,37 +1,71 @@
 "use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { useAddresses } from '@/hooks/use-user-settings';
-import { Address } from '@/types/user';
-import { MapPin, Plus, CreditCard as Edit, Trash2, Chrome as Home, Building, Phone, Loader as Loader2, Star } from 'lucide-react';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useAddresses } from "@/hooks/use-user-settings";
+import { Address } from "@/types/user";
+import {
+  MapPin,
+  Plus,
+  CreditCard as Edit,
+  Trash2,
+  Chrome as Home,
+  Building,
+  Phone,
+  Loader as Loader2,
+  Star,
+} from "lucide-react";
 
 const addressSchema = z.object({
-  label: z.string().min(1, 'Label is required'),
-  line1: z.string().min(1, 'Address line 1 is required'),
-  line2: z.string().optional(),
-  city: z.string().min(1, 'City is required'),
+  label: z.string().min(1, "Label is required"),
+  addressLine1: z.string().min(1, "Address line 1 is required"),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1, "City is required"),
   state: z.string().optional(),
-  postalCode: z.string().min(1, 'Postal code is required'),
-  country: z.string().min(1, 'Country is required'),
+  postalCode: z.string().min(1, "Postal code is required"),
+  country: z.string().min(1, "Country is required"),
   phone: z.string().optional(),
-  isDefault: z.boolean().default(false)
+  isDefault: z.boolean().default(false),
 });
 
 type AddressForm = z.infer<typeof addressSchema>;
 
 export function AddressesSettings() {
-  const { addresses, loading, createAddress, updateAddress, deleteAddress } = useAddresses();
+  const { addresses, loading, createAddress, updateAddress, deleteAddress } =
+    useAddresses();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -39,28 +73,28 @@ export function AddressesSettings() {
   const form = useForm<AddressForm>({
     resolver: zodResolver(addressSchema),
     defaultValues: {
-      label: '',
-      line1: '',
-      line2: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: '',
-      phone: '',
-      isDefault: false
-    }
+      label: "",
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+      phone: "",
+      isDefault: false,
+    },
   });
 
   const onSubmit = async (data: AddressForm) => {
-    setActionLoading('save');
+    setActionLoading("save");
     let success = false;
-    
+
     if (editingAddress) {
       success = await updateAddress(editingAddress.id, data);
     } else {
       success = await createAddress(data);
     }
-    
+
     if (success) {
       setDialogOpen(false);
       setEditingAddress(null);
@@ -84,15 +118,15 @@ export function AddressesSettings() {
   const handleNew = () => {
     setEditingAddress(null);
     form.reset({
-      label: '',
-      line1: '',
-      line2: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: '',
-      phone: '',
-      isDefault: false
+      label: "",
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      state: "",
+      postalCode: "",
+      country: "",
+      phone: "",
+      isDefault: false,
     });
     setDialogOpen(true);
   };
@@ -124,23 +158,22 @@ export function AddressesSettings() {
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>
-                {editingAddress ? 'Edit Address' : 'Add New Address'}
+                {editingAddress ? "Edit Address" : "Add New Address"}
               </DialogTitle>
               <DialogDescription>
-                {editingAddress 
-                  ? 'Update your address information below.'
-                  : 'Add a new address to your account for faster checkout.'
-                }
+                {editingAddress
+                  ? "Update your address information below."
+                  : "Add a new address to your account for faster checkout."}
               </DialogDescription>
             </DialogHeader>
-            
+
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="label">Address Label *</Label>
                   <Input
                     id="label"
-                    {...form.register('label')}
+                    {...form.register("label")}
                     placeholder="Home, Work, etc."
                   />
                   {form.formState.errors.label && (
@@ -154,31 +187,31 @@ export function AddressesSettings() {
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input
                     id="phone"
-                    {...form.register('phone')}
+                    {...form.register("phone")}
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="line1">Address Line 1 *</Label>
+                <Label htmlFor="addressLine1">Address Line 1 *</Label>
                 <Input
-                  id="line1"
-                  {...form.register('line1')}
+                  id="addressLine1"
+                  {...form.register("addressLine1")}
                   placeholder="Street address"
                 />
-                {form.formState.errors.line1 && (
+                {form.formState.errors.addressLine1 && (
                   <p className="text-sm text-destructive">
-                    {form.formState.errors.line1.message}
+                    {form.formState.errors.addressLine1.message}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="line2">Address Line 2</Label>
+                <Label htmlFor="addressLine2">Address Line 2</Label>
                 <Input
-                  id="line2"
-                  {...form.register('line2')}
+                  id="addressLine2"
+                  {...form.register("addressLine2")}
                   placeholder="Apartment, suite, etc. (optional)"
                 />
               </div>
@@ -188,7 +221,7 @@ export function AddressesSettings() {
                   <Label htmlFor="city">City *</Label>
                   <Input
                     id="city"
-                    {...form.register('city')}
+                    {...form.register("city")}
                     placeholder="City"
                   />
                   {form.formState.errors.city && (
@@ -202,7 +235,7 @@ export function AddressesSettings() {
                   <Label htmlFor="state">State/Province</Label>
                   <Input
                     id="state"
-                    {...form.register('state')}
+                    {...form.register("state")}
                     placeholder="State"
                   />
                 </div>
@@ -211,7 +244,7 @@ export function AddressesSettings() {
                   <Label htmlFor="postalCode">Postal Code *</Label>
                   <Input
                     id="postalCode"
-                    {...form.register('postalCode')}
+                    {...form.register("postalCode")}
                     placeholder="12345"
                   />
                   {form.formState.errors.postalCode && (
@@ -226,7 +259,7 @@ export function AddressesSettings() {
                 <Label htmlFor="country">Country *</Label>
                 <Input
                   id="country"
-                  {...form.register('country')}
+                  {...form.register("country")}
                   placeholder="Country"
                 />
                 {form.formState.errors.country && (
@@ -240,7 +273,7 @@ export function AddressesSettings() {
                 <input
                   type="checkbox"
                   id="isDefault"
-                  {...form.register('isDefault')}
+                  {...form.register("isDefault")}
                   className="rounded border-gray-300"
                 />
                 <Label htmlFor="isDefault">Set as default address</Label>
@@ -257,14 +290,11 @@ export function AddressesSettings() {
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={actionLoading === 'save'}
-                >
-                  {actionLoading === 'save' && (
+                <Button type="submit" disabled={actionLoading === "save"}>
+                  {actionLoading === "save" && (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   )}
-                  {editingAddress ? 'Update Address' : 'Save Address'}
+                  {editingAddress ? "Update Address" : "Save Address"}
                 </Button>
               </div>
             </form>
@@ -304,14 +334,16 @@ export function AddressesSettings() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          {address.label.toLowerCase().includes('home') ? (
+                          {address.label.toLowerCase().includes("home") ? (
                             <Home className="w-4 h-4 text-primary" />
                           ) : (
                             <Building className="w-4 h-4 text-primary" />
                           )}
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{address.label}</CardTitle>
+                          <CardTitle className="text-lg">
+                            {address.label}
+                          </CardTitle>
                           {address.isDefault && (
                             <Badge variant="default" className="text-xs mt-1">
                               <Star className="w-3 h-3 mr-1" />
@@ -344,10 +376,13 @@ export function AddressesSettings() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Address?</AlertDialogTitle>
+                              <AlertDialogTitle>
+                                Delete Address?
+                              </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete &quot;{address.label}&quot;? 
-                                This action cannot be undone.
+                                Are you sure you want to delete &quot;
+                                {address.label}&quot;? This action cannot be
+                                undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -366,11 +401,12 @@ export function AddressesSettings() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
-                      <p>{address.line1}</p>
-                      {address.line2 && <p>{address.line2}</p>}
+                      <p>{address.aaddressLine1}</p>
+                      {address.addressLine2 && <p>{address.addressLine2}</p>}
                       <p>
                         {address.city}
-                        {address.state && `, ${address.state}`} {address.postalCode}
+                        {address.state && `, ${address.state}`}{" "}
+                        {address.postalCode}
                       </p>
                       <p className="text-muted-foreground">{address.country}</p>
                       {address.phone && (

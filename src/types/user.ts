@@ -144,8 +144,8 @@ export interface UserPreferences {
 export interface Address {
   id: string;
   label: string;
-  line1: string;
-  line2?: string;
+  aaddressLine1?: string;
+  addressLine2?: string;
   city: string;
   state?: string;
   postalCode: string;

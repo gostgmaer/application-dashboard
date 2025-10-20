@@ -74,7 +74,7 @@ export function useAddresses() {
 
   const createAddress = async (address: Omit<Address, 'id'>) => {
     try {
-      const response = await userApi.createAddress(address);
+      const response = await authService.addAddress(address, session?.accessToken);
       if (response.success) {
         toast.success('Address added successfully');
         fetchAddresses();
@@ -89,7 +89,21 @@ export function useAddresses() {
 
   const updateAddress = async (id: string, address: Partial<Address>) => {
     try {
-      const response = await userApi.updateAddress(id, address);
+      const response = await authService.updateAddress(id, address, session?.accessToken);
+      if (response.success) {
+        toast.success('Address updated successfully');
+        fetchAddresses();
+        return true;
+      }
+      return false;
+    } catch (error) {
+      toast.error('Failed to update address');
+      return false;
+    }
+  };
+  const setDefaultAddress = async (id: string, address: Partial<Address>) => {
+    try {
+      const response = await authService.setDefaultAddress(id, session?.accessToken);
       if (response.success) {
         toast.success('Address updated successfully');
         fetchAddresses();
@@ -104,7 +118,7 @@ export function useAddresses() {
 
   const deleteAddress = async (id: string) => {
     try {
-      const response = await userApi.deleteAddress(id);
+      const response = await authService.removeAddress(id, session?.accessToken);
       if (response.success) {
         toast.success('Address deleted successfully');
         fetchAddresses();
@@ -117,7 +131,7 @@ export function useAddresses() {
     }
   };
 
-  return { addresses, loading, createAddress, updateAddress, deleteAddress };
+  return { addresses, loading, createAddress, updateAddress, deleteAddress, setDefaultAddress };
 }
 
 export function useDevices() {
