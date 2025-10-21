@@ -114,18 +114,7 @@ export const userApi = {
     return { success: true };
   },
 
-  // Addresses
-  getAddresses: async (): Promise<ApiResponse<Address[]>> => {
-    console.log('Fetching addresses');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      success: true,
-      data: [
-        { id: '1', label: 'Home', line1: '123 Main St', city: 'New York', postalCode: '10001', country: 'USA', phone: '+1234567890', isDefault: true },
-        { id: '2', label: 'Work', line1: '456 Business Ave', city: 'New York', postalCode: '10002', country: 'USA', isDefault: false }
-      ]
-    };
-  },
+
 
   createAddress: async (address: Omit<Address, 'id'>): Promise<ApiResponse> => {
     console.log('Creating address:', address);
