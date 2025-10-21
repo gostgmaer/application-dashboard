@@ -23,7 +23,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useSocialConnections } from "@/hooks/use-user-settings";
+import {
+  useProflileSecurity,
+  useSocialConnections,
+} from "@/hooks/use-user-settings";
 import { format } from "date-fns";
 import {
   Share2,
@@ -68,7 +71,7 @@ const socialProviders = {
 
 export function SocialSettings() {
   const { connections, loading, connectSocial, disconnectSocial } =
-    useSocialConnections();
+    useProflileSecurity();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   console.log(connections);
 

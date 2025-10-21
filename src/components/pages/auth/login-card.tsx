@@ -116,7 +116,7 @@ export function LoginCard() {
   const { update } = useSession();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { showConfirm, showAlert, showCustom } = useModal();
+  const { showConfirm, showAlert, showCustom, closeModal } = useModal();
   const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard";
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -513,7 +513,7 @@ export function LoginCard() {
 
   const showPrivacy = async () => {
     showCustom({
-      title: `Privacy and Polity`,
+      title: `Privacy and Policy`,
       content: <PrivacyPolicy />,
     });
   };

@@ -1,9 +1,10 @@
+import { useModal } from "@/contexts/modal-context";
 import Head from "next/head";
 
 export default function PrivacyPolicy() {
+  const { showConfirm, showAlert, showCustom, closeModal } = useModal();
   const handleAccept = () => {
-    console.log("User accepted the Privacy Policy");
-    // Add your logic here, e.g., update state, redirect, or make an API call
+    closeModal();
   };
 
   return (
@@ -17,9 +18,9 @@ export default function PrivacyPolicy() {
       </Head>
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg text-gray-900 dark:text-gray-100">
-          <h1 className="text-3xl font-bold mb-6 text-center">
+          {/* <h1 className="text-3xl font-bold mb-6 text-center">
             Privacy Policy
-          </h1>
+          </h1> */}
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Last Updated: October 17, 2025
           </p>
@@ -30,9 +31,9 @@ export default function PrivacyPolicy() {
               We are committed to protecting your privacy. This Privacy Policy
               explains how we collect, use, disclose, and safeguard your
               personal information when you use our services, including our
-              website, mobile applications, and other platforms ("Services"). By
-              using our Services, you consent to the practices described in this
-              Privacy Policy.
+              website, mobile applications, and other platforms
+              (&quot;Services&quot;). By using our Services, you consent to the
+              practices described in this Privacy Policy.
             </p>
           </section>
 
@@ -40,7 +41,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold mb-3">
               2. Information We Collect
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               We may collect the following types of information:
               <ul className="list-disc pl-6 mt-2">
                 <li>
@@ -65,14 +66,14 @@ export default function PrivacyPolicy() {
                   to enhance your experience and analyze usage.
                 </li>
               </ul>
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
             <h2 className="text-2xl font-semibold mb-3">
               3. How We Use Your Information
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               We use your information to:
               <ul className="list-disc pl-6 mt-2">
                 <li>Provide, operate, and improve our Services.</li>
@@ -87,14 +88,14 @@ export default function PrivacyPolicy() {
                 </li>
                 <li>Comply with legal obligations and protect our rights.</li>
               </ul>
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
             <h2 className="text-2xl font-semibold mb-3">
               4. How We Share Your Information
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               We may share your information with:
               <ul className="list-disc pl-6 mt-2">
                 <li>
@@ -119,14 +120,14 @@ export default function PrivacyPolicy() {
                 </li>
               </ul>
               We do not sell your personal information to third parties.
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
             <h2 className="text-2xl font-semibold mb-3">
               5. Cookies and Tracking Technologies
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               We use cookies and similar technologies to:
               <ul className="list-disc pl-6 mt-2">
                 <li>Remember your preferences and settings.</li>
@@ -136,7 +137,7 @@ export default function PrivacyPolicy() {
               You can manage cookie preferences through your browser settings.
               However, disabling cookies may affect the functionality of our
               Services.
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
@@ -153,7 +154,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-2xl font-semibold mb-3">
               7. Your Rights and Choices
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               Depending on your jurisdiction, you may have the following rights:
               <ul className="list-disc pl-6 mt-2">
                 <li>Access, correct, or delete your personal information.</li>
@@ -163,7 +164,7 @@ export default function PrivacyPolicy() {
               </ul>
               To exercise these rights, contact us using the information below.
               We will respond in accordance with applicable laws.
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
@@ -182,7 +183,7 @@ export default function PrivacyPolicy() {
 
           <section className="mb-6">
             <h2 className="text-2xl font-semibold mb-3">
-              9. Children's Privacy
+              9. Children&lsquo;s Privacy
             </h2>
             <p className="text-gray-700 dark:text-gray-300">
               Our Services are not intended for individuals under 13 years of

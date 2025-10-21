@@ -167,6 +167,12 @@ const authService = {
     safeApiCall(() =>
       requests.post("/auth/totp/backup-codes", body, token, headers)
     ),
+  getOTPStatus: (
+    token?: string,
+    headers?: Record<string, string>
+  ): Promise<ApiResponse> =>
+    safeApiCall(() => requests.get("/auth/mfa/status", token, headers)),
+
   setupMFA: (
     body: any,
     token?: string,

@@ -1,9 +1,10 @@
+import { useModal } from "@/contexts/modal-context";
 import Head from "next/head";
 
 export default function TermsAndConditions() {
+  const { showConfirm, showAlert, showCustom, closeModal } = useModal();
   const handleAccept = () => {
-    console.log("User accepted the Terms and Conditions");
-    // Add your logic here, e.g., update state, redirect, or make an API call
+    closeModal();
   };
 
   return (
@@ -17,9 +18,9 @@ export default function TermsAndConditions() {
       </Head>
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg text-gray-900 dark:text-gray-100">
-          <h1 className="text-3xl font-bold mb-6 text-center">
+          {/* <h1 className="text-3xl font-bold mb-6 text-center">
             Terms and Conditions
-          </h1>
+          </h1> */}
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Last Updated: October 17, 2025
           </p>
@@ -30,10 +31,10 @@ export default function TermsAndConditions() {
             </h2>
             <p className="text-gray-700 dark:text-gray-300">
               By accessing or using our services, you agree to be bound by these
-              Terms and Conditions ("Terms"). If you do not agree with any part
-              of these Terms, you must not use our services. These Terms apply
-              to all users, including visitors, registered users, and
-              subscribers.
+              Terms and Conditions (&quot;Terms&quot;). If you do not agree with
+              any part of these Terms, you must not use our services. These
+              Terms apply to all users, including visitors, registered users,
+              and subscribers.
             </p>
           </section>
 
@@ -51,7 +52,7 @@ export default function TermsAndConditions() {
             <h2 className="text-2xl font-semibold mb-3">
               3. User Responsibilities
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               You are responsible for maintaining the confidentiality of your
               account credentials and for all activities that occur under your
               account. You agree to:
@@ -67,7 +68,7 @@ export default function TermsAndConditions() {
                 </li>
                 <li>Comply with all applicable laws and regulations.</li>
               </ul>
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
@@ -89,7 +90,7 @@ export default function TermsAndConditions() {
             <h2 className="text-2xl font-semibold mb-3">
               5. Prohibited Conduct
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               You agree not to:
               <ul className="list-disc pl-6 mt-2">
                 <li>
@@ -112,17 +113,17 @@ export default function TermsAndConditions() {
                   Engage in any activity that violates the rights of others.
                 </li>
               </ul>
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
             <h2 className="text-2xl font-semibold mb-3">
               6. User-Generated Content
             </h2>
-            <p className="text-gray-700 dark:text-gray-300">
+            <div className="text-gray-700 dark:text-gray-300">
               You may submit content, such as comments, reviews, or other
-              materials ("User Content"). You are solely responsible for your
-              User Content and represent that it does not:
+              materials (&quot;User Content&quot;). You are solely responsible
+              for your User Content and represent that it does not:
               <ul className="list-disc pl-6 mt-2">
                 <li>
                   Infringe on any third-party rights, including intellectual
@@ -133,7 +134,7 @@ export default function TermsAndConditions() {
               </ul>
               We reserve the right to remove or modify User Content at our
               discretion.
-            </p>
+            </div>
           </section>
 
           <section className="mb-6">
@@ -207,11 +208,12 @@ export default function TermsAndConditions() {
               12. Disclaimer of Warranties
             </h2>
             <p className="text-gray-700 dark:text-gray-300">
-              Our services are provided "as is" and "as available" without
-              warranties of any kind, either express or implied, including but
-              not limited to implied warranties of merchantability, fitness for
-              a particular purpose, or non-infringement. We do not guarantee
-              that our services will be uninterrupted, secure, or error-free.
+              Our services are provided &quot;as is&quot; and &quot;as
+              available&quot; without warranties of any kind, either express or
+              implied, including but not limited to implied warranties of
+              merchantability, fitness for a particular purpose, or
+              non-infringement. We do not guarantee that our services will be
+              uninterrupted, secure, or error-free.
             </p>
           </section>
 
@@ -233,8 +235,8 @@ export default function TermsAndConditions() {
               You agree to indemnify, defend, and hold harmless us, our
               affiliates, officers, directors, employees, and agents from any
               claims, liabilities, damages, or expenses (including reasonable
-              attorneys' fees) arising from your use of our services, your User
-              Content, or your violation of these Terms.
+              attorneys&apos; fees) arising from your use of our services, your
+              User Content, or your violation of these Terms.
             </p>
           </section>
 
@@ -253,10 +255,10 @@ export default function TermsAndConditions() {
             <h2 className="text-2xl font-semibold mb-3">16. Feedback</h2>
             <p className="text-gray-700 dark:text-gray-300">
               Any feedback, suggestions, or ideas you provide about our services
-              ("Feedback") is non-confidential. We may use, reproduce, and
-              incorporate Feedback into our services without any obligation to
-              you, and you grant us a perpetual, irrevocable, worldwide license
-              to use such Feedback.
+              (&ldquo;Feedback&ldquo;) is non-confidential. We may use,
+              reproduce, and incorporate Feedback into our services without any
+              obligation to you, and you grant us a perpetual, irrevocable,
+              worldwide license to use such Feedback.
             </p>
           </section>
 
