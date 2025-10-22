@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import authService from '@/lib/http/authService';
 import { useSession } from 'next-auth/react';
 import addressServices from '@/lib/http/address';
+import { useSetting } from '@/contexts/SettingContext';
 
 export function useUserData() {
   const [user, setUser] = useState<User | null>(null);
@@ -380,15 +381,41 @@ export function useUserPreferences() {
 
 export function useProflileSecurity() {
   const { data: session } = useSession()
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
-  const [activeSessions, setActiveSessions] = useState<ActivityLog[]>([]);
-  const [loginHistory, setLoginHistory] = useState<ActivityLog[]>([]);
-  const [securityLogs, setSecurityLogs] = useState<ActivityLog[]>([]);
-  const [connections, setConnections] = useState<SocialConnection[]>([]);
-  const [twoFa, setTwoFa] = useState<any>(null);
 
+  const logoutDevice = async (deviceId: string) => {
+    try {
+      const response = await authService.logout(session?.accessToken);
+      if (response.success) {
+        toast.success('Device logged out successfully');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      toast.error('Failed to logout device');
+      return false;
+    }
+  };
+  const logoutAllDevices = async () => {
+    try {
+      const response = await authService.logoutAll(undefined, session?.accessToken);
+      if (response.success) {
+        toast.success('All devices logged out successfully');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      toast.error('Failed to logout all devices');
+      return false;
+    }
+  };
+  return { logoutAllDevices, logoutDevice };
+
+}
+
+export function useTwoFactorStatus() {
+  const { data: session } = useSession()
+  const { setLoading } = useSetting();
+  const [twoFa, setTwoFa] = useState<any>(null);
   const fetchTwoFA = async () => {
     try {
       const response = await authService.getOTPStatus(session?.accessToken);
@@ -402,127 +429,18 @@ export function useProflileSecurity() {
     }
   };
 
-
-  const fetchConnections = async () => {
-    try {
-      const response = await authService.getLinkedAccounts(session?.accessToken);
-      if (response.success && response.data) {
-        setConnections(response.data.linkedAccounts);
-      }
-    } catch (error) {
-      toast.error('Failed to load social connections');
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchTwoFA();
     }
-  };
+  }, [session]);
 
-  const connectSocial = async (provider: string) => {
-    try {
-      // const response = await userApi.connectSocial(provider);
-      const response = await authService.linkSocialAccount({ "provider": "google", accessToken: session?.accessToken }, session?.accessToken);
-      if (response.success) {
-        toast.success(`Connected to ${provider} successfully`);
-        fetchConnections();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      toast.error(`Failed to connect to ${provider}`);
-      return false;
-    }
-  };
-
-  const disconnectSocial = async (provider: string) => {
-    try {
-      const response = await userApi.disconnectSocial(provider);
-      if (response.success) {
-        toast.success(`Disconnected from ${provider} successfully`);
-        fetchConnections();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      toast.error(`Failed to disconnect from ${provider}`);
-      return false;
-    }
-  };
-
-  const fetchDevices = async () => {
-    try {
-      const response = await authService.getKnownDevices(session?.accessToken);
-      if (response.success && response.data) {
-        setDevices(response.data.items);
-      }
-    } catch (error) {
-      toast.error('Failed to load devices');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logoutDevice = async (deviceId: string) => {
-    try {
-      const response = await userApi.logoutDevice(deviceId);
-      if (response.success) {
-        toast.success('Device logged out successfully');
-        fetchDevices();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      toast.error('Failed to logout device');
-      return false;
-    }
-  };
-
-  const logoutAllDevices = async () => {
-    try {
-      const response = await userApi.logoutAllDevices();
-      if (response.success) {
-        toast.success('All devices logged out successfully');
-        fetchDevices();
-        return true;
-      }
-      return false;
-    } catch (error) {
-      toast.error('Failed to logout all devices');
-      return false;
-    }
-  };
-
-  const updateDeviceTrust = async (deviceId: string, trusted: boolean) => {
-    try {
-      const response = await userApi.updateDeviceTrust(deviceId, trusted);
-      if (response.success) {
-        setDevices(prev => prev.map(device =>
-          device.id === deviceId ? { ...device, trusted } : device
-        ));
-        fetchDevices()
-        fetchSecurityLogs()
-        toast.success(`Device ${trusted ? 'trusted' : 'untrusted'} successfully`);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      toast.error('Failed to update device trust');
-      return false;
-    }
-  };
-  const fetchActivityLogs = async (page: number = 1) => {
-    try {
-      setLoading(true);
-      const response = await authService.getActivityLogs(session?.accessToken);
-      if (response.success && response.data) {
-        setActivityLogs(response.data.logs);
-
-      }
-    } catch (error) {
-      toast.error('Failed to load activity logs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  return { fetchTwoFA, twoFa };
+}
+export function useSecurityLogs() {
+  const { data: session } = useSession()
+  const { setLoading } = useSetting();
+  const [securityLogs, setSecurityLogs] = useState<ActivityLog[]>([]);
   const fetchSecurityLogs = async (page: number = 1) => {
     try {
       setLoading(true);
@@ -536,19 +454,19 @@ export function useProflileSecurity() {
       setLoading(false);
     }
   };
-  const fetchActiveSession = async (page: number = 1) => {
-    try {
-      setLoading(true);
-      const response = await authService.getAllActiveSessions(session?.accessToken);
-      if (response.success && response.data) {
-        setActiveSessions(response.data);
-      }
-    } catch (error) {
-      toast.error('Failed to load security logs');
-    } finally {
-      setLoading(false);
+
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchSecurityLogs();
     }
-  };
+  }, [session]);
+
+  return { fetchSecurityLogs, securityLogs };
+}
+export function useLoginHistory() {
+  const { data: session } = useSession()
+  const { setLoading } = useSetting();
+  const [loginHistory, setLoginHistory] = useState<ActivityLog[]>([]);
   const fetchLoginHistory = async (page: number = 1) => {
     try {
       setLoading(true);
@@ -565,23 +483,64 @@ export function useProflileSecurity() {
 
   useEffect(() => {
     if (session?.accessToken) {
-      fetchConnections();
-      fetchDevices();
-      fetchSecurityLogs()
-      fetchActivityLogs()
-      fetchActiveSession()
-      fetchLoginHistory()
+      fetchLoginHistory();
     }
   }, [session]);
 
+  return { fetchLoginHistory, loginHistory };
+}
+export function useActiveSessions() {
+  const { data: session } = useSession()
+  const { setLoading } = useSetting();
+  const [activeSessions, setActiveSessions] = useState<ActivityLog[]>([]);
+
+  const fetchActiveSession = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      const response = await authService.getAllActiveSessions(session?.accessToken);
+      if (response.success && response.data) {
+        setActiveSessions(response.data);
+      }
+    } catch (error) {
+      toast.error('Failed to load security logs');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (session?.accessToken) {
-      fetchTwoFA();
+      fetchActiveSession();
     }
   }, [session]);
 
+  return { fetchActiveSession, activeSessions };
+}
+export function useMyActivity() {
+  const { data: session } = useSession()
+  const { setLoading } = useSetting();
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
 
-  return { fetchActiveSession, fetchActivityLogs, fetchConnections, fetchDevices, fetchLoginHistory, fetchSecurityLogs, updateDeviceTrust, logoutAllDevices, logoutDevice, disconnectSocial, connectSocial, devices, connections, loading, loginHistory, securityLogs, activityLogs, activeSessions, twoFa, fetchTwoFA };
+  const fetchActivityLogs = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      const response = await authService.getActivityLogs(session?.accessToken);
+      if (response.success && response.data) {
+        setActivityLogs(response.data.logs);
 
+      }
+    } catch (error) {
+      toast.error('Failed to load activity logs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchActivityLogs();
+    }
+  }, [session]);
+
+  return { fetchActivityLogs, activityLogs };
 }

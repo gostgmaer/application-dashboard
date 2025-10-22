@@ -31,6 +31,7 @@ interface SettingContextType {
   setting: Setting | null;
   loading: boolean;
   error: string | null;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>; // 👈 added
   refreshSetting: () => Promise<void>;
   updateLocalSetting: (newSetting: Partial<Setting>) => void;
 }
@@ -100,7 +101,6 @@ export function SettingProvider({ children }: SettingProviderProps) {
         setLoading(false);
       } catch (parseError) {
         console.error("Error parsing cached setting:", parseError);
-        // fallback to fresh fetch if parsing fails
         fetchSetting();
       }
     } else {
@@ -112,6 +112,7 @@ export function SettingProvider({ children }: SettingProviderProps) {
     setting,
     loading,
     error,
+    setLoading, // ✅ added
     refreshSetting,
     updateLocalSetting,
   };

@@ -26,7 +26,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useProflileSecurity, useUserData } from "@/hooks/use-user-settings";
+import {
+  useProflileSecurity,
+  useTwoFactorStatus,
+  useUserData,
+} from "@/hooks/use-user-settings";
+import { useSetting } from "@/contexts/SettingContext";
 import { userApi } from "@/lib/api";
 import { toast } from "sonner";
 import {
@@ -78,28 +83,8 @@ type OTPVerificationForm = z.infer<typeof otpVerificationSchema>;
 
 export function SecuritySettings() {
   const { updateUser, profile } = useUserData();
-  const {
-    fetchActiveSession,
-    fetchActivityLogs,
-    fetchConnections,
-    fetchDevices,
-    fetchLoginHistory,
-    fetchSecurityLogs,
-    updateDeviceTrust,
-    logoutAllDevices,
-    logoutDevice,
-    disconnectSocial,
-    connectSocial,
-    devices,
-    connections,
-    loading,
-    loginHistory,
-    securityLogs,
-    activityLogs,
-    activeSessions,
-    twoFa,
-    fetchTwoFA,
-  } = useProflileSecurity();
+  const { fetchTwoFA, twoFa } = useTwoFactorStatus();
+  const { loading } = useSetting();
   const [showPasswords, setShowPasswords] = useState({
     current: false,
     new: false,

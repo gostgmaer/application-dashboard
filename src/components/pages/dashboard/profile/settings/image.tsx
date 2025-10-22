@@ -65,26 +65,50 @@ export default function ProfileImageSection({ user }: PersonalDetailsTabProps) {
     }
   };
 
-  const handleReplace = async (file: File): Promise<string> => {
+  const handleReplace = async (file: File, isReplace = false) => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const formData = new FormData();
+      formData.append("files", file);
+      const response = await fetch("http://localhost:3500/api/files/upload", {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+      });
+      const { data } = await response.json();
+      if (response.ok) {
+        setProfileImage(data?.[0]?.url);
 
-      // Revoke old URL if it exists
-      if (profileImage) {
-        URL.revokeObjectURL(profileImage);
+        const body = {
+          id: data[0].id,
+          url: data[0].url,
+          name: data[0].originalName,
+          size: data[0].size,
+          type: data[0].mimeType,
+        };
+
+        await authService.updateProfilePicture(body, session?.accessToken);
+
+        toast({ title: "Success", description: "File Upload SuccessFul!" });
+        return data?.[0]?.url;
+      } else {
+        toast({
+          title: "Failed",
+          description: "File Upload failed!",
+          variant: "destructive",
+        });
+        throw new Error(data.message || "Upload failed");
       }
-
-      // Create new URL
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
-
-      console.log("File replaced:", file.name);
-      return imageUrl;
     } catch (error) {
-      console.error("Replace failed:", error);
-      throw error;
+      // setUploadedFiles((prev) =>
+      //   prev.map((f) =>
+      //     fileObjects.find((fo) => fo.id === f.id)
+      //       ? { ...f, status: "error", error: (error as Error).message }
+      //       : f
+      //   )
+      // );
     } finally {
       setIsLoading(false);
     }

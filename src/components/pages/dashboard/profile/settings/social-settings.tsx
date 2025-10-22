@@ -71,7 +71,7 @@ const socialProviders = {
 
 export function SocialSettings() {
   const { connections, loading, connectSocial, disconnectSocial } =
-    useProflileSecurity();
+    useSocialConnections();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   console.log(connections);
 
