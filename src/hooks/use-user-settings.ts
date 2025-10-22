@@ -271,7 +271,7 @@ export function useActivityLogs() {
   useEffect(() => {
     fetchActivityLogs();
     fetchSecurityLogs();
-  }, []);
+  }, [session]);
 
   return {
     activityLogs,
@@ -540,7 +540,7 @@ export function useMyActivity() {
     if (session?.accessToken) {
       fetchActivityLogs();
     }
-  }, [session]);
+  }, []);
 
   return { fetchActivityLogs, activityLogs };
 }

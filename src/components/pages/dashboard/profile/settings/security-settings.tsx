@@ -834,8 +834,8 @@ export function SecuritySettings() {
       </Card>
 
       <SocialSettings></SocialSettings>
-      {/* <DevicesSettings></DevicesSettings> */}
-      {/* <ActivitySettings></ActivitySettings> */}
+      <DevicesSettings></DevicesSettings>
+      <ActivitySettings></ActivitySettings>
 
       {/* SMS Setup Dialog */}
       <Dialog open={smsSetupDialog} onOpenChange={setSmsSetupDialog}>

@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useActivityLogs } from "@/hooks/use-user-settings";
+import { useActivityLogs, useMyActivity } from "@/hooks/use-user-settings";
 import { format } from "date-fns";
 import {
   Activity,
@@ -32,33 +32,33 @@ import {
   Loader as Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
+import { useSetting } from "@/contexts/SettingContext";
 
 const ITEMS_PER_PAGE = 10;
 
 export function ActivitySettings() {
   const {
-    activityLogs,
     securityLogs,
+    activityLogs,
     activityTotal,
     securityTotal,
-    activityLoading,
-    securityLoading,
     fetchActivityLogs,
     fetchSecurityLogs,
   } = useActivityLogs();
 
+  const { loading } = useSetting();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("activity");
-  console.log(activityLogs);
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    if (activeTab === "activity") {
-      fetchActivityLogs(page);
-    } else {
-      fetchSecurityLogs(page);
-    }
-  };
+  // const handlePageChange = (page: number) => {
+  //   setCurrentPage(page);
+  //   if (activeTab === "activity") {
+  //     fetchActivityLogs(page);
+  //   } else {
+  //     fetchSecurityLogs(page);
+  //   }
+  // };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,43 +73,43 @@ export function ActivitySettings() {
     }
   };
 
-  const renderPagination = (total: number) => {
-    const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  // const renderPagination = (total: number) => {
+  //   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
-    if (totalPages <= 1) return null;
+  //   if (totalPages <= 1) return null;
 
-    return (
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-          {Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} entries
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Previous
-          </Button>
-          <span className="text-sm">
-            Page {currentPage} of {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-          >
-            Next
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
-      </div>
-    );
-  };
+  //   return (
+  //     <div className="flex items-center justify-between">
+  //       <p className="text-sm text-muted-foreground">
+  //         Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+  //         {Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} entries
+  //       </p>
+  //       <div className="flex items-center gap-2">
+  //         <Button
+  //           variant="outline"
+  //           size="sm"
+  //           onClick={() => handlePageChange(currentPage - 1)}
+  //           disabled={currentPage === 1}
+  //         >
+  //           <ChevronLeft className="w-4 h-4" />
+  //           Previous
+  //         </Button>
+  //         <span className="text-sm">
+  //           Page {currentPage} of {totalPages}
+  //         </span>
+  //         <Button
+  //           variant="outline"
+  //           size="sm"
+  //           onClick={() => handlePageChange(currentPage + 1)}
+  //           disabled={currentPage === totalPages}
+  //         >
+  //           Next
+  //           <ChevronRight className="w-4 h-4" />
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   return (
     <div className="space-y-6">
@@ -159,7 +159,7 @@ export function ActivitySettings() {
             </TabsList>
 
             <TabsContent value="activity" className="space-y-4">
-              {activityLoading ? (
+              {loading ? (
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="w-8 h-8 animate-spin" />
                 </div>
@@ -217,13 +217,13 @@ export function ActivitySettings() {
                       </TableBody>
                     </Table>
                   </div>
-                  {renderPagination(activityTotal)}
+                  {/* {renderPagination(activityTotal)} */}
                 </>
               )}
             </TabsContent>
 
             <TabsContent value="security" className="space-y-4">
-              {securityLoading ? (
+              {loading ? (
                 <div className="flex items-center justify-center h-64">
                   <Loader2 className="w-8 h-8 animate-spin" />
                 </div>
@@ -281,7 +281,7 @@ export function ActivitySettings() {
                       </TableBody>
                     </Table>
                   </div>
-                  {renderPagination(securityTotal)}
+                  {/* {renderPagination(securityTotal)} */}
                 </>
               )}
             </TabsContent>
