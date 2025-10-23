@@ -168,7 +168,7 @@ export function useDevices() {
     try {
       const response = await authService.getKnownDevices(session?.accessToken);
       if (response.success && response.data) {
-        setDevices(response.data.items);
+        setDevices(response.data.result);
       }
     } catch (error) {
       toast.error('Failed to load devices');
@@ -243,7 +243,7 @@ export function useActivityLogs() {
       setActivityLoading(true);
       const response = await authService.getActivityLogs(session?.accessToken);
       if (response.success && response.data) {
-        setActivityLogs(response.data.logs);
+        setActivityLogs(response.data.result);
         setActivityTotal(response.data.pagination.total);
       }
     } catch (error) {
@@ -439,19 +439,19 @@ export function useTwoFactorStatus() {
 }
 export function useSecurityLogs() {
   const { data: session } = useSession()
-  const { setLoading } = useSetting();
+
   const [securityLogs, setSecurityLogs] = useState<ActivityLog[]>([]);
   const fetchSecurityLogs = async (page: number = 1) => {
     try {
-      setLoading(true);
+
       const response = await authService.getSecurityLogs(session?.accessToken);
       if (response.success && response.data) {
-        setSecurityLogs(response.data.logs);
+        setSecurityLogs(response.data.result);
       }
     } catch (error) {
       toast.error('Failed to load security logs');
     } finally {
-      setLoading(false);
+
     }
   };
 

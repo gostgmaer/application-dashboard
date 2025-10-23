@@ -141,7 +141,6 @@ export function DataTable<TData>({
       if (value && value.trim()) {
         params[key] = value.trim();
       }
-      
     });
 
     return params;
@@ -166,6 +165,7 @@ export function DataTable<TData>({
     { refreshInterval, revalidateOnFocus }
   );
 
+  console.log(data);
 
   const tableData = useMemo(() => {
     if (!data?.result) return [];
@@ -506,7 +506,7 @@ export function DataTable<TData>({
 
       {/* Table */}
       <div className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
-        <Table >
+        <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow

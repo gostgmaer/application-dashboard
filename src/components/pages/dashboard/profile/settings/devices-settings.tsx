@@ -140,7 +140,7 @@ export function DevicesSettings() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {devices.map((device, index) => {
+            {devices?.map((device, index) => {
               const DeviceIcon = getDeviceIcon(device.name);
 
               return (

@@ -157,6 +157,7 @@ export interface Address {
 export interface Device {
   id: string;
   name: string;
+  result: any;
   ip: string;
   os: string;
   browser: string;
@@ -188,4 +189,85 @@ export interface TOTPSetup {
   secret: string;
   qrCode: string;
   backupCodes: string[];
+}
+
+export type RiskLevel = 'low' | 'medium' | 'high' | string;
+export type LoginMethod = 'password' | 'otp' | 'sso' | string;
+
+
+export interface Coordinates {
+  lat: number | null;
+  lng: number | null;
+}
+
+
+export interface Location {
+  coordinates: Coordinates;
+  country: string; // e.g. "Unknown" or ISO country name/code
+  region: string; // state/region name or "Unknown"
+  city: string; // city name or "Unknown"
+  timezone: string | null; // tz database name or null
+}
+
+
+export interface Browser {
+  name: string | null;
+  version: string | null;
+  major: string | null; // major version as string (keeps original shape)
+}
+
+
+export interface OS {
+  name: string | null;
+  version: string | null;
+}
+
+
+
+export interface SecurityAnalysis {
+  userAgentLength: number;
+  hasSecurityHeaders: boolean;
+  headerCount: number;
+  timestamp: string; // ISO timestamp
+}
+
+
+export interface Security {
+  analysis: SecurityAnalysis;
+  suspiciousScore: number; // 0..n scoring system
+  riskLevel: RiskLevel;
+  flags: string[]; // list of short flag identifiers
+}
+
+export interface securityEvent {
+  location: Location;
+  browser: Browser;
+  os: OS;
+  device: Device;
+  security: Security;
+
+
+  // times are kept as ISO strings to preserve exact incoming shape
+  loginTime: string; // ISO timestamp
+  detectedAt: string; // ISO timestamp
+
+
+  ipAddress: string;
+  userAgent: string;
+
+
+  successful: boolean;
+  failureReason?: string | null;
+
+
+  deviceId?: string;
+  fingerprint?: string;
+  otpUsed?: string; // e.g. "none" | "sms" | "authenticator"
+
+
+  loginMethod: LoginMethod;
+
+
+  _id: string; // database id
+  id?: string; // duplicate id field present in payload
 }

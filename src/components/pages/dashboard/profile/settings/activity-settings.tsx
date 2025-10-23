@@ -20,7 +20,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useActivityLogs, useMyActivity } from "@/hooks/use-user-settings";
+import {
+  useActivityLogs,
+  useMyActivity,
+  useSecurityLogs,
+} from "@/hooks/use-user-settings";
 import { format } from "date-fns";
 import {
   Activity,
@@ -30,21 +34,188 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader as Loader2,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils/utils";
 import { useSetting } from "@/contexts/SettingContext";
+import { useSession } from "next-auth/react";
+import {
+  DataTable,
+  DataTableFilter,
+} from "@/components/ui/data-table/data-Table-Client";
+import { useModal } from "@/contexts/modal-context";
+import { ColumnDef } from "@tanstack/react-table";
+import { securityEvent } from "@/types/user";
 
 const ITEMS_PER_PAGE = 10;
 
+export function SecurityLogsTable(props: any) {
+  const { data: session } = useSession();
+  const { showConfirm, showAlert, showCustom } = useModal();
+  const filters: DataTableFilter[] = [
+    {
+      id: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+        { label: "Pending", value: "pending" },
+        { label: "Banned", value: "banned" },
+        { label: "Deleted", value: "deleted" },
+        { label: "Archived", value: "archived" },
+        { label: "Draft", value: "draft" },
+      ],
+    },
+  ];
+
+  const handleView = async (data: any) => {
+    console.log(data);
+  };
+
+  const columns: ColumnDef<securityEvent>[] = [
+    {
+      accessorKey: "id",
+      header: "ID",
+      cell: ({ row }) => {
+        return (
+          //  <div className="font-medium">{user.fullName}</div>
+
+          <div className="font-medium flex items-center gap-2">
+            {row.original.id}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "detectedAt",
+      header: "Timestamp",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("detectedAt"));
+        return <div>{date.toLocaleString()}</div>;
+      },
+    },
+    {
+      accessorKey: "ipAddress",
+      header: "ip Address",
+      cell: ({ row }) => {
+        return row.getValue("ipAddress");
+      },
+    },
+    {
+      accessorKey: "device",
+      header: "Device",
+      cell: ({ row }) => {
+        const device: any = row.getValue("device") as string;
+        return (
+          <div className="flex flex-col text-sm">
+            <span>
+              <strong>Vendor:</strong>{" "}
+              {device.vendor || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Model:</strong>{" "}
+              {device.model || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Type:</strong>{" "}
+              {device.type || <span className="text-gray-400">Unknown</span>}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "loginTime",
+      header: "Last Login Time",
+      cell: ({ row }) => {
+        const lastLogin = row.getValue("loginTime") as string;
+        return <div>{lastLogin} Ago</div>;
+      },
+    },
+    {
+      accessorKey: "os",
+      header: "Operating System",
+      cell: ({ row }) => {
+        const os: any = row.getValue("os");
+        return (
+          <div className="flex flex-col text-sm">
+            <span>
+              <strong>Name:</strong>{" "}
+              {os.name || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Version:</strong>{" "}
+              {os.version || <span className="text-gray-400">Unknown</span>}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "browser",
+      header: "Browser",
+      cell: ({ row }) => {
+        const browser: any = row.getValue("browser");
+        return (
+          <div className="flex flex-col text-sm">
+            <span>
+              <strong>Name:</strong>{" "}
+              {browser.name || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Version:</strong>{" "}
+              {browser.version || (
+                <span className="text-gray-400">Unknown</span>
+              )}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      id: "actions",
+
+      cell: ({ row }) => {
+        const user = row.original;
+
+        return (
+          <div className="text-red-500" onClick={() => handleView(user)}>
+            <Eye className="mr-2 h-4 w-4" />
+            View
+          </div>
+        );
+      },
+    },
+  ];
+  return (
+    <div className=" mx-auto py-10">
+      <div className="space-y-4">
+        <DataTable
+          columns={columns}
+          endpoint="/auth/security-logs"
+          token={session?.accessToken}
+          filters={filters}
+          enableRowSelection={true}
+          enableMultiRowSelection={true}
+          refreshInterval={3000000}
+          searchPlaceholder="Search users by name, email..."
+          emptyMessage="No users found."
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ActivitySettings() {
   const {
-    securityLogs,
     activityLogs,
     activityTotal,
     securityTotal,
     fetchActivityLogs,
     fetchSecurityLogs,
   } = useActivityLogs();
+  const { securityLogs } = useSecurityLogs();
 
   const { loading } = useSetting();
 
@@ -72,44 +243,6 @@ export function ActivitySettings() {
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
     }
   };
-
-  // const renderPagination = (total: number) => {
-  //   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
-
-  //   if (totalPages <= 1) return null;
-
-  //   return (
-  //     <div className="flex items-center justify-between">
-  //       <p className="text-sm text-muted-foreground">
-  //         Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
-  //         {Math.min(currentPage * ITEMS_PER_PAGE, total)} of {total} entries
-  //       </p>
-  //       <div className="flex items-center gap-2">
-  //         <Button
-  //           variant="outline"
-  //           size="sm"
-  //           onClick={() => handlePageChange(currentPage - 1)}
-  //           disabled={currentPage === 1}
-  //         >
-  //           <ChevronLeft className="w-4 h-4" />
-  //           Previous
-  //         </Button>
-  //         <span className="text-sm">
-  //           Page {currentPage} of {totalPages}
-  //         </span>
-  //         <Button
-  //           variant="outline"
-  //           size="sm"
-  //           onClick={() => handlePageChange(currentPage + 1)}
-  //           disabled={currentPage === totalPages}
-  //         >
-  //           Next
-  //           <ChevronRight className="w-4 h-4" />
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   );
-  // };
 
   return (
     <div className="space-y-6">
@@ -261,7 +394,7 @@ export function ActivitySettings() {
                             </TableCell>
                             <TableCell>
                               {format(
-                                new Date(log.timestamp),
+                                new Date(log.detectedAt),
                                 "MMM dd, yyyy HH:mm"
                               )}
                             </TableCell>
@@ -281,7 +414,6 @@ export function ActivitySettings() {
                       </TableBody>
                     </Table>
                   </div>
-                  {/* {renderPagination(securityTotal)} */}
                 </>
               )}
             </TabsContent>

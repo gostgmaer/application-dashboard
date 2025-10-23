@@ -24,6 +24,7 @@ import {
   Eye,
   Trash2,
   Info,
+  Loader2,
 } from "lucide-react";
 import UserServices from "@/lib/http/userService";
 import { useToast } from "@/hooks/useToast";
@@ -34,6 +35,7 @@ import { useSession } from "next-auth/react";
 import userServices from "@/lib/http/userService";
 import FileUploader, { Attachment } from "@/components/elements/uploader";
 import FileUpload from "@/components/elements/file/FileUpload";
+import { useSetting } from "@/contexts/SettingContext";
 
 interface Role {
   _id: string;
@@ -142,7 +144,7 @@ const subscriptionTypes = ["free", "premium", "enterprise"];
 
 export default function UserCreate({ u, id, master }: any) {
   const { data: session } = useSession();
-
+  const { setLoading, loading } = useSetting();
   const route = useRouter();
   const { toast } = useToast();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -164,51 +166,52 @@ export default function UserCreate({ u, id, master }: any) {
     values: UserData,
     s: "draft" | "published" | "update"
   ) => {
-    const updatedUser = {
-      ...values,
-      status: s === "draft" ? "draft" : values?.status,
-      referralCode: values?.referralCode || generateReferralCode(),
-      profilePicture: uploadedFiles[0],
-    };
-    let res: any = {};
+    setLoading(true);
+    try {
+      const updatedUser = {
+        ...values,
+        status: s === "draft" ? "draft" : values?.status,
+        referralCode: values?.referralCode || generateReferralCode(),
+        profilePicture: uploadedFiles[0],
+      };
+      let res: any = {};
 
-    switch (s) {
-      case "draft":
-        {
-          res = await userServices.create(updatedUser, session?.accessToken);
-        }
+      switch (s) {
+        case "draft":
+          {
+            res = await userServices.create(updatedUser, session?.accessToken);
+          }
 
-        break;
-      case "update":
-        {
-          res = await userServices.updatePatch(
-            id,
-            updatedUser,
-            session?.accessToken
-          );
-        }
-        break;
+          break;
+        case "update":
+          {
+            res = await userServices.updatePatch(
+              id,
+              updatedUser,
+              session?.accessToken
+            );
+          }
+          break;
 
-      default:
-        {
-          res = await UserServices.create(updatedUser, session?.accessToken);
-        }
-        break;
-    }
-
-    if (res.error) {
-      const error = JSON.parse(res.error);
-      toast({
-        title: error.status,
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
+        default:
+          {
+            res = await UserServices.create(updatedUser, session?.accessToken);
+          }
+          break;
+      }
       reset();
       toast({
         title: res.status,
         description: res.message,
       });
+    } catch (error: any) {
+      toast({
+        title: error.status,
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
       route.push("/dashboard/users");
     }
   };
@@ -842,10 +845,14 @@ export default function UserCreate({ u, id, master }: any) {
                       onSubmit(data, "published")
                     )}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
-                    disabled={Object.keys(errors).length > 0}
+                    disabled={Object.keys(errors).length > 0 && loading}
                   >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Create User
+                    {loading ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <Eye className="w-4 h-4 mr-2" />
+                    )}
+                    {loading ? " Creating User....." : "Create User"}
                   </Button>
                 </div>
               )}
