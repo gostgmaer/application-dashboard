@@ -167,16 +167,7 @@ export interface Device {
   current: boolean;
 }
 
-export interface ActivityLog {
-  id: string;
-  action: string;
-  statusCode: number;
-  device: any;
-  deviceType: string;
-  ip: string;
-  timestamp: string;
-  status: 'success' | 'failed' | 'warning';
-}
+
 
 export interface SocialConnection {
   provider: 'google' | 'github' | 'facebook' | 'twitter';
@@ -270,4 +261,40 @@ export interface securityEvent {
 
   _id: string; // database id
   id?: string; // duplicate id field present in payload
+}
+
+export interface ActivityLog {
+  _id: string;
+  userId: string;
+  action: string;
+  route: string;
+  method: string;
+  ip: string;
+  userAgent: string;
+  additionalData: {
+    entity: string;
+    operation: string;
+    entityId: string;
+    entityData: {
+      id: string;
+      role: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+    };
+  };
+  responseTime: number | null;
+  statusCode: number;
+  requestSize: number;
+  responseSize: number | null;
+  browser: { name: string | null; version: string | null };
+  os: { name: string | null; version: string | null };
+  device: { type: string | null; vendor: string | null; model: string | null };
+  location: {
+    country: string;
+    region: string;
+    city: string;
+  };
+  timestamp: string;
+  summary: string;
 }

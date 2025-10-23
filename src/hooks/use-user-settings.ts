@@ -2,12 +2,13 @@
 
 import { useState, useEffect, use } from 'react';
 import { userApi } from '@/lib/api';
-import { User, Address, Device, ActivityLog, SocialConnection, UserPreferences } from '@/types/user';
+import { User, Address, Device, ActivityLog, SocialConnection, UserPreferences, securityEvent } from '@/types/user';
 import { toast } from 'sonner';
 import authService from '@/lib/http/authService';
 import { useSession } from 'next-auth/react';
 import addressServices from '@/lib/http/address';
 import { useSetting } from '@/contexts/SettingContext';
+import { useApiSWR } from './useApiSWR';
 
 export function useUserData() {
   const [user, setUser] = useState<User | null>(null);
@@ -157,32 +158,29 @@ export function useAddresses() {
 }
 
 export function useDevices() {
-  const [devices, setDevices] = useState<Device[]>([]);
+
   const [loading, setLoading] = useState(true);
   const { data: session } = useSession()
-  useEffect(() => {
-    fetchDevices();
-  }, []);
 
-  const fetchDevices = async () => {
-    try {
-      const response = await authService.getKnownDevices(session?.accessToken);
-      if (response.success && response.data) {
-        setDevices(response.data.result);
-      }
-    } catch (error) {
-      toast.error('Failed to load devices');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: devices,
+    error,
+    isLoading,
+    mutate,
+  } = useApiSWR(
+    "/auth/known-devices",
+    session?.accessToken,
+    undefined,
+    undefined,
+    undefined
+  );
 
   const logoutDevice = async (deviceId: string) => {
     try {
       const response = await userApi.logoutDevice(deviceId);
       if (response.success) {
         toast.success('Device logged out successfully');
-        fetchDevices();
+
         return true;
       }
       return false;
@@ -197,7 +195,7 @@ export function useDevices() {
       const response = await userApi.logoutAllDevices();
       if (response.success) {
         toast.success('All devices logged out successfully');
-        fetchDevices();
+
         return true;
       }
       return false;
@@ -209,11 +207,8 @@ export function useDevices() {
 
   const updateDeviceTrust = async (deviceId: string, trusted: boolean) => {
     try {
-      const response = await userApi.updateDeviceTrust(deviceId, trusted);
+      const response = await authService.trustDevice({ deviceId }, session?.accessToken);
       if (response.success) {
-        setDevices(prev => prev.map(device =>
-          device.id === deviceId ? { ...device, trusted } : device
-        ));
         toast.success(`Device ${trusted ? 'trusted' : 'untrusted'} successfully`);
         return true;
       }
@@ -440,7 +435,7 @@ export function useTwoFactorStatus() {
 export function useSecurityLogs() {
   const { data: session } = useSession()
 
-  const [securityLogs, setSecurityLogs] = useState<ActivityLog[]>([]);
+  const [securityLogs, setSecurityLogs] = useState<securityEvent[]>([]);
   const fetchSecurityLogs = async (page: number = 1) => {
     try {
 

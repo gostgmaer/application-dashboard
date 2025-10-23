@@ -38,6 +38,8 @@ import {
   Loader as Loader2,
   TriangleAlert as AlertTriangle,
 } from "lucide-react";
+import { useApiSWR } from "@/hooks/useApiSWR";
+import { useSession } from "next-auth/react";
 
 const getDeviceIcon = (device: string) => {
   const deviceLower = device.toLowerCase();
@@ -55,14 +57,22 @@ const getDeviceIcon = (device: string) => {
 };
 
 export function DevicesSettings() {
-  const {
-    devices,
-    loading,
-    logoutDevice,
-    logoutAllDevices,
-    updateDeviceTrust,
-  } = useDevices();
+  const { data: session } = useSession();
+  const { logoutDevice, logoutAllDevices, updateDeviceTrust } = useDevices();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const {
+    data: devices,
+    error,
+    isLoading,
+    mutate,
+  } = useApiSWR(
+    "/auth/known-devices",
+    session?.accessToken,
+    undefined,
+    undefined,
+    undefined
+  );
 
   const handleLogoutDevice = async (deviceId: string) => {
     setActionLoading(deviceId);
@@ -80,7 +90,7 @@ export function DevicesSettings() {
     await updateDeviceTrust(deviceId, trusted);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <Loader2 className="w-8 h-8 animate-spin" />
@@ -140,7 +150,7 @@ export function DevicesSettings() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {devices?.map((device, index) => {
+            {devices?.result.map((device: any, index: number) => {
               const DeviceIcon = getDeviceIcon(device.name);
 
               return (
@@ -173,7 +183,7 @@ export function DevicesSettings() {
                                     Current Device
                                   </Badge>
                                 )}
-                                {device.trusted && (
+                                {device.isTrusted && (
                                   <Badge
                                     variant="secondary"
                                     className="text-xs"
@@ -268,7 +278,7 @@ export function DevicesSettings() {
                             <Switch
                               checked={device.trusted}
                               onCheckedChange={(checked) =>
-                                handleTrustToggle(device.id, checked)
+                                handleTrustToggle(device.deviceId, checked)
                               }
                             />
                           </div>

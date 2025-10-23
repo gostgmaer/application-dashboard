@@ -25,7 +25,7 @@ import {
   useMyActivity,
   useSecurityLogs,
 } from "@/hooks/use-user-settings";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import {
   Activity,
   Shield,
@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/data-table/data-Table-Client";
 import { useModal } from "@/contexts/modal-context";
 import { ColumnDef } from "@tanstack/react-table";
-import { securityEvent } from "@/types/user";
+import { ActivityLog, securityEvent } from "@/types/user";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -74,19 +74,19 @@ export function SecurityLogsTable(props: any) {
   };
 
   const columns: ColumnDef<securityEvent>[] = [
-    {
-      accessorKey: "id",
-      header: "ID",
-      cell: ({ row }) => {
-        return (
-          //  <div className="font-medium">{user.fullName}</div>
+    // {
+    //   accessorKey: "id",
+    //   header: "ID",
+    //   cell: ({ row }) => {
+    //     return (
+    //       //  <div className="font-medium">{user.fullName}</div>
 
-          <div className="font-medium flex items-center gap-2">
-            {row.original.id}
-          </div>
-        );
-      },
-    },
+    //       <div className="font-medium flex items-center gap-2">
+    //         {row.original.id}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "detectedAt",
       header: "Timestamp",
@@ -106,20 +106,20 @@ export function SecurityLogsTable(props: any) {
       accessorKey: "device",
       header: "Device",
       cell: ({ row }) => {
-        const device: any = row.getValue("device") as string;
+        const device: any = row.getValue("device");
         return (
-          <div className="flex flex-col text-sm">
-            <span>
+          <div className="flex text-sm">
+            <span className="">
               <strong>Vendor:</strong>{" "}
-              {device.vendor || <span className="text-gray-400">Unknown</span>}
+              {device?.vendor || <span className="text-gray-400">Unknown</span>}
             </span>
             <span>
               <strong>Model:</strong>{" "}
-              {device.model || <span className="text-gray-400">Unknown</span>}
+              {device?.model || <span className="text-gray-400">Unknown</span>}
             </span>
             <span>
               <strong>Type:</strong>{" "}
-              {device.type || <span className="text-gray-400">Unknown</span>}
+              {device?.type || <span className="text-gray-400">Unknown</span>}
             </span>
           </div>
         );
@@ -130,7 +130,9 @@ export function SecurityLogsTable(props: any) {
       header: "Last Login Time",
       cell: ({ row }) => {
         const lastLogin = row.getValue("loginTime") as string;
-        return <div>{lastLogin} Ago</div>;
+        return (
+          <div> {formatDistanceToNow(lastLogin, { addSuffix: true })}</div>
+        );
       },
     },
     {
@@ -139,7 +141,7 @@ export function SecurityLogsTable(props: any) {
       cell: ({ row }) => {
         const os: any = row.getValue("os");
         return (
-          <div className="flex flex-col text-sm">
+          <div className="flex text-sm">
             <span>
               <strong>Name:</strong>{" "}
               {os.name || <span className="text-gray-400">Unknown</span>}
@@ -158,7 +160,7 @@ export function SecurityLogsTable(props: any) {
       cell: ({ row }) => {
         const browser: any = row.getValue("browser");
         return (
-          <div className="flex flex-col text-sm">
+          <div className="flex text-sm">
             <span>
               <strong>Name:</strong>{" "}
               {browser.name || <span className="text-gray-400">Unknown</span>}
@@ -207,52 +209,219 @@ export function SecurityLogsTable(props: any) {
   );
 }
 
-export function ActivitySettings() {
-  const {
-    activityLogs,
-    activityTotal,
-    securityTotal,
-    fetchActivityLogs,
-    fetchSecurityLogs,
-  } = useActivityLogs();
-  const { securityLogs } = useSecurityLogs();
+export function ActivityLogsTable(props: any) {
+  const { data: session } = useSession();
+  const { showConfirm, showAlert, showCustom } = useModal();
+  const filters: DataTableFilter[] = [
+    {
+      id: "status",
+      label: "Status",
+      type: "select",
+      options: [
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+        { label: "Pending", value: "pending" },
+        { label: "Banned", value: "banned" },
+        { label: "Deleted", value: "deleted" },
+        { label: "Archived", value: "archived" },
+        { label: "Draft", value: "draft" },
+      ],
+    },
+  ];
 
-  const { loading } = useSetting();
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState("activity");
-
-  // const handlePageChange = (page: number) => {
-  //   setCurrentPage(page);
-  //   if (activeTab === "activity") {
-  //     fetchActivityLogs(page);
-  //   } else {
-  //     fetchSecurityLogs(page);
-  //   }
-  // };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "success":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
-      case "failed":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
-      case "warning":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
-    }
+  const handleView = async (data: any) => {
+    console.log(data);
   };
+
+  const columns: ColumnDef<ActivityLog>[] = [
+    // {
+    //   accessorKey: "_id",
+    //   header: "Event ID",
+    //   cell: ({ row }) => (
+    //     <div className="font-mono text-xs text-gray-600 truncate max-w-[160px]">
+    //       {row.getValue("_id")}
+    //     </div>
+    //   ),
+    // },
+    {
+      accessorKey: "timestamp",
+      header: "Timestamp",
+      cell: ({ row }) => {
+        const date = new Date(row.getValue("timestamp"));
+        return (
+          <div className="text-sm text-gray-700">
+            {date.toLocaleString()} <br />
+            <span className="text-xs text-gray-400">
+              ({formatDistanceToNow(date, { addSuffix: true })})
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => (
+        <div className="capitalize font-medium">{row.getValue("action")}</div>
+      ),
+    },
+    {
+      accessorKey: "method",
+      header: "Method",
+      cell: ({ row }) => {
+        const method = row.getValue("method") as string;
+        const color =
+          method === "GET"
+            ? "text-blue-500"
+            : method === "POST"
+            ? "text-green-500"
+            : method === "PUT"
+            ? "text-yellow-500"
+            : method === "DELETE"
+            ? "text-red-500"
+            : "text-gray-500";
+        return <span className={`font-semibold ${color}`}>{method}</span>;
+      },
+    },
+    {
+      accessorKey: "route",
+      header: "Route",
+      cell: ({ row }) => (
+        <div className="text-gray-700 text-sm">{row.getValue("route")}</div>
+      ),
+    },
+    {
+      accessorKey: "ip",
+      header: "IP Address",
+      cell: ({ row }) => (
+        <div className="text-gray-600 font-mono">{row.getValue("ip")}</div>
+      ),
+    },
+    {
+      accessorKey: "browser",
+      header: "Browser",
+      cell: ({ row }) => {
+        const browser: any = row.getValue("browser");
+        return (
+          <div className="flex text-sm">
+            <span>
+              <strong>Name:</strong>{" "}
+              {browser?.name || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Version:</strong>{" "}
+              {browser?.version || (
+                <span className="text-gray-400">Unknown</span>
+              )}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "os",
+      header: "Operating System",
+      cell: ({ row }) => {
+        const os: any = row.getValue("os");
+        return (
+          <div className="flex flex-col text-sm">
+            <span>
+              <strong>Name:</strong>{" "}
+              {os?.name || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Version:</strong>{" "}
+              {os?.version || <span className="text-gray-400">Unknown</span>}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "device",
+      header: "Device Info",
+      cell: ({ row }) => {
+        const device: any = row.getValue("device");
+        return (
+          <div className="flex text-sm">
+            <span>
+              <strong>Vendor:</strong>{" "}
+              {device?.vendor || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Model:</strong>{" "}
+              {device?.model || <span className="text-gray-400">Unknown</span>}
+            </span>
+            <span>
+              <strong>Type:</strong>{" "}
+              {device?.type || <span className="text-gray-400">Unknown</span>}
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "statusCode",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.getValue("statusCode") as number;
+        const color =
+          status >= 200 && status < 300
+            ? "text-green-600"
+            : status >= 400
+            ? "text-red-600"
+            : "text-gray-600";
+        return <span className={`font-semibold ${color}`}>{status}</span>;
+      },
+    },
+    // {
+    //   accessorKey: "summary",
+    //   header: "Summary",
+    //   cell: ({ row }) => (
+    //     <div className="text-sm text-gray-700">{row.getValue("summary")}</div>
+    //   ),
+    // },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const event = row.original;
+        return (
+          <button
+            onClick={() => handleView(event)}
+            className="flex items-center text-blue-600 hover:text-blue-800 text-sm"
+          >
+            <Eye className="mr-1 h-4 w-4" /> View
+          </button>
+        );
+      },
+    },
+  ];
+
+  return (
+    <div className=" mx-auto py-10">
+      <div className="space-y-4">
+        <DataTable
+          columns={columns}
+          endpoint="/activity-logs/my-activities"
+          token={session?.accessToken}
+          filters={filters}
+          enableRowSelection={true}
+          enableMultiRowSelection={true}
+          refreshInterval={3000000}
+          searchPlaceholder="Search users by name, email..."
+          emptyMessage="No users found."
+        />
+      </div>
+    </div>
+  );
+}
+
+export function ActivitySettings() {
+  const [activeTab, setActiveTab] = useState("activity");
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Activity & Logs</h1>
-        <p className="text-muted-foreground mt-2">
-          Monitor your account activity and security events
-        </p>
-      </div>
-
       <Card className="border-0 shadow-sm bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -261,16 +430,6 @@ export function ActivitySettings() {
               <CardDescription>
                 View and manage your account activity history
               </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
-              <Button variant="outline" size="sm">
-                <Trash2 className="w-4 h-4 mr-2" />
-                Clear Logs
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -292,130 +451,11 @@ export function ActivitySettings() {
             </TabsList>
 
             <TabsContent value="activity" className="space-y-4">
-              {loading ? (
-                <div className="flex items-center justify-center h-64">
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                </div>
-              ) : (
-                <>
-                  <div className="rounded-lg border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Action</TableHead>
-                          <TableHead>Device / IP</TableHead>
-                          <TableHead>Timestamp</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {activityLogs.map((log, index) => (
-                          <motion.tr
-                            key={log.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="hover:bg-muted/50"
-                          >
-                            <TableCell className="font-medium">
-                              {log.action}
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm">{log.deviceType}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {log.ip}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {format(
-                                new Date(log.timestamp),
-                                "MMM dd, yyyy HH:mm a"
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="secondary"
-                                className={cn(
-                                  "capitalize"
-                                  // getStatusColor(log.statusCode)
-                                )}
-                              >
-                                {/* {log.status} */}
-                              </Badge>
-                            </TableCell>
-                          </motion.tr>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  {/* {renderPagination(activityTotal)} */}
-                </>
-              )}
+              <ActivityLogsTable></ActivityLogsTable>
             </TabsContent>
 
             <TabsContent value="security" className="space-y-4">
-              {loading ? (
-                <div className="flex items-center justify-center h-64">
-                  <Loader2 className="w-8 h-8 animate-spin" />
-                </div>
-              ) : (
-                <>
-                  <div className="rounded-lg border overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Action</TableHead>
-                          <TableHead>Device / IP</TableHead>
-                          <TableHead>Timestamp</TableHead>
-                          <TableHead>Status</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {securityLogs.map((log, index) => (
-                          <motion.tr
-                            key={log.id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="hover:bg-muted/50"
-                          >
-                            <TableCell className="font-medium">
-                              {log.action}
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm">{log.device}</p>
-                                <p className="text-xs text-muted-foreground">
-                                  {log.ip}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {format(
-                                new Date(log.detectedAt),
-                                "MMM dd, yyyy HH:mm"
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="secondary"
-                                className={cn(
-                                  "capitalize",
-                                  getStatusColor(log.status)
-                                )}
-                              >
-                                {log.status}
-                              </Badge>
-                            </TableCell>
-                          </motion.tr>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </>
-              )}
+              <SecurityLogsTable></SecurityLogsTable>
             </TabsContent>
           </Tabs>
         </CardContent>
