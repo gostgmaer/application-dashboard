@@ -17,3 +17,44 @@ export interface ApiResponse<T = any> {
   }
   raw?: string;
 }
+// Single Master Record
+export interface Master {
+  _id: string;
+  type: string;
+  code: string;
+  label: string;
+  altLabel?: string;
+  description?: string;
+  parentId?: string;
+  tenantId?: string;
+  domain?: string;
+  sortOrder?: number;
+  isActive?: boolean;
+}
+// Paginated List Response
+export interface MasterList {
+  data: Master[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+// Grouped by Type Response
+export interface MasterGroup {
+  type: string;
+  values: Master[];
+  count: number;      // returned records
+}
+
+export interface MasterGrouped {
+  grouped: MasterGroup[];
+  summary: {
+    totalTypes: number;
+    totalRecords: number;
+  };
+}
