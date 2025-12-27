@@ -32,6 +32,7 @@ import {
   MailOpen,
   ShieldCheck,
   TicketPercent,
+  AppWindow,
 } from "lucide-react";
 
 interface NavItem {
@@ -56,6 +57,14 @@ const navigationItems: NavItem[] = [
     // ],
   },
   {
+    title: "Master Data",
+    icon: AppWindow,
+    href: "/dashboard/master",
+    // children: [
+    //   { title: "All Users", href: "/dashboard/users", icon: Users }
+    // ],
+  },
+  {
     title: "E-commerce",
     icon: ShoppingCart,
     children: [
@@ -65,10 +74,14 @@ const navigationItems: NavItem[] = [
         icon: ShoppingCart,
       },
       { title: "Orders", href: "/dashboard/ecommerce/orders", icon: Calendar },
-       { title: "Discount Rules", href: "/dashboard/ecommerce/discounts", icon: TicketPercent },
+      {
+        title: "Discount Rules",
+        href: "/dashboard/ecommerce/discounts",
+        icon: TicketPercent,
+      },
     ],
   },
-    {
+  {
     title: "Analytics",
     icon: BarChart3,
     children: [
