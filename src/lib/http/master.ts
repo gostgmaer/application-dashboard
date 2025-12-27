@@ -98,7 +98,7 @@ const masterServices = {
         token?: string,
         headers?: Record<string, any>
     ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.delete(`/masters/${idOrCode}`, token, undefined, headers));
+        return safeApiCall(() => requests.delete(`/masters/${idOrCode}`, undefined, token, undefined, headers));
     },
 };
 

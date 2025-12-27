@@ -60,7 +60,7 @@ export function MasterDataTable() {
       cancelText: "Cancel",
       variant: "destructive",
       onConfirm: async () => {
-        deleteRequest(data.id);
+        deleteRequest(data._id);
       },
     });
     if (confirmed) {
