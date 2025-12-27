@@ -23,8 +23,8 @@ import { useToast } from "@/hooks/useToast";
 import permissionServices from "@/lib/http/permissionServices";
 import { useSession } from "next-auth/react";
 import { permissionCategory } from "./mock";
-
-
+import masterServices from "@/lib/http/master";
+import { Textarea } from "@/components/ui/textarea";
 
 // Define action types
 const actionTypes = {
@@ -35,31 +35,76 @@ const actionTypes = {
   MANAGE: "full",
 };
 // Zod schema based on the provided Mongoose schema
-const permissionSchema = z
-  .object({
-    name: z.string().min(1, "Name is required").trim(),
-    description: z.string().trim().optional(),
-    category: z.string().trim(),
-    action: z.enum([
-      actionTypes.READ,
-      actionTypes.WRITE,
-      actionTypes.MODIFY,
-      actionTypes.DELETE,
-      actionTypes.MANAGE,
-    ]),
-    isDefault: z.boolean(),
-    isActive: z.boolean(),
-  })
-  .strict();
+// lib/validations/master.ts
 
-interface permissionData {
-  name: string;
+export const MasterSchema = z.object({
+  type: z.string().min(1, "Type is required").max(50, "Type max 50 characters"),
+  
+  code: z.string().min(1, "Code is required").max(50, "Code max 50 characters"),
+  
+  label: z
+    .string()
+    .min(1, "Label is required")
+    .max(200, "Label max 200 characters"),
+  
+  // ✅ Optional fields: null, undefined, or empty string allowed
+  tenantId: z
+    .string()
+    .max(100, "tenantId max 100 characters")
+    .nullable()
+    .optional()
+    .transform(val => val === null || val === '' || val === undefined ? null : val),
+  
+  altLabel: z
+    .string()
+    .max(200, "altLabel max 200 characters")
+    .nullable()
+    .optional()
+    .transform(val => val === null || val === '' || val === undefined ? null : val),
+  
+  description: z
+    .string()
+    .max(500, "Description max 500 characters")
+    .nullable()
+    .optional()
+    .transform(val => val === null || val === '' || val === undefined ? null : val),
+  
+  parentId: z
+    .string()
+    .refine((id) => !id || /^[0-9a-fA-F]{24}$/.test(id), "Invalid parentId format")
+    .nullable()
+    .optional()
+    .transform(val => val === null || val === '' || val === undefined ? null : val),
+  
+  domain: z
+    .string()
+    .max(100, "Domain max 100 characters")
+    .nullable()
+    .optional()
+    .transform(val => val === null || val === '' || val === undefined ? null : val),
+  
+  sortOrder: z.coerce
+    .number()
+    .int({ message: "sortOrder must be integer" })
+    .min(0, "sortOrder 0-9999")
+    .max(9999, "sortOrder 0-9999")
+    .optional()
+    .or(z.null())
+    .transform(val => val === null || val === undefined ? 0 : val),
+});
+
+
+
+interface CreateMasterInput {
+  type: string;
+  code: string;
+  label: string;
+  tenantId?: string;
+  altLabel?: string;
   description?: string;
-  category?: string;
-  action?: keyof typeof actionTypes;
-  //   permissions: string[];
-  isDefault: boolean;
-  isActive: boolean;
+  parentId?: string;
+  domain?: string;
+  sortOrder?: number;
 }
 
 export default function Form({ p, id }: any) {
@@ -72,30 +117,33 @@ export default function Form({ p, id }: any) {
     formState: { errors },
     setValue,
     getValues,
-  } = useForm<permissionData>({
-    resolver: zodResolver(permissionSchema),
+  } = useForm<CreateMasterInput>({
+    resolver: zodResolver(MasterSchema),
     defaultValues: {
-      name: p?.name?.split(":")[0] || "",
+      type: p?.type || "",
+      code: p?.code || "",
+      label: p?.label || "",
+      tenantId: p?.tenantId || "",
+      altLabel: p?.altLabel || "",
       description: p?.description || "",
-      category: p?.category || "",
-      action: p?.action || "read",
-      isDefault: p?.isDefault || false,
-      isActive: p?.isActive || true,
+      parentId: p?.parentId || "",
+      domain: p?.domain || "",
+      sortOrder: p?.sortOrder || 0,
     },
   });
 
   const onSubmit = async (
-    data: permissionData,
-    status: "draft" | "published" | "update"
+    data: CreateMasterInput,
+    s: "draft" | "published" | "update"
   ) => {
     const updateData = {
       ...data,
     };
     let res: any = {};
-    switch (status) {
+    switch (s) {
       case "update":
         {
-          res = await permissionServices.updatePatch(
+          res = await masterServices.update(
             id,
             updateData,
             session?.accessToken
@@ -105,10 +153,7 @@ export default function Form({ p, id }: any) {
 
       default:
         {
-          res = await permissionServices.create(
-            updateData,
-            session?.accessToken
-          );
+          res = await masterServices.create(updateData, session?.accessToken);
         }
         break;
     }
@@ -128,183 +173,187 @@ export default function Form({ p, id }: any) {
   };
 
   return (
-    <div className=" bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div className="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
         <Card className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 shadow-lg">
-          <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b-gray-200 dark:border-b-gray-700 pb-0">
+          {/* <CardHeader className="bg-gray-50 dark:bg-gray-800 border-b-gray-200 dark:border-b-gray-700 pb-0">
             <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
-              <div className="w-2 h-6 bg-blue-400 rounded-full"></div>
-              Permission Information
+              <div className="w-2 h-6 bg-green-400 rounded-full"></div>
+              Master Data Information
             </CardTitle>
-          </CardHeader>
+          </CardHeader> */}
           <CardContent className="space-y-6 p-6">
+            {/* Type Field */}
             <div>
               <Label
-                htmlFor="name"
+                htmlFor="type"
                 className="text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Permission Name *
+                Type *
               </Label>
               <Input
-                id="name"
-                {...register("name")}
-                className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Enter category title"
+                id="type"
+                {...register("type")}
+                 disabled={id ? true : false}
+                className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                placeholder="GENDER, COUNTRY, STATUS"
               />
-              {errors.name && (
+              {errors.type && (
                 <p className="text-red-400 text-xs mt-1">
-                  {errors.name.message}
+                  {errors.type.message}
                 </p>
               )}
             </div>
 
-            <div className="mt-6">
+            {/* Code Field */}
+            <div>
               <Label
-                htmlFor="category"
+                htmlFor="code"
                 className="text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Category *
-              </Label>
-
-              <Controller
-                name="category"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    defaultValue={getValues("category")}
-                  >
-                    <SelectTrigger
-                      className={`mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.category ? "border-red-500" : ""
-                      }`}
-                    >
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                      {permissionCategory.map((category) => (
-                        <SelectItem
-                          key={category.label}
-                          value={category.label}
-                          className="hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          {category.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-
-              {errors.category && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.category.message}
-                </p>
-              )}
-            </div>
-            <div className="mt-6">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Action
-              </Label>
-              <div className="flex flex-wrap gap-6 mt-2">
-                <Controller
-                  name="action"
-                  control={control}
-                  render={({ field }) => (
-                    <>
-                      {Object.values(actionTypes).map((action) => (
-                        <div
-                          key={action}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="radio"
-                            id={`action-${action}`}
-                            name="action" // Ensures only one radio button can be selected
-                            value={action}
-                            checked={field.value === action}
-                            onChange={(e) => field.onChange(e.target.value)}
-                            className="h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 dark:border-gray-600 cursor-pointer"
-                          />
-                          <Label
-                            htmlFor={`action-${action}`}
-                            className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer"
-                          >
-                            {action.charAt(0).toUpperCase() + action.slice(1)}
-                          </Label>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                />
-              </div>
-              {errors.action && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.action.message}
-                </p>
-              )}
-            </div>
-
-            <div className="mt-6">
-              <Label
-                htmlFor="description"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                Description
+                Code *
               </Label>
               <Input
-                id="description"
-                {...register("description")}
-                className={`mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-blue-500 ${
-                  errors.description ? "border-red-500" : ""
-                }`}
-                placeholder="Enter permission description"
+                id="code"
+                {...register("code")}
+                disabled={id ? true : false}
+                className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                placeholder="M, F, IN, ACTIVE"
               />
-              {errors.description && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.description.message}
+              {errors.code && (
+                <p className="text-red-400 text-xs mt-1">
+                  {errors.code.message}
                 </p>
               )}
             </div>
 
-            <div className="mt-6 space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm text-gray-700 dark:text-gray-300">
-                  Default ?
+            {/* Label Field */}
+            <div>
+              <Label
+                htmlFor="label"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Label *
+              </Label>
+              <Input
+                id="label"
+                {...register("label")}
+                className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                placeholder="Male, Female, India, Active"
+              />
+              {errors.label && (
+                <p className="text-red-400 text-xs mt-1">
+                  {errors.label.message}
+                </p>
+              )}
+            </div>
+
+            {/* Optional Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Tenant ID */}
+              <div>
+                <Label
+                  htmlFor="tenantId"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Tenant ID
                 </Label>
-                <Controller
-                  control={control}
-                  name="isDefault"
-                  render={({ field }) => (
-                    <Switch
-                      id="isDefault"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
+                <Input
+                  id="tenantId"
+                  {...register("tenantId")}
+                  className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="tenant123 (optional)"
                 />
               </div>
-              <div className="flex items-center justify-between">
-                <Label className="text-sm text-gray-700 dark:text-gray-300">
-                  Active ?
+
+              {/* Domain */}
+              <div>
+                <Label
+                  htmlFor="domain"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Domain
                 </Label>
-                <Controller
-                  control={control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <Switch
-                      id="isActive"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
+                <Input
+                  id="domain"
+                  {...register("domain")}
+                  className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="HR, SALES, INVENTORY (optional)"
+                />
+              </div>
+            </div>
+
+            {/* Alt Label & Description */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label
+                  htmlFor="altLabel"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Alt Label
+                </Label>
+                <Input
+                  id="altLabel"
+                  {...register("altLabel")}
+                  className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="Alternative label (optional)"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="sortOrder"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Sort Order
+                </Label>
+                <Input
+                  id="sortOrder"
+                  type="number"
+                  {...register("sortOrder", { valueAsNumber: true })}
+                  className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white"
+                  placeholder="0"
+                  min="0"
+                  max="9999"
+                />
+              </div>
+            </div>
+
+            {/* Description & Parent ID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <Label
+                  htmlFor="description"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  {...register("description")}
+                  className="mt-1 w-full h-24 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 p-3 rounded-lg resize-vertical"
+                  placeholder="Enter description (optional)"
+                />
+              </div>
+
+              <div>
+                <Label
+                  htmlFor="parentId"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Parent ID
+                </Label>
+                <Input
+                  id="parentId"
+                  {...register("parentId")}
+                  className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="507f1f77bcf86cd799439011 (optional)"
                 />
               </div>
             </div>
 
             <Separator className="bg-gray-200 dark:bg-gray-700 my-6" />
-            <div className="flex gap-3">
+             <div className="flex gap-3">
               <Button
                 type="button"
                 onClick={handleSubmit((data) =>
@@ -314,9 +363,10 @@ export default function Form({ p, id }: any) {
                 disabled={Object.keys(errors).length > 0}
               >
                 <Save className="w-4 h-4 mr-2" />
-                Save Permission
+                 {id ? "Update Master" : "Create Master"}
               </Button>
             </div>
+           
           </CardContent>
         </Card>
       </div>

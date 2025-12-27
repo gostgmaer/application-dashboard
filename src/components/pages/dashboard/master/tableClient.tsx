@@ -74,7 +74,7 @@ export function MasterDataTable() {
 
   const handleUpdate: any = async (p: any) => {
     showCustom({
-      title: `Update Master Data: ${p.name}`,
+      title: `Update Master Data: ${p.code}`,
       content: <Form p={p} id={p._id} />,
     });
   };
