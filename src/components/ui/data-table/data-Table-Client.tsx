@@ -276,7 +276,7 @@ export function DataTable<TData>({
       setSortField(columnId);
       setSortOrder(newOrder);
       setSorting([{ id: columnId, desc: newOrder === "desc" }]);
-      setCurrentPage(1); // Reset to first page when sorting changes
+      setCurrentPage(1);
     },
     [sorting, enableServerSideOperations]
   );
@@ -288,11 +288,10 @@ export function DataTable<TData>({
     const debounceTimer = setTimeout(() => {
       setSearchQuery(globalFilter);
       setCurrentPage(1);
-      mutate(); // 🔥 REQUIRED
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [globalFilter, enableServerSideOperations, mutate]);
+  }, [globalFilter, enableServerSideOperations]);
 
   useEffect(() => {
     if (!enableServerSideOperations) return;
