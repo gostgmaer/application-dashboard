@@ -129,7 +129,7 @@ export function MasterDataTable() {
         const tenant = row.getValue("tenantId");
         return (
           <div className="flex items-center gap-2">
-            { tenant.name}
+            { tenant?.name || ""}
           </div>
         );
       }
