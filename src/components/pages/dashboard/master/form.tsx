@@ -39,50 +39,64 @@ const actionTypes = {
 
 export const MasterSchema = z.object({
   type: z.string().min(1, "Type is required").max(50, "Type max 50 characters"),
-  
+
   code: z.string().min(1, "Code is required").max(50, "Code max 50 characters"),
-  
+
   label: z
     .string()
     .min(1, "Label is required")
     .max(200, "Label max 200 characters"),
-  
+
   // ✅ Optional fields: null, undefined, or empty string allowed
   tenantId: z
     .string()
     .max(100, "tenantId max 100 characters")
     .nullable()
     .optional()
-    .transform(val => val === null || val === '' || val === undefined ? null : val),
-  
+    .transform((val) =>
+      val === null || val === "" || val === undefined ? null : val
+    ),
+  isDefault: z.boolean().optional(),
+
   altLabel: z
     .string()
     .max(200, "altLabel max 200 characters")
     .nullable()
     .optional()
-    .transform(val => val === null || val === '' || val === undefined ? null : val),
-  
+    .transform((val) =>
+      val === null || val === "" || val === undefined ? null : val
+    ),
+
   description: z
     .string()
     .max(500, "Description max 500 characters")
     .nullable()
     .optional()
-    .transform(val => val === null || val === '' || val === undefined ? null : val),
-  
+    .transform((val) =>
+      val === null || val === "" || val === undefined ? null : val
+    ),
+
   parentId: z
     .string()
-    .refine((id) => !id || /^[0-9a-fA-F]{24}$/.test(id), "Invalid parentId format")
+    .refine(
+      (id) => !id || /^[0-9a-fA-F]{24}$/.test(id),
+      "Invalid parentId format"
+    )
     .nullable()
     .optional()
-    .transform(val => val === null || val === '' || val === undefined ? null : val),
-  
+    .transform((val) =>
+      val === null || val === "" || val === undefined ? null : val
+    ),
+
   domain: z
     .string()
     .max(100, "Domain max 100 characters")
     .nullable()
     .optional()
-    .transform(val => val === null || val === '' || val === undefined ? null : val),
-  
+    .transform((val) =>
+      val === null || val === "" || val === undefined ? null : val
+    ),
+
   sortOrder: z.coerce
     .number()
     .int({ message: "sortOrder must be integer" })
@@ -90,15 +104,14 @@ export const MasterSchema = z.object({
     .max(9999, "sortOrder 0-9999")
     .optional()
     .or(z.null())
-    .transform(val => val === null || val === undefined ? 0 : val),
+    .transform((val) => (val === null || val === undefined ? 0 : val)),
 });
-
-
 
 interface CreateMasterInput {
   type: string;
   code: string;
   label: string;
+  isDefault: boolean;
   tenantId?: string;
   altLabel?: string;
   description?: string;
@@ -123,11 +136,12 @@ export default function Form({ p, id }: any) {
       type: p?.type || "",
       code: p?.code || "",
       label: p?.label || "",
+      isDefault: p?.isDefault || false,
       tenantId: p?.tenantId || "",
       altLabel: p?.altLabel || "",
       description: p?.description || "",
       parentId: p?.parentId || "",
-      domain: p?.domain || "",
+      domain: p?.domain || "Master",
       sortOrder: p?.sortOrder || 0,
     },
   });
@@ -194,7 +208,7 @@ export default function Form({ p, id }: any) {
               <Input
                 id="type"
                 {...register("type")}
-                 disabled={id ? true : false}
+                disabled={id ? true : false}
                 className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:border-green-500 focus:ring-1 focus:ring-green-500"
                 placeholder="GENDER, COUNTRY, STATUS"
               />
@@ -336,24 +350,27 @@ export default function Form({ p, id }: any) {
                 />
               </div>
 
-              <div>
-                <Label
-                  htmlFor="parentId"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Parent ID
+             
+              <div className="flex items-center justify-between">
+                <Label className="text-sm text-gray-700 dark:text-gray-300">
+                  Default Role
                 </Label>
-                <Input
-                  id="parentId"
-                  {...register("parentId")}
-                  className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="507f1f77bcf86cd799439011 (optional)"
+                <Controller
+                  control={control}
+                  name="isDefault"
+                  render={({ field }) => (
+                    <Switch
+                      id="isDefault"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
                 />
               </div>
             </div>
 
             <Separator className="bg-gray-200 dark:bg-gray-700 my-6" />
-             <div className="flex gap-3">
+            <div className="flex gap-3">
               <Button
                 type="button"
                 onClick={handleSubmit((data) =>
@@ -363,10 +380,9 @@ export default function Form({ p, id }: any) {
                 disabled={Object.keys(errors).length > 0}
               >
                 <Save className="w-4 h-4 mr-2" />
-                 {id ? "Update Master" : "Create Master"}
+                {id ? "Update Master" : "Create Master"}
               </Button>
             </div>
-           
           </CardContent>
         </Card>
       </div>

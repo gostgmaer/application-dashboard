@@ -125,11 +125,14 @@ export function MasterDataTable() {
     {
       accessorKey: "tenantId",
       header: "Tenant",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-2">
-          {row.getValue("tenantId")}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const tenant = row.getValue("tenantId");
+        return (
+          <div className="flex items-center gap-2">
+            { tenant.name}
+          </div>
+        );
+      }
     },
     {
       accessorKey: "isActive",

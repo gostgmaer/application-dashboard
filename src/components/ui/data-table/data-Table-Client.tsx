@@ -272,7 +272,7 @@ export function DataTable<TData>({
     const debounceTimer = setTimeout(() => {
       setSearchQuery(globalFilter);
       setCurrentPage(1); // Reset to first page when search changes
-    }, 500);
+    }, 200);
 
     return () => clearTimeout(debounceTimer);
   }, [globalFilter, enableServerSideOperations]);
