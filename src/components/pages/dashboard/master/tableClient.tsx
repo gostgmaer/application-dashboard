@@ -126,10 +126,10 @@ export function MasterDataTable() {
       accessorKey: "tenantId",
       header: "Tenant",
       cell: ({ row }) => {
-        const tenant = row.getValue("tenantId");
+        // const tenantId = row.getValue("tenantId") as Tenant;
         return (
           <div className="flex items-center gap-2">
-            { tenant?.name || ""}
+           { row.getValue("tenantId")}
           </div>
         );
       }

@@ -26,11 +26,8 @@ export interface Master {
   altLabel?: string;
   description?: string;
   parentId?: string;
-  tenantId?: {
-    name?: string;
-    id?: string;
-    slug?: string;
-  };
+  tenantId?: string;
+  tenantSlug?: string;
   domain?: string;
   sortOrder?: number;
   isActive?: boolean;

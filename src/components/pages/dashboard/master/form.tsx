@@ -25,6 +25,7 @@ import { useSession } from "next-auth/react";
 import { permissionCategory } from "./mock";
 import masterServices from "@/lib/http/master";
 import { Textarea } from "@/components/ui/textarea";
+import { useModal } from "@/contexts/modal-context";
 
 // Define action types
 const actionTypes = {
@@ -46,18 +47,7 @@ export const MasterSchema = z.object({
     .string()
     .min(1, "Label is required")
     .max(200, "Label max 200 characters"),
-
-  // ✅ Optional fields: null, undefined, or empty string allowed
-  tenantId: z
-    .string()
-    .max(100, "tenantId max 100 characters")
-    .nullable()
-    .optional()
-    .transform((val) =>
-      val === null || val === "" || val === undefined ? null : val
-    ),
   isDefault: z.boolean().optional(),
-
   altLabel: z
     .string()
     .max(200, "altLabel max 200 characters")
@@ -87,16 +77,6 @@ export const MasterSchema = z.object({
     .transform((val) =>
       val === null || val === "" || val === undefined ? null : val
     ),
-
-  domain: z
-    .string()
-    .max(100, "Domain max 100 characters")
-    .nullable()
-    .optional()
-    .transform((val) =>
-      val === null || val === "" || val === undefined ? null : val
-    ),
-
   sortOrder: z.coerce
     .number()
     .int({ message: "sortOrder must be integer" })
@@ -122,6 +102,7 @@ interface CreateMasterInput {
 
 export default function Form({ p, id }: any) {
   const { data: session, status, update } = useSession();
+   const { showConfirm, showAlert, showCustom,closeModal } = useModal();
   const { toast } = useToast();
   const {
     register,
@@ -184,7 +165,9 @@ export default function Form({ p, id }: any) {
         description: res.message,
       });
     }
+    closeModal();
   };
+
 
   return (
     <div className="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
