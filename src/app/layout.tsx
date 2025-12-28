@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Roboto } from "next/font/google";
 import { Providers } from "@/components/providers";
-import { SessionProviderWrapper } from "@/components/Sessionproviders";
+// import { SessionProviderWrapper } from "@/components/Sessionproviders";
 import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
+import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 
 const roboto = Roboto({ subsets: ["latin"] });
 
