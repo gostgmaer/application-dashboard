@@ -330,9 +330,9 @@ export function DataTable<TData>({
         }));
         setCurrentPage(1);
       }
-      mutate()
+     
     },
-    [enableServerSideOperations,mutate]
+    [enableServerSideOperations]
   );
 
   // Handle pagination

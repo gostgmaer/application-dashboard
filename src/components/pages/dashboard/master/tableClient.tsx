@@ -24,7 +24,7 @@ import { Master } from "@/types/global";
 
 const filters: DataTableFilter[] = [
   {
-    id: "status",
+    id: "isActive",
     label: "Status",
     type: "select",
     options: [
