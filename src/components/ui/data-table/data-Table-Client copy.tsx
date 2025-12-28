@@ -11,9 +11,6 @@ import {
   VisibilityState,
   RowSelectionState,
   flexRender,
-  getFilteredRowModel,
-  getSortedRowModel,
-  getPaginationRowModel,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -227,24 +224,12 @@ export function DataTable<TData>({
   const table = useReactTable({
     data: tableData,
     columns: tableColumns,
-
     getCoreRowModel: getCoreRowModel(),
-
-    // ✅ ENABLE client models ONLY when server-side is OFF
-    ...(enableServerSideOperations
-      ? {}
-      : {
-          getFilteredRowModel: getFilteredRowModel(),
-          getSortedRowModel: getSortedRowModel(),
-          getPaginationRowModel: getPaginationRowModel(),
-        }),
-
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     onGlobalFilterChange: setGlobalFilter,
-
     state: {
       sorting,
       columnFilters,
@@ -252,14 +237,13 @@ export function DataTable<TData>({
       rowSelection,
       globalFilter,
     },
-
     enableRowSelection: true,
     enableMultiRowSelection,
-
+    // Disable client-side operations when server-side is enabled
     manualPagination: enableServerSideOperations,
     manualSorting: enableServerSideOperations,
     manualFiltering: enableServerSideOperations,
-
+    // Set page count from server response
     pageCount: enableServerSideOperations ? pagination.totalPages : undefined,
   });
 
@@ -287,53 +271,27 @@ export function DataTable<TData>({
 
     const debounceTimer = setTimeout(() => {
       setSearchQuery(globalFilter);
-      setCurrentPage(1);
-      mutate(); // 🔥 REQUIRED
+      setCurrentPage(1); // Reset to first page when search changes
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [globalFilter, enableServerSideOperations, mutate]);
-
-  useEffect(() => {
-    if (!enableServerSideOperations) return;
-
-    mutate(); // ✅ always runs with LATEST filterValues
-  }, [
-    filterValues,
-    currentPage,
-    pageSize,
-    sortField,
-    sortOrder,
-    searchQuery,
-    enableServerSideOperations,
-    mutate,
-  ]);
+  }, [globalFilter, enableServerSideOperations]);
 
   // Handle server-side filter changes
-  const handleFilterChange = useCallback(
-    (filterId: string, value: string) => {
-      const normalizedValue = value === "__all__" ? "" : value;
+  const handleFilterChange = useCallback((filterId: string, value: string) => {
+    setFilterValues((prev) => ({ ...prev, [filterId]: value }));
+    setCurrentPage(1); // Reset to first page when filters change
 
-      // UI (always)
-      setColumnFilters((prev) => {
-        const next = prev.filter((f) => f.id !== filterId);
-        if (normalizedValue) {
-          next.push({ id: filterId, value: normalizedValue });
-        }
-        return next;
-      });
-
-      // Server-side state ONLY
-      if (enableServerSideOperations) {
-        setFilterValues((prev) => ({
-          ...prev,
-          [filterId]: normalizedValue,
-        }));
-        setCurrentPage(1);
-      }
-    },
-    [enableServerSideOperations]
-  );
+    // Also update client-side filters for UI consistency
+    if (value) {
+      setColumnFilters((prev) => [
+        ...prev.filter((f) => f.id !== filterId),
+        { id: filterId, value },
+      ]);
+    } else {
+      setColumnFilters((prev) => prev.filter((f) => f.id !== filterId));
+    }
+  }, []);
 
   // Handle pagination
   const handlePageChange = useCallback((newPage: number) => {
@@ -489,7 +447,7 @@ export function DataTable<TData>({
                   <div key={filter.id}>
                     {filter.type === "select" ? (
                       <Select
-                        value={filterValues[filter.id] || "__all__"}
+                        value={filterValues[filter.id] || ""}
                         onValueChange={(value) =>
                           handleFilterChange(filter.id, value)
                         }
@@ -500,7 +458,7 @@ export function DataTable<TData>({
                           />
                         </SelectTrigger>
                         <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                          <SelectItem value="__all__">{`All ${filter.label}`}</SelectItem>
+                          <SelectItem value="NA">{`All ${filter.label}`}</SelectItem>
                           {filter.options?.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -604,21 +562,27 @@ export function DataTable<TData>({
                 </TableCell>
               </TableRow>
             ) : tableData.length ? (
-              table.getRowModel().rows.map((tableRow) => (
-                <TableRow
-                  key={tableRow.id}
-                  data-state={tableRow.getIsSelected() && "selected"}
-                >
-                  {tableRow.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              tableData.map((row: any, index: number) => {
+                const tableRow = table.getRowModel().rows[index];
+                if (!tableRow) return null;
+
+                return (
+                  <TableRow
+                    key={`row-${index}`}
+                    data-state={tableRow.getIsSelected() && "selected"}
+                    className="text-gray-900 dark:text-gray-100"
+                  >
+                    {tableRow.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell
