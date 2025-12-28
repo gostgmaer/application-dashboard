@@ -248,8 +248,8 @@ export default function Form({ p, id }: any) {
             {/* Optional Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Tenant ID */}
-              <div>
-                <Label
+               {id &&<div>
+             <Label
                   htmlFor="tenantId"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
@@ -258,10 +258,11 @@ export default function Form({ p, id }: any) {
                 <Input
                   id="tenantId"
                   {...register("tenantId")}
+                  disabled={id ? true : false}
                   className="mt-1 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="tenant123 (optional)"
                 />
-              </div>
+              </div>}
 
               {/* Domain */}
               <div>
@@ -278,11 +279,7 @@ export default function Form({ p, id }: any) {
                   placeholder="HR, SALES, INVENTORY (optional)"
                 />
               </div>
-            </div>
-
-            {/* Alt Label & Description */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
+                <div>
                 <Label
                   htmlFor="altLabel"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300"
@@ -314,6 +311,27 @@ export default function Form({ p, id }: any) {
                   max="9999"
                 />
               </div>
+               <div className="flex items-center justify-between">
+                <Label className="text-sm text-gray-700 dark:text-gray-300">
+                  Default ?
+                </Label>
+                <Controller
+                  control={control}
+                  name="isDefault"
+                  render={({ field }) => (
+                    <Switch
+                      id="isDefault"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Alt Label & Description */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
             </div>
 
             {/* Description & Parent ID */}
@@ -334,22 +352,7 @@ export default function Form({ p, id }: any) {
               </div>
 
              
-              <div className="flex items-center justify-between">
-                <Label className="text-sm text-gray-700 dark:text-gray-300">
-                  Default Role
-                </Label>
-                <Controller
-                  control={control}
-                  name="isDefault"
-                  render={({ field }) => (
-                    <Switch
-                      id="isDefault"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
-                />
-              </div>
+             
             </div>
 
             <Separator className="bg-gray-200 dark:bg-gray-700 my-6" />

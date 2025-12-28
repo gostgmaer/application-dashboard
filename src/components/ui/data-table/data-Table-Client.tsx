@@ -291,7 +291,7 @@ export function DataTable<TData>({
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [globalFilter, enableServerSideOperations]);
+  }, [globalFilter, enableServerSideOperations,mutate]);
 
   useEffect(() => {
     if (!enableServerSideOperations) return;
@@ -330,8 +330,9 @@ export function DataTable<TData>({
         }));
         setCurrentPage(1);
       }
+      mutate()
     },
-    [enableServerSideOperations]
+    [enableServerSideOperations,mutate]
   );
 
   // Handle pagination
