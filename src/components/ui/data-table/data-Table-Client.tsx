@@ -421,7 +421,7 @@ export function DataTable<TData>({
             </span>
 
             {onDelete && (
-              <Button variant="destructive" size="sm">
+              <Button variant="destructive" size="sm" onClick={handleDelete}>
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </Button>

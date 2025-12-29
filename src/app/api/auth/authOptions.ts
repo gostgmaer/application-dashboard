@@ -42,6 +42,7 @@ import {
   secret,
   facebookClient,
   facebookSecret,
+  secretexp,
 } from "@/config/setting";
 import authService from "@/lib/http/authService";
 
@@ -229,7 +230,7 @@ export const authOptions: AuthOptions = {
 
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: Number(secretexp) || 1 * 60 * 60,
   },
 
   callbacks: {

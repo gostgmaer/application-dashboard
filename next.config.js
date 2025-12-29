@@ -4,18 +4,19 @@
 // });
 const buildId = process.env.NEXT_PUBLIC_BUILD_ID;
 const nextConfig = {
-reactStrictMode: true,
- generateBuildId: async () => buildId,
+  reactStrictMode: true,
+  generateBuildId: async () => buildId,
   productionBrowserSourceMaps: true,
   eslint: {
     ignoreDuringBuilds: true,
-  },generateEtags:true,
+  },
+  generateEtags: true,
 
   webpack(config) {
     config.devtool = "source-map";
     return config;
   },
-   onDemandEntries: {
+  onDemandEntries: {
     // Prevent dev server from caching aggressively
     maxInactiveAge: 25 * 1000,
     pagesBufferLength: 5,
@@ -33,12 +34,12 @@ reactStrictMode: true,
       static: 60 * 60 * 24, // 24 hours
       dynamic: 60, // 1 minute
     },
-       authInterrupts: true,
+    authInterrupts: true,
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
-  // compiler: {
-  //   removeConsole: process.env.NODE_ENV === "production",
-  // },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
   poweredByHeader: false,
   async rewrites() {
     return [
@@ -72,12 +73,15 @@ reactStrictMode: true,
           },
         ],
       },
-       {
-      source: "/:all*(js|css|svg|jpg|png|ico|woff2?)",
-      headers: [
-        { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-      ],
-    },
+      {
+        source: "/:all*(js|css|svg|jpg|png|ico|woff2?)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
       {
         source: "/api/(.*)",
         headers: [
@@ -88,11 +92,9 @@ reactStrictMode: true,
         ],
       },
       {
-      source: "/(.*)",
-      headers: [
-        { key: "Cache-Control", value: "no-cache" },
-      ],
-    },
+        source: "/(.*)",
+        headers: [{ key: "Cache-Control", value: "no-cache" }],
+      },
       {
         source: "/_next/static/(.*)",
         headers: [
