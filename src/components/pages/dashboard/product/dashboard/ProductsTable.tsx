@@ -102,11 +102,9 @@ export function ProductsTable({ category }: any) {
       });
     }
   };
-
   const handleExport = (rows: Product[]) => {
     console.log("Exporting users:", rows);
   };
-
   const columns: ColumnDef<Product>[] = [
     {
       accessorKey: "title",
