@@ -28,6 +28,8 @@ import { toast } from "@/hooks/useToast";
 import { Discount } from "@/types/discount";
 import { DiscountForm } from "./DiscountForm";
 import { useState } from "react";
+import { format } from "date-fns";
+import Breadcrumbs from "@/components/layout/common/breadcrumb";
 
 const filters: DataTableFilter[] = [
   {
@@ -39,23 +41,43 @@ const filters: DataTableFilter[] = [
       { label: "Fixed", value: "fixed" },
     ],
   },
+  {
+    id: "isActive",
+    label: "Status",
+    type: "select",
+    options: [
+      { label: "Active", value: "true" },
+      { label: "Inactive", value: "false" },
+    ],
+  },
+  {
+    id: "isArchive",
+    label: "Archive",
+    type: "select",
+    options: [
+      { label: "Yes", value: "true" },
+      { label: "No", value: "false" },
+    ],
+  },
 ];
 
-export function DiscountRulesTable({statics}:any) {
+type ApplyDiscountRuleProps = {
+  d: Discount;
+  token?: string;
+};
 
+export function DiscountRulesTable({ statics }: any) {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
-  const [loading, setLoading] = useState(false);
 
   const deleteRequest = async (id: any) => {
-    setLoading(true);
     try {
       const res = await discountServices.removeDiscountRule(
         id,
         session?.accessToken
       );
-      toast({ title: "Success", description: "Deleted SuccessFul!" });
+      toast({ title: "Success", description: res.message,variant:"default"});
       return res;
     } catch (error) {
       toast({
@@ -64,7 +86,6 @@ export function DiscountRulesTable({statics}:any) {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
     }
   };
   const handleDelete = async (data: any) => {
@@ -91,24 +112,6 @@ export function DiscountRulesTable({statics}:any) {
 
   const handleExport = (rows: Discount[]) => {
     console.log("Exporting users:", rows);
-  };
-
-  const handleApplyRule:any = async (discount: Discount) => {
-    setLoading(true);
-    try {
-      const response = await discountServices.applyDiscountRule(
-        discount._id,
-        session?.accessToken
-      );
-        toast({ title: "Success", description: response.message });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to apply discount rule";
-    } finally {
-      setLoading(false);
-    }
   };
 
   const formatValue = (discount: Discount) => {
@@ -159,32 +162,60 @@ export function DiscountRulesTable({statics}:any) {
       accessorKey: "startDate",
       header: "Start Date",
       cell: ({ row }) => {
-        const date = new Date(row.getValue("startDate"));
-        return <div>{date.toLocaleString()}</div>;
+        return (
+          <div>
+            {row.getValue("startDate")
+              ? format(
+                  new Date(row.getValue("startDate") as string),
+                  "MMM dd, yyyy"
+                )
+              : "-"}
+          </div>
+        );
       },
     },
     {
       accessorKey: "endDate",
       header: "End Date",
       cell: ({ row }) => {
-        const date = new Date(row.getValue("endDate"));
-        return <div>{date.toLocaleString()}</div>;
-      },
-    },
-    {
-      accessorKey: "createdAt",
-      header: "Created",
-      cell: ({ row }) => {
-        const date = new Date(row.getValue("createdAt"));
-        return <div>{date.toLocaleString()}</div>;
+        return (
+          <div>
+            {row.getValue("endDate")
+              ? format(
+                  new Date(row.getValue("endDate") as string),
+                  "MMM dd, yyyy"
+                )
+              : "-"}
+          </div>
+        );
       },
     },
     {
       accessorKey: "updatedAt",
       header: "Last Updated",
       cell: ({ row }) => {
-        const date = new Date(row.getValue("updatedAt"));
-        return <div>{date.toLocaleString()}</div>;
+        return (
+          <div>
+            {row.getValue("updatedAt")
+              ? format(
+                  new Date(row.getValue("updatedAt") as string),
+                  "MMM dd, yyyy"
+                )
+              : "-"}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "in_use",
+      header: "Currently Used",
+      cell: ({ row }) => {
+        const in_use = row.getValue("in_use") as boolean;
+        return (
+          <Badge variant={in_use ? "default" : "destructive"} className="">
+            {in_use ? "Yes" : "No"}
+          </Badge>
+        );
       },
     },
     {
@@ -192,24 +223,7 @@ export function DiscountRulesTable({statics}:any) {
       cell: ({ row }) => {
         const d = row.original;
 
-        return (
-          <div>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => handleApplyRule(d)}
-              disabled={d.in_use || loading}
-              className="text-blue-600 border-blue-200 hover:bg-blue-50"
-            >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Play className="h-3 w-3 mr-1" />
-              )}
-              {loading ? "Applying..." : "Apply Rule"}
-            </Button>
-          </div>
-        );
+        return <ApplyDiscountRule d={d} token={session?.accessToken} />;
       },
     },
     {
@@ -254,8 +268,24 @@ export function DiscountRulesTable({statics}:any) {
       },
     },
   ];
+
+  const handleCreate: any = async () => {
+    showCustom({
+      title: `Create New Discount Rule`,
+      content: <DiscountForm statics={statics} />,
+    });
+  };
   return (
-    <div className="container mx-auto py-10">
+    <div className=" mx-auto px-2 py-4">
+      <Breadcrumbs
+        heading="Role Dashboard"
+        desc="Manage user roles, permissions, and access control across your organization"
+        btn={{
+          event: handleCreate,
+          show: hasPermission("role:create") && true,
+        }}
+      />
+
       <div className="space-y-4">
         <DataTable
           columns={columns}
@@ -273,3 +303,59 @@ export function DiscountRulesTable({statics}:any) {
     </div>
   );
 }
+
+const ApplyDiscountRule = ({ d, token }: ApplyDiscountRuleProps) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleApplyRule = async (discount: Discount): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await discountServices.applyDiscountRule(
+        discount._id,
+        token
+      );
+
+      toast({
+        title: "Success",
+        description: response.message ?? "Discount rule applied successfully",
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to apply discount rule";
+
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div>
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => handleApplyRule(d)}
+        disabled={d.in_use || loading || d.isActive === false}
+        className="text-blue-600 border-blue-200 hover:bg-blue-50 flex items-center gap-1"
+      >
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Applying...
+          </>
+        ) : (
+          <>
+            <Play className="h-3 w-3" />
+            Apply Rule
+          </>
+        )}
+      </Button>
+    </div>
+  );
+};

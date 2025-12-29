@@ -64,11 +64,15 @@ export function ProductsTable({ category }: any) {
     options: category
   },
   {
-    id: "title",
-    label: "Title",
-    type: "input",
-    placeholder: "Filter by title...",
-  },
+    id: "isArchive",
+    label: "Archive",
+    type: "select",
+    options: [
+      { label: "Yes", value: "true" },
+      { label: "No", value: "false" },
+    ],
+  }
+  
 ];
 
   const handleDeleteRow = (rows: Product[]) => {
@@ -237,8 +241,7 @@ export function ProductsTable({ category }: any) {
     },
   ];
   return (
-    <div className="container mx-auto py-10">
-      <div className="space-y-4">
+     <div className="space-y-4">
         <DataTable
           columns={columns}
           endpoint="/products"
@@ -246,12 +249,11 @@ export function ProductsTable({ category }: any) {
           filters={filters}
           enableRowSelection={true}
           enableMultiRowSelection={true}
-          onDelete={handleDelete}
+          onDelete={handleDeleteRow}
           onExport={handleExport}
           searchPlaceholder="Search title, sku, category..."
           emptyMessage="No products found."
         />
       </div>
-    </div>
   );
 }

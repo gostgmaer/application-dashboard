@@ -22,7 +22,7 @@ const productService = {
     safeApiCall(() => requests.get(`/products/active-data`, token,)),
 
   remove: async (id: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/products/${id}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/products/${id}`,  undefined, token)),
 
   // Bulk Operations
   bulkDelete: async (body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>

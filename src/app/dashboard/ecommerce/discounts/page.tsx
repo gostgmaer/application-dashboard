@@ -1,6 +1,7 @@
 import { authOptions } from "@/app/api/auth/authOptions";
 import PrivateLayout from "@/components/layout/dashboard";
 import DiscountsPage from "@/components/pages/dashboard/product/discounts";
+import { DiscountRulesTable } from "@/components/pages/dashboard/product/discounts/DiscountRoles";
 import permissionServices from "@/lib/http/permissionServices";
 import productService from "@/lib/http/ProductServices";
 import roleServices from "@/lib/http/roleServices";
@@ -20,7 +21,7 @@ const Page = async (props: any) => {
       <div className=" mx-auto py-2">
         <Suspense fallback={<div>Loading...</div>}>
           <div className="rounded-md  shadow-sm overflow-auto ">
-            <DiscountsPage statics={{...statics.data}} ></DiscountsPage>
+            <DiscountRulesTable statics={{...statics.data}} ></DiscountRulesTable>
           </div>
         </Suspense>
       </div>

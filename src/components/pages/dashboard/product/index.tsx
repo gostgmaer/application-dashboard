@@ -96,22 +96,22 @@ export default function DashboardPage({token, category}: any) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Header */}
       {/* Main Content */}
-      <div className="">
+    
         {/* Global Filters */}
-        <GlobalFilters filters={filters} onFiltersChange={setFilters} />
+        {/* <GlobalFilters filters={filters} onFiltersChange={setFilters} /> */}
 
         {/* Stats Cards */}
         <StatsCards stats={data} />
 
         {/* Charts Section */}
-        <ChartsSection chartData={chartData} />
+        {/* <ChartsSection chartData={chartData} /> */}
 
         {/* Top Lists */}
-        <TopLists topLists={topLists} />
+        {/* <TopLists topLists={topLists} /> */}
 
         {/* Products Table */}
         <ProductsTable category={category} />
-      </div>
+     
     </div>
   );
 }

@@ -69,7 +69,7 @@ const discountServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     // POST /discounts/rules/:ruleId/remove
-    return safeApiCall(() => requests.post(`/discounts/rules/${ruleId}/remove`, {}, token, headers));
+    return safeApiCall(() => requests.post(`/discounts/rules/${ruleId}/remove`, undefined, token));
   },
 
   // ========================================

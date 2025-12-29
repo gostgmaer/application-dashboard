@@ -32,7 +32,6 @@ const filters: DataTableFilter[] = [
       { label: "Inactive", value: "false" },
     ],
   },
-
   {
     id: "isArchive",
     label: "Archive",
