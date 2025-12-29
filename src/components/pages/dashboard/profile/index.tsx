@@ -36,7 +36,6 @@ import {
   UserCheck2Icon,
 } from "lucide-react";
 // import { cn } from '@/lib/utils/utils';
-import { useDebounce } from "use-debounce";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -168,7 +167,6 @@ export default function Profile({
   const [addresses, setAddresses] = useState<Address[]>(address || []);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
@@ -311,19 +309,6 @@ export default function Profile({
     }
   };
 
-  const filteredUsers = useMemo(() => {
-    if (!debouncedSearchTerm) return otherUsers;
-    return otherUsers.filter(
-      (user) =>
-        user.username
-          .toLowerCase()
-          .includes(debouncedSearchTerm.toLowerCase()) ||
-        user.firstName
-          .toLowerCase()
-          .includes(debouncedSearchTerm.toLowerCase()) ||
-        user.lastName.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-    );
-  }, [debouncedSearchTerm, otherUsers]);
 
   const selectedUser = otherUsers.find((user) => user.id === selectedUserId);
 

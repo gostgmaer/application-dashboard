@@ -157,16 +157,16 @@ export function LoginCard() {
       acceptTerms: false,
     },
   });
-  console.log(isValid, errors);
+
   // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      mounted.current = false;
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     mounted.current = false;
+  //     if (timeoutRef.current) {
+  //       clearTimeout(timeoutRef.current);
+  //     }
+  //   };
+  // }, []);
 
   // Enhanced error handler
   const handleApiError = useCallback((error: any): string => {

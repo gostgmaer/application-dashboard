@@ -1,6 +1,7 @@
 export const baseurl = process.env.NEXT_PUBLIC_BASE_URL;
 export const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 export const secret = process.env.NEXT_PUBLIC_SECRET;
+export const secretexp = process.env.NEXTAUTH_JWT_TIME;
 export const googleClient = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 export const googleSecret = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET;
 export const githubClient = process.env.NEXT_PUBLIC_GITHUB_ID;
