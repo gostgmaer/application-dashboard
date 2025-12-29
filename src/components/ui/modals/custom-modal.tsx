@@ -37,14 +37,14 @@ const CustomModal: React.FC<CustomModalProps> = ({ isOpen, onClose, options }) =
     <Dialog open={isOpen} onOpenChange={closeHandler}>
       <DialogContent className={cn("sm:max-w-[625px]", className)}>
         {title && (
-          <DialogHeader>
+          <DialogHeader className='p-2'>
             <DialogTitle className=' capitalize'>{title}</DialogTitle>
             <DialogDescription>
               {/* This is here for accessibility, can be empty */}
             </DialogDescription>
           </DialogHeader>
         )}
-        <div className="py-4 max-h-[85vh] overflow-y-auto">
+        <div className="py-4 max-h-[85vh] overflow-y-auto p-2">
           {content}
         </div>
         {footer && (

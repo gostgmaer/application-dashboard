@@ -28,7 +28,7 @@ export default function Breadcrumbs({
     }));
 
   return (
-    <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-gray-200 dark:border-gray-800 pb-2">
+    <div className="flex flex-wrap justify-between items-center gap-3 mb-4 border-b border-gray-200 dark:border-gray-800  p-2">
       {/* Left: Heading & Breadcrumb */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">

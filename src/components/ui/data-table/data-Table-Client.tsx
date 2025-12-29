@@ -411,7 +411,7 @@ export function DataTable<TData>({
   }
 
   return (
-    <div className="space-y-5 p-4 overflow-auto">
+    <div className="space-y-5 overflow-auto p-2">
       {/* Action Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         {selectedRows.length > 0 ? (
