@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -10,11 +10,12 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-   "sourceMap": true,        // ✅ Required for debugging
+    "sourceMap": true,
     "inlineSources": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "types": ["node"],
+    
+    "types": ["node", "react", "react-dom"],
     "incremental": true,
     "plugins": [
       {
@@ -25,6 +26,14 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/helper/services/httpServices.js", "src/config/setting.js", "src/app/dashboard/ecommerce/invoices"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/helper/services/httpServices.js",
+    "src/config/setting.js",
+    "src/app/dashboard/ecommerce/invoices/**/*"
+  ],
   "exclude": ["node_modules"]
 }

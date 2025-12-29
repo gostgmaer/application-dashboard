@@ -12,6 +12,7 @@ import { ModalProvider } from "@/contexts/modal-context";
 import ModalManager from "./ui/modals/modal-manager";
 import { NotificationProviderCommunication } from "@/contexts/notification-context";
 import { MessagingProvider } from "@/contexts/messaging-context";
+import QueryProviders from "@/contexts/queryProvider";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -22,6 +23,7 @@ export function Providers({ children }: ProvidersProps) {
     <SettingProvider>
       <WebSocketProvider>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProviders>
           <UserProvider>
             <NotificationProvider>
               <NotificationProviderCommunication>
@@ -37,6 +39,7 @@ export function Providers({ children }: ProvidersProps) {
               </NotificationProviderCommunication>
             </NotificationProvider>
           </UserProvider>
+          </QueryProviders>
         </ThemeProvider>
       </WebSocketProvider>
     </SettingProvider>

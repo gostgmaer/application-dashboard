@@ -1,5 +1,4 @@
 import { getServerSession } from "next-auth";
-
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import Profile from "@/components/pages/dashboard/profile";
 import { Suspense } from "react";
