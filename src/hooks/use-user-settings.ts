@@ -28,9 +28,6 @@ export function useUserData() {
       setLoading(false);
     }
   };
-
-
-
   const fetchUser = async () => {
     try {
       const response = await authService.getAccountSetting(session?.accessToken);

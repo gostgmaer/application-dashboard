@@ -1,7 +1,7 @@
 "use client";
-
+import { useApiQuery } from "@/hooks/useApiQuery";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState, useMemo, useCallback, useEffect } from "react";
-import { useApiSWR } from "@/hooks/useApiSWR";
 import {
   useReactTable,
   getCoreRowModel,
@@ -159,16 +159,20 @@ export function DataTable<TData>({
     filterValues,
   ]);
 
-  const { data, error, isLoading, mutate } = useApiSWR(
+  const queryClient = useQueryClient();
+
+  const { data, error, isLoading, refetch } = useApiQuery(
     endpoint,
     token,
     serverQueryParams,
     params,
     headers,
-    { refreshInterval, revalidateOnFocus }
+    {
+      refetchInterval: refreshInterval || false,
+      refetchOnWindowFocus: revalidateOnFocus,
+      keepPreviousData: true, // ⭐ VERY IMPORTANT for tables
+    }
   );
-
-  console.log(data);
 
   const tableData = useMemo(() => {
     if (!data?.result) return [];
@@ -291,22 +295,7 @@ export function DataTable<TData>({
     }, 500);
 
     return () => clearTimeout(debounceTimer);
-  }, [globalFilter, enableServerSideOperations,mutate]);
-
-  useEffect(() => {
-    if (!enableServerSideOperations) return;
-
-    mutate(); // ✅ always runs with LATEST filterValues
-  }, [
-    filterValues,
-    currentPage,
-    pageSize,
-    sortField,
-    sortOrder,
-    searchQuery,
-    enableServerSideOperations,
-    mutate,
-  ]);
+  }, [globalFilter, enableServerSideOperations]);
 
   // Handle server-side filter changes
   const handleFilterChange = useCallback(
@@ -330,7 +319,6 @@ export function DataTable<TData>({
         }));
         setCurrentPage(1);
       }
-     
     },
     [enableServerSideOperations]
   );
@@ -346,8 +334,10 @@ export function DataTable<TData>({
   }, []);
 
   const handleRefresh = useCallback(() => {
-    mutate();
-  }, [mutate]);
+    queryClient.invalidateQueries({
+      queryKey: [endpoint],
+    });
+  }, [queryClient, endpoint]);
 
   const handleExport = useCallback(() => {
     const dataToExport =

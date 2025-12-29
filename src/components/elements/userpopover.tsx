@@ -36,7 +36,6 @@ export function UserStatus({data}:any) {
  signOut();
     localStorage.clear();
     sessionStorage.clear(); // Debug: Log cookies before removing
-
     console.log("Cookies before removal:", Cookies.get()); // Remove all cookies set via js-cookie
     Object.keys(Cookies.get()).forEach((cookieName) => {
       Cookies.remove(cookieName, { path: "/" });
