@@ -48,25 +48,36 @@ export function MasterDataTable() {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
-  const deleteRequest = async (id: any) => {
-    return await masterServices.softDelete(id, session?.accessToken);
+  const deleteRequest = async (ids: any | any[]) => {
+    if (Array.isArray(ids)) {
+      const idArray = ids.map((item: any) => item._id);
+      return await masterServices.bulkDelete({ids:idArray}, session?.accessToken);
+    }
+    return await masterServices.softDelete(ids._id, session?.accessToken);
   };
-  const handleDelete = async (data: any) => {
+  const handleDelete = async (data: any | any[]) => {
+    const isBulk = Array.isArray(data);
+    const itemCount = isBulk ? data.length : 1;
+
     const confirmed = await showConfirm({
-      title: "Delete Item",
-      description:
-        "Are you sure you want to delete this item? This action cannot be undone.",
-      confirmText: "Delete",
+      title: isBulk ? `Delete ${itemCount} Items` : "Delete Item",
+      description: isBulk
+        ? `Are you sure you want to delete these ${itemCount} items? This action cannot be undone.`
+        : "Are you sure you want to delete this item? This action cannot be undone.",
+      confirmText: isBulk ? `Delete ${itemCount}` : "Delete",
       cancelText: "Cancel",
       variant: "destructive",
       onConfirm: async () => {
-        deleteRequest(data._id);
+        await deleteRequest(data);
       },
     });
+
     if (confirmed) {
       await showAlert({
         title: "Success",
-        description: "Item has been deleted successfully.",
+        description: isBulk
+          ? `${itemCount} items have been deleted successfully.`
+          : "Item has been deleted successfully.",
         variant: "success",
       });
     }
@@ -129,10 +140,10 @@ export function MasterDataTable() {
         // const tenantId = row.getValue("tenantId") as Tenant;
         return (
           <div className="flex items-center gap-2">
-           { row.getValue("tenantId")}
+            {row.getValue("tenantId")}
           </div>
         );
-      }
+      },
     },
     {
       accessorKey: "isActive",

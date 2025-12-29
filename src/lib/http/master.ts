@@ -18,7 +18,7 @@ const masterServices = {
         token?: string,
         headers?: Record<string, any>
     ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.get("/masters/grouped", token, query, undefined, headers, 1));
+        return safeApiCall(() => requests.get("/masters/data", token, query, undefined, headers, 1));
     },
     // Single record by ID or code
     getSingle: async (
@@ -56,32 +56,16 @@ const masterServices = {
         token?: string,
         headers?: Record<string, any>
     ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.post("/masters/bulk/upsert", body, token, headers));
+        return safeApiCall(() => requests.post("/masters/bulk-upsert", body, token, headers));
     },
 
     bulkUpdate: async (
-        body: any,
-        token?: string,
-        headers?: Record<string, any>
-    ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.post("/masters/bulk/update", body, token, headers));
-    },
-
-    bulkUpdateByIds: async (
-        body: any,
-        token?: string,
-        headers?: Record<string, any>
-    ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.post("/masters/bulk/update/ids", body, token, headers));
-    },
-
-    bulkUpdateByType: async (
         type: string,
         body: any,
         token?: string,
         headers?: Record<string, any>
     ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.post(`/masters/bulk/update/type/${type}`, body, token, headers));
+        return safeApiCall(() => requests.patch(`/masters/type/${type}/bulk`, body, token, headers));
     },
 
     bulkDelete: async (
@@ -89,7 +73,7 @@ const masterServices = {
         token?: string,
         headers?: Record<string, any>
     ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.post("/masters/bulk/delete", body, token, headers));
+        return safeApiCall(() => requests.delete("/masters/bulk", body, token, headers));
     },
 
     // Soft delete
