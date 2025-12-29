@@ -1,5 +1,4 @@
 "use client";
-import { DataTable } from "@/components/ui/data-table/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +9,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ColumnFilter } from "@/components/ui/data-table/column-filter";
-import { ServerResponse, TableState } from "@/types/table";
 import Link from "next/link";
-import Breadcrumbs from "@/components/layout/common/breadcrumb";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useSession } from "next-auth/react";
+import {
+  DataTable,
+  DataTableFilter,
+} from "@/components/ui/data-table/data-Table-Client";
+import { useModal } from "@/contexts/modal-context";
+import { usePermissions } from "@/hooks/usePermissions";
+import orderServices from "@/lib/http/OrderServices";
 // import { BrandForm } from "./form";
 
 interface order {
@@ -30,64 +32,94 @@ interface order {
   last_name: string;
   payment_status: string;
   payment_method: string;
-
   customer: object;
   user: object;
 }
 
-export default function Table({ props }: any) {
-const {data:session} = useSession()
-  
+const ORDER_STATUS_OPTIONS = [
+  { label: "Pending", value: "pending" },
+  { label: "Processing", value: "processing" },
+  { label: "Completed", value: "completed" },
+  { label: "Shipped", value: "shipped" },
+  { label: "Delivered", value: "delivered" },
+  { label: "Canceled", value: "canceled" },
+  { label: "Returned", value: "returned" },
+  { label: "Failed", value: "failed" },
+  { label: "Refunded", value: "refunded" },
 
-  const fetch = async (state: TableState): Promise<ServerResponse<unknown>> => {
-    return {
-      data: props.results || [],
-      totalCount: props.total,
-      pageCount: Math.ceil(props.total / state.pagination["pageSize"]),
-    };
-  };
+  { label: "On Hold", value: "on-hold" },
+  { label: "Awaiting Payment", value: "awaiting-payment" },
+  { label: "Payment Received", value: "payment-received" },
+  { label: "Payment Failed", value: "payment-failed" },
+
+  { label: "Dispatched", value: "dispatched" },
+  { label: "In Transit", value: "in-transit" },
+  { label: "Out for Delivery", value: "out-for-delivery" },
+
+  { label: "Partially Shipped", value: "partially-shipped" },
+  { label: "Partially Delivered", value: "partially-delivered" },
+  { label: "Partially Refunded", value: "partially-refunded" },
+
+  { label: "Order Accepted", value: "order-accepted" },
+  { label: "Order Declined", value: "order-declined" },
+
+  { label: "Awaiting Fulfillment", value: "awaiting-fulfillment" },
+  { label: "Awaiting Confirmation", value: "awaiting-confirmation" },
+  { label: "Awaiting Shipment", value: "awaiting-shipment" },
+
+  { label: "Ready for Pickup", value: "ready-for-pickup" },
+  { label: "Backordered", value: "backordered" },
+
+  { label: "Packaging", value: "packaging" },
+  { label: "Quality Checked", value: "quality-checked" },
+];
+
+const filters: DataTableFilter[] = [
+  {
+    id: "status",
+    label: "Status",
+    type: "select",
+    options: ORDER_STATUS_OPTIONS,
+  },
+  {
+    id: "payment_method",
+    label: "Payment Method",
+    type: "select",
+    options: [
+      { label: "Credit Card", value: "credit_card" },
+      { label: "Debit Card", value: "debit_card" },
+      { label: "PayPal", value: "paypal" },
+      { label: "Bank Transfer", value: "bank_transfer" },
+      { label: "Cash on Delivery", value: "cod" },
+      { label: "Wallet", value: "wallet" },
+    ],
+  },
+  {
+    id: "payment_status",
+    label: "Payment Status",
+    type: "select",
+    options: [
+      { label: "Unpaid", value: "unpaid" },
+      { label: "Paid", value: "paid" },
+      { label: "Failed", value: "failed" },
+      { label: "Refunded", value: "refunded" },
+      { label: "Partially Paid", value: "partial" },
+      { label: "Pending", value: "pending" },
+    ],
+  },
+];
+
+export default function Table({ props }: any) {
+  const { data: session } = useSession();
+  const { showConfirm, showAlert, showCustom } = useModal();
+  const { hasPermission } = usePermissions();
 
   const columns: ColumnDef<order>[] = [
     {
-      id: "select",
-      header: ({ table }) => (
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
-    {
       accessorKey: "order_id",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Order ID
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="order_id" />
-        </div>
-      ),
+      header: "Order ID",
       cell: ({ row }) => {
         const order = row.original;
-
         return (
           <div className="flex items-center space-x-3">
             <Link
@@ -100,60 +132,24 @@ const {data:session} = useSession()
         );
       },
     },
-
     {
       accessorKey: "createdAt",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Order Date
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Order Date" />
-        </div>
-      ),
+      header: "Order Date",
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as string;
-
-        return (
-          <div className="flex items-center space-x-3">
-            <div>
-              <div className="font-medium">{createdAt}</div>
-            </div>
-          </div>
-        );
+        return <div className="flex items-center space-x-3">{createdAt}</div>;
       },
     },
     {
       accessorKey: "payment_status",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Payment Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Payment Status" />
-        </div>
-      ),
+      header: "Payment Status",
       cell: ({ row }) => {
         const payment_status = row.getValue("payment_status") as string;
 
         return (
           <div className="flex items-center space-x-3">
-            <div>
-              <div
-                className={`font-medium capitalize status-${payment_status}`}
-              >
-                {payment_status}
-              </div>
+            <div className={`font-medium capitalize status-${payment_status}`}>
+              {payment_status}
             </div>
           </div>
         );
@@ -161,82 +157,37 @@ const {data:session} = useSession()
     },
     {
       accessorKey: "payment_method",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Payment Method
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Payment Method" />
-        </div>
-      ),
+      header: "Payment Method",
+
       cell: ({ row }) => {
         const payment_method = row.getValue("payment_method") as string;
-
         return (
-          <div className="flex items-center space-x-3">
-            <div>
-              <div className="font-medium">{payment_method}</div>
-            </div>
-          </div>
+          <div className="flex items-center space-x-3">{payment_method}</div>
         );
       },
     },
     {
       accessorKey: "totalPrice",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Price
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="Price" />
-        </div>
-      ),
+      header: "Price",
+
       cell: ({ row }) => {
         const totalPrice = row.getValue("totalPrice") as Number;
         console.log(totalPrice);
 
         return (
           <div className="flex items-center space-x-3">
-            <div>
-              <div className="font-medium">{totalPrice.toFixed(2)}</div>
-            </div>
+            {totalPrice.toFixed(2)}
           </div>
         );
       },
     },
     {
       accessorKey: "status",
-      header: ({ column }) => (
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="-ml-3 h-8 data-[state=open]:bg-accent"
-          >
-            Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-          <ColumnFilter column={column} title="status" />
-        </div>
-      ),
+      header: "Status",
+
       cell: ({ row }) => {
         const status = row.getValue("status") as string;
-        const variant =
-          status === "active"
-            ? "default"
-            : status === "inactive"
-            ? "destructive"
-            : "secondary";
+
         return (
           <div className="flex items-center space-x-3">
             <div className={`font-medium capitalize status-${status}`}>
@@ -278,19 +229,52 @@ const {data:session} = useSession()
       },
     },
   ];
+
+  const handleDeleteRow = (rows: order[]) => {
+    // console.log("Deleting users:", rows);
+    alert(`Deleting ${rows.length} user(s)`);
+  };
+  const deleteRequest = async (id: any) => {
+    return await orderServices.deleteOrder(id, session?.accessToken);
+  };
+  const handleDelete = async (data: any) => {
+    const confirmed = await showConfirm({
+      title: "Delete Item",
+      description:
+        "Are you sure you want to delete this item? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        deleteRequest(data.id);
+      },
+    });
+    if (confirmed) {
+      await showAlert({
+        title: "Success",
+        description: "Item has been deleted successfully.",
+        variant: "success",
+      });
+    }
+  };
+  const handleExport = (rows: order[]) => {
+    console.log("Exporting users:", rows);
+  };
+
   return (
     <>
-      <Breadcrumbs btn={{ show: false }}></Breadcrumbs>
-
-      <div className="rounded-md border  p-4 bg-gray-50  shadow-sm overflow-auto max-h-screen">
+      <div className="space-y-4">
         <DataTable
           columns={columns}
-          fetchData={fetch}
-          initiallimit={10}
-          searchPlaceholder="Search..."
-          limitOptions={[10, 20, 50, 100]}
-          defaultSorting={[{ id: "createdAt", desc: true }]}
-          exportFileName="brands-export"
+          endpoint="/orders"
+          token={session?.accessToken}
+          filters={filters}
+          enableRowSelection={true}
+          enableMultiRowSelection={true}
+          onDelete={handleDeleteRow}
+          onExport={handleExport}
+          searchPlaceholder="Search... "
+          emptyMessage="No products found."
         />
       </div>
     </>
