@@ -21,8 +21,9 @@ export function useApiQuery<T = any>(
   headers?: Record<string, any>,
   options?: Omit<
     UseQueryOptions<T, ApiError, T, QueryKey>,
-    "queryKey" | "queryFn"
+    "queryKey" | "queryFn" | "initialData"
   >
+
 ) {
   const queryKey: QueryKey | null = key
     ? [key, token, query, params]

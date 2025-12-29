@@ -170,7 +170,9 @@ export function DataTable<TData>({
     {
       refetchInterval: refreshInterval || false,
       refetchOnWindowFocus: revalidateOnFocus,
-      keepPreviousData: true, // ⭐ VERY IMPORTANT for tables
+
+      // ✅ React Query v5 replacement
+      placeholderData: (previousData) => previousData,
     }
   );
 
@@ -409,50 +411,53 @@ export function DataTable<TData>({
   }
 
   return (
-    <div className="space-y-4 p-2 overflow-auto">
+    <div className="space-y-5 p-4 overflow-auto">
       {/* Action Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         {selectedRows.length > 0 ? (
-          <div className="flex items-center space-x-2">
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-200">
-              {selectedRows.length} row(s) selected
+          <div className="flex items-center gap-2 rounded-lg bg-muted/40 px-3 py-2">
+            <span className="text-sm font-medium text-foreground">
+              {selectedRows.length} selected
             </span>
+
             {onDelete && (
-              <Button variant="destructive" size="sm" onClick={handleDelete}>
+              <Button variant="destructive" size="sm">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </Button>
             )}
+
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
-              Export Selected
+              Export
             </Button>
+
             <Button
-              onClick={() => setRowSelection({})}
               variant="ghost"
               size="sm"
+              onClick={() => setRowSelection({})}
             >
               <X className="mr-2 h-4 w-4" />
               Clear
             </Button>
           </div>
         ) : (
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap items-center gap-3">
             {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground dark:text-gray-400" />
+            <div className="relative w-[260px]">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 placeholder={searchPlaceholder}
                 value={globalFilter}
                 onChange={(e) => setGlobalFilter(e.target.value)}
-                className="pl-9 pr-9 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700"
+                className="pl-9 pr-9 h-9 rounded-md bg-background border-border focus:ring-2 focus:ring-primary/30"
               />
               {globalFilter && (
                 <Button
-                  onClick={() => setGlobalFilter("")}
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-1 top-1/2 h-6 w-6 -translate-y-1/2 p-0"
+                  size="icon"
+                  className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2"
+                  onClick={() => setGlobalFilter("")}
                 >
                   <X className="h-3 w-3" />
                 </Button>
@@ -460,13 +465,13 @@ export function DataTable<TData>({
             </div>
 
             {/* Export */}
-            <Button variant="outline" onClick={handleExport}>
+            <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="mr-2 h-4 w-4" />
               Export
             </Button>
 
             {/* Refresh */}
-            <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <Button variant="outline" size="icon" onClick={handleRefresh}>
               <RefreshCw
                 className={cn("h-4 w-4", isLoading && "animate-spin")}
               />
@@ -474,7 +479,7 @@ export function DataTable<TData>({
 
             {/* Filters */}
             {filters.length > 0 && (
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {filters.map((filter) => (
                   <div key={filter.id}>
                     {filter.type === "select" ? (
@@ -484,13 +489,15 @@ export function DataTable<TData>({
                           handleFilterChange(filter.id, value)
                         }
                       >
-                        <SelectTrigger className="w-[180px] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+                        <SelectTrigger className="h-9 w-[180px] bg-background border-border">
                           <SelectValue
                             placeholder={filter.placeholder || filter.label}
                           />
                         </SelectTrigger>
-                        <SelectContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                          <SelectItem value="__all__">{`All ${filter.label}`}</SelectItem>
+                        <SelectContent>
+                          <SelectItem value="__all__">
+                            All {filter.label}
+                          </SelectItem>
                           {filter.options?.map((option) => (
                             <SelectItem key={option.value} value={option.value}>
                               {option.label}
@@ -500,17 +507,18 @@ export function DataTable<TData>({
                       </Select>
                     ) : (
                       <Input
+                        className="h-9 w-[180px] bg-background border-border"
                         placeholder={filter.placeholder || filter.label}
                         value={filterValues[filter.id] || ""}
                         onChange={(e) =>
                           handleFilterChange(filter.id, e.target.value)
                         }
-                        className="w-[180px] bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700"
                       />
                     )}
                   </div>
                 ))}
-                {(Object.keys(filterValues).some((key) => filterValues[key]) ||
+
+                {(Object.values(filterValues).some(Boolean) ||
                   globalFilter) && (
                   <Button
                     variant="ghost"
@@ -518,7 +526,7 @@ export function DataTable<TData>({
                     onClick={handleResetFilters}
                   >
                     <X className="mr-2 h-4 w-4" />
-                    Reset Filters
+                    Reset
                   </Button>
                 )}
               </div>
@@ -529,49 +537,47 @@ export function DataTable<TData>({
 
       {/* Filters Info */}
       {appliedFilters.applied > 0 && (
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          {appliedFilters.applied} filter(s) applied
-          {appliedFilters.search &&
-            ` • Searching for: "${appliedFilters.search}"`}
+        <div className="text-xs text-muted-foreground">
+          {appliedFilters.applied} filters applied
+          {appliedFilters.search && ` • Searching “${appliedFilters.search}”`}
         </div>
       )}
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="rounded-xl border border-border bg-background shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="bg-gray-50 dark:bg-gray-800"
-              >
+              <TableRow key={headerGroup.id} className="bg-muted/40">
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
                     {header.isPlaceholder ? null : (
                       <div
-                        className={cn(
-                          "flex items-center space-x-2",
-                          header.column.getCanSort() &&
-                            "cursor-pointer select-none text-gray-900 dark:text-gray-100"
-                        )}
                         onClick={() =>
                           header.column.getCanSort() && handleSort(header.id)
                         }
+                        className={cn(
+                          "flex items-center gap-2 text-sm font-medium",
+                          header.column.getCanSort() &&
+                            "cursor-pointer select-none hover:text-primary"
+                        )}
                       >
                         {flexRender(
                           header.column.columnDef.header,
                           header.getContext()
                         )}
                         {header.column.getCanSort() && (
-                          <div className="ml-2">
-                            {header.column.getIsSorted() === "asc" ? (
+                          <>
+                            {header.column.getIsSorted() === "asc" && (
                               <ArrowUp className="h-4 w-4" />
-                            ) : header.column.getIsSorted() === "desc" ? (
-                              <ArrowDown className="h-4 w-4" />
-                            ) : (
-                              <ArrowUpDown className="h-4 w-4" />
                             )}
-                          </div>
+                            {header.column.getIsSorted() === "desc" && (
+                              <ArrowDown className="h-4 w-4" />
+                            )}
+                            {!header.column.getIsSorted() && (
+                              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </>
                         )}
                       </div>
                     )}
@@ -580,26 +586,28 @@ export function DataTable<TData>({
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (enableRowSelection ? 1 : 0)}
-                  className="h-24 text-center text-gray-900 dark:text-gray-100"
+                  className="h-28 text-center"
                 >
-                  <div className="flex items-center justify-center">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
+                  <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading data…
                   </div>
                 </TableCell>
               </TableRow>
             ) : tableData.length ? (
-              table.getRowModel().rows.map((tableRow) => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={tableRow.id}
-                  data-state={tableRow.getIsSelected() && "selected"}
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-muted/30 transition-colors"
                 >
-                  {tableRow.getVisibleCells().map((cell) => (
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -613,7 +621,7 @@ export function DataTable<TData>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length + (enableRowSelection ? 1 : 0)}
-                  className="h-24 text-center text-gray-900 dark:text-gray-100"
+                  className="h-28 text-center text-muted-foreground"
                 >
                   {emptyMessage}
                 </TableCell>
@@ -624,71 +632,67 @@ export function DataTable<TData>({
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between px-2 text-gray-900 dark:text-gray-100">
-        <div className="flex items-center space-x-6 lg:space-x-8">
-          <div className="flex items-center space-x-2">
-            <p className="text-sm font-medium">Rows per page</p>
+      <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">Rows</span>
             <Select
               value={`${pageSize}`}
-              onValueChange={(value) => handlePageSizeChange(Number(value))}
+              onValueChange={(v) => handlePageSizeChange(Number(v))}
             >
               <SelectTrigger className="h-8 w-[70px]">
-                <SelectValue placeholder={pageSize} />
+                <SelectValue />
               </SelectTrigger>
-              <SelectContent side="top">
-                {paginationLimits.map((pageSizeOption) => (
-                  <SelectItem key={pageSizeOption} value={`${pageSizeOption}`}>
-                    {pageSizeOption}
+              <SelectContent>
+                {paginationLimits.map((size) => (
+                  <SelectItem key={size} value={`${size}`}>
+                    {size}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          <div className="flex w-[100px] items-center justify-center text-sm font-medium">
+          <span className="text-muted-foreground">
             Page {pagination.page} of {pagination.totalPages}
-          </div>
+          </span>
 
-          <div className="text-sm text-muted-foreground">
-            {pagination.total} total results
-          </div>
+          <span className="text-muted-foreground">
+            {pagination.total} results
+          </span>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-1">
           <Button
+            size="icon"
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => handlePageChange(1)}
             disabled={!pagination.hasPrev || isLoading}
           >
-            <span className="sr-only">Go to first page</span>
             <ChevronsLeft className="h-4 w-4" />
           </Button>
           <Button
+            size="icon"
             variant="outline"
-            className="h-8 w-8 p-0"
             onClick={() => handlePageChange(pagination.page - 1)}
             disabled={!pagination.hasPrev || isLoading}
           >
-            <span className="sr-only">Go to previous page</span>
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
+            size="icon"
             variant="outline"
-            className="h-8 w-8 p-0"
             onClick={() => handlePageChange(pagination.page + 1)}
             disabled={!pagination.hasNext || isLoading}
           >
-            <span className="sr-only">Go to next page</span>
             <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
+            size="icon"
             variant="outline"
-            className="hidden h-8 w-8 p-0 lg:flex"
             onClick={() => handlePageChange(pagination.totalPages)}
             disabled={!pagination.hasNext || isLoading}
           >
-            <span className="sr-only">Go to last page</span>
             <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
