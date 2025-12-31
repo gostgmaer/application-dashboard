@@ -35,3 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 /node_modules_tmp
+/pnpm-lock.yaml
+pnpm-lock.yaml
