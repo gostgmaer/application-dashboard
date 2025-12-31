@@ -17,36 +17,11 @@ import {
   Package,
   LockKeyholeIcon,
 } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-} from "recharts";
-import UsersTable from "./table";
-import { DataTableExample } from "./tableClient";
+
+import { Table } from "./tableClient";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { useApiSWR } from "@/hooks/useApiSWR";
 import { usePermissions } from "@/hooks/usePermissions";
-
-const usersByRole = [
-  { name: "Admin", value: 5, fill: "#3b82f6" },
-  { name: "Customer", value: 1530, fill: "#10b981" },
-  { name: "Vendor", value: 7, fill: "#f59e0b" },
-];
-
-const usersByDevice = [
-  { device: "Mobile", users: 900 },
-  { device: "Desktop", users: 600 },
-  { device: "Tablet", users: 42 },
-];
 
 export default function UserDashboard({ token, props }: any) {
   const { hasPermission } = usePermissions();
@@ -96,15 +71,15 @@ export default function UserDashboard({ token, props }: any) {
   }
 
   return (
-    <>
+    <div className="">
       <Breadcrumbs
         heading={"User Dashboard"}
         btn={{ show: hasPermission("user:create") && true }}
       ></Breadcrumbs>
 
-      <div className="rounded-md    shadow-sm overflow-auto ">
+      <div className="rounded-md shadow-sm overflow-auto ">
         <div className=" mx-auto space-y-8">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 px-2">
             <StatCard
               title="Total Users"
               value={data?.totalUsers || 0}
@@ -137,24 +112,16 @@ export default function UserDashboard({ token, props }: any) {
               description="Total Role Assigned"
               link="/dashboard/users/roles"
             />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <StatCard
               title="Growth Rate"
-              value={data?.weeklyGrowthRate || 0}
+              value={data?.monthlyGrowthRate || 0}
               icon={TrendingUp}
               description="User growth this month"
             />
-            <StatCard
-              title="Avg Session Duration"
-              value="8m 42s"
-              icon={Clock}
-              description="Average time per session"
-            />
+
             <StatCard
               title="Active Sessions"
-              value="347"
+              value={data?.currentlyLoggedInUsers || 0}
               icon={Activity}
               description="Currently online"
             />
@@ -166,7 +133,7 @@ export default function UserDashboard({ token, props }: any) {
             />
             <StatCard
               title="Countries"
-              value="42"
+              value={data?.usersByCountry.length || 0}
               icon={Globe}
               description="Global user reach"
             />
@@ -178,6 +145,8 @@ export default function UserDashboard({ token, props }: any) {
             />
           </div>
 
+          {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"></div> */}
+          {/* 
           <div className="grid gap-4 md:grid-cols-2">
             <ChartCard title="Users by Role">
               <ResponsiveContainer width="100%" height={300}>
@@ -213,19 +182,13 @@ export default function UserDashboard({ token, props }: any) {
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
-          </div>
+          </div> */}
 
-          <div className="space-y-4" id="user-table">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-semibold tracking-tight">Users</h2>
-              <p className="text-sm text-muted-foreground">
-                A comprehensive list of all users in the system
-              </p>
-            </div>
-            <DataTableExample props={props} />
+          <div className="" id="user-table">
+            <Table props={props} />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

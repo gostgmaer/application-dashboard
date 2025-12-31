@@ -41,7 +41,7 @@ export type User = {
   createdAt: string;
 };
 
-export function DataTableExample(props: any) {
+export function Table(props: any) {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
@@ -66,13 +66,7 @@ export function DataTableExample(props: any) {
       label: "Role",
       type: "select",
       options: props?.props,
-    },
-    {
-      id: "email",
-      label: "Email",
-      type: "input",
-      placeholder: "Filter by email...",
-    },
+    }
   ];
 
   const deleteRequest = async (id: any) => {
@@ -289,7 +283,6 @@ export function DataTableExample(props: any) {
     },
   ];
   return (
-    <div className=" mx-auto py-10">
       <div className="space-y-4">
         <DataTable
           columns={columns}
@@ -306,6 +299,5 @@ export function DataTableExample(props: any) {
           emptyMessage="No users found."
         />
       </div>
-    </div>
   );
 }
