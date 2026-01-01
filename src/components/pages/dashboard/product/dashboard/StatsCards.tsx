@@ -67,7 +67,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Discounted Products",
-      value: stats.topDiscountedProductsCount,
+      value: stats?.productsWithDiscounts,
       change: "+45.6%",
       trend: "up" as const,
       icon: Percent,

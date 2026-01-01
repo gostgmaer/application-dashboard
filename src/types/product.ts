@@ -116,7 +116,8 @@ export interface DashboardStats {
   thisMonthProducts: number;
   revenueGrowth: number;
   averageStockPerProduct: number;
-  topDiscountedProductsCount: number
+  topDiscountedProductsCount: number;
+  productsWithDiscounts:number
 }
 
 export interface DashboardFilters {
