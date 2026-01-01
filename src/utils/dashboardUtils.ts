@@ -78,7 +78,7 @@ export function calculateStats(filteredProducts: ProductList[]): DashboardStats 
   const avgBasePrice = filteredProducts.reduce((sum, p) => sum + p.price, 0) / totalProducts || 0;
   const totalRevenue = mockSales.reduce((sum, s) => sum + s.amount, 0);
   const lowStockProductsCount = filteredProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
-  
+
   const categorySales = mockCategories.map(cat => ({
     name: cat.name,
     count: filteredProducts.filter(p => p.category === cat.name).length
@@ -105,7 +105,8 @@ export function calculateStats(filteredProducts: ProductList[]): DashboardStats 
     thisMonthProducts,
     revenueGrowth: 12.5, // Mock data
     averageStockPerProduct,
-    topDiscountedProductsCount: productsOnSale
+    topDiscountedProductsCount: productsOnSale,
+    productsWithDiscounts: 10
  
   };
 }
