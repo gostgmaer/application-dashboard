@@ -58,7 +58,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}`,undefined, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}`, undefined, token, undefined, headers));
   },
 
   login: async (
@@ -726,6 +726,50 @@ const userServices = {
   ): Promise<ApiResponse> => {
     return safeApiCall(() => requests.get("/users/docs/routes", token, undefined, undefined, headers, 1));
   },
+  // =====================================
+  // 📦 BULK OPERATIONS
+  // =====================================
+
+  bulkUpdateRole: async (
+    body: { ids: string[]; role: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.put("/users/bulk/update-role", body, token, headers)
+    );
+  },
+
+  bulkUpdateStatus: async (
+    body: { ids: string[]; status: string },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.put("/users/bulk/update-status", body, token, headers)
+    );
+  },
+
+  bulkDelete: async (
+    body: { ids: string[] },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.delete("/users/bulk/delete", body, token, undefined, headers)
+    );
+  },
+
+  bulkAddLoyaltyPoints: async (
+    body: { updates: { id: string; points: number }[] },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() =>
+      requests.post("/users/bulk/add-loyalty-points", body, token, headers)
+    );
+  },
+
 };
 
 export default userServices;

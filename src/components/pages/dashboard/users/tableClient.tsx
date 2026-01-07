@@ -30,6 +30,7 @@ import userServices from "@/lib/http/userService";
 import { useModal } from "@/contexts/modal-context";
 import Image from "next/image";
 import { usePermissions } from "@/hooks/usePermissions";
+import { toast, useToast } from "@/hooks/useToast";
 
 export type User = {
   id: string;
@@ -45,6 +46,7 @@ export function Table(props: any) {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const { hasPermission } = usePermissions();
+  const {toast} = useToast();
 
   const filters: DataTableFilter[] = [
     {
@@ -66,12 +68,31 @@ export function Table(props: any) {
       label: "Role",
       type: "select",
       options: props?.props,
-    }
+    },
   ];
 
   const deleteRequest = async (id: any) => {
-    return await userServices.remove(id, session?.accessToken);
+    const req = await userServices.remove(id, session?.accessToken);
+    req.success && toast({
+        title: "User Deleted",
+        description: "The user has been deleted successfully.",
+      });
+
+    }
+    
+  
+
+  const deletebulk = async (rows: User[]) => {
+    const ids = rows.map((row) => row.id);
+
+    const req= await userServices.bulkDelete({ ids }, session?.accessToken);
+     req.success && toast({
+        title: "User Deleted",
+        description: "The user has been deleted successfully.",
+      });
+    
   };
+
   const handleDelete = async (data: any) => {
     const confirmed = await showConfirm({
       title: "Delete Item",
@@ -84,13 +105,6 @@ export function Table(props: any) {
         deleteRequest(data.id);
       },
     });
-    if (confirmed) {
-      await showAlert({
-        title: "Success",
-        description: "Item has been deleted successfully.",
-        variant: "success",
-      });
-    }
   };
 
   const handleAssignRole = async (data: any) => {
@@ -283,21 +297,21 @@ export function Table(props: any) {
     },
   ];
   return (
-      <div className="space-y-4">
-        <DataTable
-          columns={columns}
-          endpoint="/users"
-          token={session?.accessToken}
-          filters={filters}
-          enableRowSelection={true}
-          enableMultiRowSelection={true}
-          onDelete={handleDelete}
-          onExport={handleExport}
-          //   pageSize={10}
-          refreshInterval={3000000}
-          searchPlaceholder="Search users by name, email..."
-          emptyMessage="No users found."
-        />
-      </div>
+    <div className="space-y-4">
+      <DataTable
+        columns={columns}
+        endpoint="/users"
+        token={session?.accessToken}
+        filters={filters}
+        enableRowSelection={true}
+        enableMultiRowSelection={true}
+        onDelete={deletebulk}
+        onExport={handleExport}
+        //   pageSize={10}
+        refreshInterval={3000000}
+        searchPlaceholder="Search users by name, email..."
+        emptyMessage="No users found."
+      />
+    </div>
   );
 }

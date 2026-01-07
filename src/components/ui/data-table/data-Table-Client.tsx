@@ -135,8 +135,8 @@ export function DataTable<TData>({
 
     // Add sorting
     if (sortField) {
-      params.sortBy = sortField;
-      params.sortOrder = sortOrder;
+      params.sort = sortField;
+      params.order = sortOrder;
     }
 
     // Add filters
