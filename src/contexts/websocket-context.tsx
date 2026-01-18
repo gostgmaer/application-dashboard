@@ -1,7 +1,14 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { WebSocketEvent } from '@/types';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  ReactNode,
+} from "react";
+import { WebSocketEvent } from "@/types";
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -9,37 +16,42 @@ interface WebSocketContextType {
   addEventListener: (type: string, callback: (data: any) => void) => () => void;
 }
 
-const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
+const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export function useWebSocket() {
   const context = useContext(WebSocketContext);
   if (!context) {
-    throw new Error('useWebSocket must be used within a WebSocketProvider');
+    throw new Error("useWebSocket must be used within a WebSocketProvider");
   }
   return context;
 }
 
-export function WebSocketProvider({ children }: { children: React.ReactNode }) {
+const socketEnabled = process.env.NEXT_PUBLIC_SOCKETING_ENABLED === "true";
+
+export function WebSocketProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const listenersRef = useRef<Map<string, Set<(data: any) => void>>>(new Map());
 
   useEffect(() => {
-    // Simulate WebSocket connection
+    if (!socketEnabled) return;
+
     setIsConnected(true);
 
-    // Simulate incoming events
     const interval = setInterval(() => {
-      // Simulate random events for demo
       if (Math.random() > 0.8) {
-        const eventTypes = ['notification:new', 'message:new', 'typing:start', 'call:incoming'];
-        const randomEvent = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-        
-        const listeners = listenersRef.current.get(randomEvent);
-        if (listeners && listeners.size > 0) {
-          listeners.forEach(callback => {
-            callback(generateMockData(randomEvent));
-          });
-        }
+        const eventTypes = [
+          "notification:new",
+          "message:new",
+          "typing:start",
+          "call:incoming",
+        ];
+
+        const randomEvent =
+          eventTypes[Math.floor(Math.random() * eventTypes.length)];
+
+        listenersRef.current
+          .get(randomEvent)
+          ?.forEach((cb) => cb(generateMockData(randomEvent)));
       }
     }, 5000);
 
@@ -50,29 +62,26 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const sendMessage = (event: WebSocketEvent) => {
-    // Simulate sending message
-    console.log('Sending WebSocket message:', event);
+    if (!socketEnabled) return;
+    console.log("Mock send:", event);
   };
 
   const addEventListener = (type: string, callback: (data: any) => void) => {
     if (!listenersRef.current.has(type)) {
       listenersRef.current.set(type, new Set());
     }
+
     listenersRef.current.get(type)!.add(callback);
 
     return () => {
-      const listeners = listenersRef.current.get(type);
-      if (listeners) {
-        listeners.delete(callback);
-        if (listeners.size === 0) {
-          listenersRef.current.delete(type);
-        }
-      }
+      listenersRef.current.get(type)?.delete(callback);
     };
   };
 
   return (
-    <WebSocketContext.Provider value={{ isConnected, sendMessage, addEventListener }}>
+    <WebSocketContext.Provider
+      value={{ isConnected, sendMessage, addEventListener }}
+    >
       {children}
     </WebSocketContext.Provider>
   );
@@ -80,46 +89,51 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
 
 function generateMockData(eventType: string) {
   switch (eventType) {
-    case 'notification:new':
+    case "notification:new":
       return {
         id: Date.now().toString(),
-        type: ['info', 'warning', 'success'][Math.floor(Math.random() * 3)],
-        priority: 'medium',
-        title: 'New Notification',
-        message: 'You have received a new notification',
+        type: ["info", "warning", "success"][Math.floor(Math.random() * 3)],
+        priority: "medium",
+        title: "New Notification",
+        message: "You have received a new notification",
         read: false,
         createdAt: new Date(),
-        userId: 'user1'
+        userId: "user1",
       };
-    case 'message:new':
+    case "message:new":
       return {
         id: Date.now().toString(),
-        conversationId: 'conv1',
-        senderId: 'user2',
-        content: 'Hello there! This is a real-time message.',
-        type: 'text',
+        conversationId: "conv1",
+        senderId: "user2",
+        content: "Hello there! This is a real-time message.",
+        type: "text",
         createdAt: new Date(),
-        status: 'sent'
+        status: "sent",
       };
-    case 'typing:start':
+    case "typing:start":
       return {
-        conversationId: 'conv1',
-        userId: 'user2',
-        userName: 'John Doe'
+        conversationId: "conv1",
+        userId: "user2",
+        userName: "John Doe",
       };
-    case 'call:incoming':
+    case "call:incoming":
       return {
         id: Date.now().toString(),
-        conversationId: 'conv1',
-        initiatorId: 'user2',
+        conversationId: "conv1",
+        initiatorId: "user2",
         participants: [
-          { id: 'user2', name: 'John Doe', email: 'john@example.com', online: true },
-          { id: 'user1', name: 'You', email: 'you@example.com', online: true }
+          {
+            id: "user2",
+            name: "John Doe",
+            email: "john@example.com",
+            online: true,
+          },
+          { id: "user1", name: "You", email: "you@example.com", online: true },
         ],
-        type: Math.random() > 0.5 ? 'video' : 'audio',
-        status: 'ringing',
+        type: Math.random() > 0.5 ? "video" : "audio",
+        status: "ringing",
         startedAt: new Date(),
-        teamsUrl: 'https://teams.microsoft.com/l/meetup-join/...'
+        teamsUrl: "https://teams.microsoft.com/l/meetup-join/...",
       };
     default:
       return {};
