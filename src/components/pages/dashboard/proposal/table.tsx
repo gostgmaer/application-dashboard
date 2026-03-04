@@ -3,21 +3,22 @@ interface Proposal {
 	id: string;
 	name: string;
 	email: string;
-	status: "active" | "inactive" | "pending";
-	inquiryNumber: string;
+	status: "new" | "reviewing" | "contacted" | "quoted" | "negotiating" | "accepted" | "rejected" | "completed" | "cancelled";
+	inquiryNumber: string | number;
 	priority: string;
 	projectType?: string;
 	budget?: string;
 	timeline?: string;
 	company?: string;
 	website?: string;
+	templateName?: string;
 }
 
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoveHorizontal as MoreHorizontal, Mail, Copy, Pencil, Trash2, Lock } from "lucide-react";
+import { MoveHorizontal as MoreHorizontal, Mail, Copy, Pencil, Trash2, Lock, FileText } from "lucide-react";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -36,6 +37,8 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { toast, useToast } from "@/hooks/useToast";
 import inquiryService from "@/lib/http/inqueryService";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { ProposalModalContent } from "./ProposalModal";
+import { loadProposalTemplate, mapProposalData, extractStylesAndContent, formatInquiryNumber } from "@/lib/proposal/proposalService";
 
 export function ProposalTable(props: any) {
 	const { data: session } = useSession();
@@ -49,13 +52,15 @@ export function ProposalTable(props: any) {
 			label: "Status",
 			type: "select",
 			options: [
-				{ label: "Active", value: "active" },
-				{ label: "Inactive", value: "inactive" },
-				{ label: "Pending", value: "pending" },
-				{ label: "Banned", value: "banned" },
-				{ label: "Deleted", value: "deleted" },
-				{ label: "Archived", value: "archived" },
-				{ label: "Draft", value: "draft" },
+				{ label: "New", value: "new" },
+				{ label: "Reviewing", value: "reviewing" },
+				{ label: "Contacted", value: "contacted" },
+				{ label: "Quoted", value: "quoted" },
+				{ label: "Negotiating", value: "negotiating" },
+				{ label: "Accepted", value: "accepted" },
+				{ label: "Rejected", value: "rejected" },
+				{ label: "Completed", value: "completed" },
+				{ label: "Cancelled", value: "cancelled" },
 			],
 		},
 	];
@@ -78,11 +83,64 @@ export function ProposalTable(props: any) {
 		});
 	};
 
+	const handleOpenProposal = async (proposal: Proposal) => {
+		try {
+			toast({
+				title: "Loading Proposal...",
+				description: "Please wait while we prepare the proposal.",
+			});
+
+			// Load the template (use templateName from backend or default to static_basic)
+			const templateName = proposal.templateName || "static_basic";
+			const template = await loadProposalTemplate(templateName);
+
+			// Map the data to the template
+			const mappedHtml = mapProposalData(template, proposal);
+
+			// Extract styles and content from the HTML
+			const { styles, content } = extractStylesAndContent(mappedHtml);
+
+			// Use the existing modal system
+			showCustom({
+				title: "",
+				className: "!max-w-7xl w-6xl",
+				content: (
+					<ProposalModalContent
+						proposalData={proposal}
+						htmlTemplate={content}
+						htmlStyles={styles}
+						token={session?.accessToken}
+						onClose={() => {}}
+					/>
+				),
+			});
+		} catch (error) {
+			console.error("Error loading proposal:", error);
+			toast({
+				title: "Error",
+				description: "Failed to load proposal template",
+				variant: "destructive",
+			});
+		}
+	};
+
 	const handleExport = (rows: Proposal[]) => {
 		console.log("Exporting proposals:", rows);
 	};
 
 	const columns: ColumnDef<Proposal>[] = [
+		{
+			accessorKey: "inquiryNumber",
+			header: "Proposal #",
+			cell: ({ row }) => {
+				const inquiryNumber = row.getValue("inquiryNumber") as string;
+				return (
+					<div className='font-mono text-sm font-semibold text-primary'>
+						{formatInquiryNumber(inquiryNumber)}
+					</div>
+				);
+			},
+		},
 		{
 			accessorKey: "name",
 			header: "Name",
@@ -150,15 +208,33 @@ export function ProposalTable(props: any) {
 			header: "Status",
 			cell: ({ row }) => {
 				const status = row.getValue("status") as string;
+				const getStatusVariant = (status: string) => {
+					switch (status) {
+						case "new":
+							return "default";
+						case "reviewing":
+							return "secondary";
+						case "contacted":
+							return "outline";
+						case "quoted":
+							return "outline";
+						case "negotiating":
+							return "secondary";
+						case "accepted":
+							return "default";
+						case "rejected":
+							return "destructive";
+						case "completed":
+							return "default";
+						case "cancelled":
+							return "destructive";
+						default:
+							return "outline";
+					}
+				};
 				return (
-					<Badge
-						variant={
-							status === "active" ? "default"
-							: status === "inactive" ?
-								"secondary"
-							:	"outline"
-						}>
-						{status}
+					<Badge variant={getStatusVariant(status)}>
+						{status.charAt(0).toUpperCase() + status.slice(1)}
 					</Badge>
 				);
 			},
@@ -182,13 +258,9 @@ export function ProposalTable(props: any) {
 						<DropdownMenuContent align='end'>
 							<DropdownMenuLabel>Actions</DropdownMenuLabel>
 
-							<DropdownMenuItem>
-								<Link
-									href={`/dashboard/users/${user["id"]}/update`}
-									className='flex items-center'>
-									<Pencil className='mr-2 h-4 w-4 text-blue-600 dark:text-blue-400' />
-									Edit
-								</Link>
+							<DropdownMenuItem onClick={() => handleOpenProposal(user)}>
+								<FileText className='mr-2 h-4 w-4 text-green-600 dark:text-green-400' />
+								Open Proposal
 							</DropdownMenuItem>
 
 							{hasPermission("user:delete") && (
