@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   TicketPercent,
   AppWindow,
+  AppWindowIcon,
 } from "lucide-react";
 
 interface NavItem {
@@ -52,6 +53,14 @@ const navigationItems: NavItem[] = [
     title: "User Management",
     icon: Users,
     href: "/dashboard/users",
+    // children: [
+    //   { title: "All Users", href: "/dashboard/users", icon: Users }
+    // ],
+  },
+    {
+    title: "Proposal Management",
+    icon: AppWindowIcon,
+    href: "/dashboard/proposal",
     // children: [
     //   { title: "All Users", href: "/dashboard/users", icon: Users }
     // ],
