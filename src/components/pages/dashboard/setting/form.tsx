@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Card,
   CardContent,
@@ -13,848 +15,461 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Loader2,
-  Facebook,
-  Twitter,
-  Instagram,
-  Linkedin,
-  Youtube,
-  PrinterCheck,
+  Check,
+  AlertCircle,
+  Settings as SettingsIcon,
+  Mail,
+  Globe,
+  CreditCard,
+  Key,
+  FileText,
+  DollarSign,
+  Shield,
+  Layers,
+  ChevronRight,
+  Database
 } from "lucide-react";
-import { settingsSchema, SettingsFormData } from "@/lib/validation/settings";
-import { Settings } from "@/types/settings";
-import { toast } from "sonner";
+import settingServices from "@/lib/http/settngsServices";
+import { sitekey } from "@/config/setting";
+import { cn } from "@/lib/utils/utils";
 
-interface SettingsPageProps {
-  settings: Settings;
+interface SettingField {
+  key: string;
+  label: string;
+  type: string;
+  value: any;
+  disabled?: boolean;
+  options?: string[];
+  isConfigured?: boolean;
 }
 
+interface SettingSection {
+  id: string;
+  title: string;
+  fields: SettingField[];
+}
+
+interface SettingsPageProps {
+  settings?: any;
+}
+
+const sectionIcons: Record<string, any> = {
+  basic: SettingsIcon,
+  contact: Mail,
+  branding: Globe,
+  currency: DollarSign,
+  email: Mail,
+  stripe: CreditCard,
+  paypal: Layers,
+  razorpay: Shield,
+  otp: Key,
+  policies: FileText,
+};
+
 export default function SettingsPage({ settings }: SettingsPageProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<
-    "maintenance" | "disable-site" | null
-  >(null);
+  const { data: session } = useSession();
+  const [tenants, setTenants] = useState<string[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<string>(
+    sitekey || settings?.siteKey || "my-store-001"
+  );
+  const [sections, setSections] = useState<SettingSection[]>([]);
+  const [activeSectionId, setActiveSectionId] = useState<string>("basic");
+  const [isLoadingTenants, setIsLoadingTenants] = useState(true);
+  const [isLoadingSchema, setIsLoadingSchema] = useState(true);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<SettingsFormData>({
-    resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      siteName: settings?.siteName || "",
-      name: settings?.name || "",
-      isLive: settings?.isLive ?? true,
-      maintenanceMode: settings?.maintenanceMode ?? false,
-      siteTimezone: settings?.siteTimezone || "UTC",
-      siteLocale: settings?.siteLocale || "en-US",
-      defaultPageSize: settings?.defaultPageSize ?? 20,
-      maxUploadSizeMB: settings?.maxUploadSizeMB ?? 10,
-      contactInfo: {
-        email: settings?.contactInfo?.email || "",
-        phone: settings?.contactInfo?.phone || "",
-        address: {
-          street: settings?.contactInfo?.address?.street || "",
-          city: settings?.contactInfo?.address?.city || "",
-          state: settings?.contactInfo?.address?.state || "",
-          zipCode: settings?.contactInfo?.address?.zipCode || "",
-          country: settings?.contactInfo?.address?.country || "",
-        },
-        supportEmail: settings?.contactInfo?.supportEmail || "",
-        supportPhone: settings?.contactInfo?.supportPhone || "",
-        contactHours: settings?.contactInfo?.contactHours || "",
-      },
-      branding: {
-        logo: settings?.branding?.logo || "",
-        favicon: settings?.branding?.favicon || "",
-        themeColor: settings?.branding?.themeColor || "#000000",
-        customCSSUrl: settings?.branding?.customCSSUrl || "",
-        customJSUrl: settings?.branding?.customJSUrl || "",
-      },
-      shipping: {
-        shippingOptions: settings?.shipping?.shippingOptions?.join(",") || "",
-        shippingMethods: settings?.shipping?.shippingMethods?.join(",") || "",
-        minOrderAmount: settings?.shipping?.minOrderAmount ?? 0,
-        maxOrderAmount: settings?.shipping?.maxOrderAmount,
-        freeShippingThreshold: settings?.shipping?.freeShippingThreshold ?? 100,
-        shippingHandlingFee: settings?.shipping?.shippingHandlingFee ?? 5,
-        shippingInsuranceEnabled:
-          settings?.shipping?.shippingInsuranceEnabled ?? false,
-      },
-      email: {
-        smtpHost: settings?.email?.smtpHost || "",
-        smtpPort: settings?.email?.smtpPort,
-        smtpUser: settings?.email?.smtpUser || "",
-        smtpPassword: settings?.email?.smtpPassword || "",
-        templates: {
-          orderConfirmation:
-            settings?.email?.templates?.orderConfirmation || "",
-          passwordReset: settings?.email?.templates?.passwordReset || "",
-          shippingNotification:
-            settings?.email?.templates?.shippingNotification || "",
-          promotional: settings?.email?.templates?.promotional || "",
-        },
-        emailSenderName: settings?.email?.emailSenderName || "",
-        emailSenderAddress: settings?.email?.emailSenderAddress || "",
-      },
-      seo: {
-        title: settings?.seo?.title || "",
-        description: settings?.seo?.description || "",
-        keywords: settings?.seo?.keywords?.join(",") || "",
-        googleSiteVerification: settings?.seo?.googleSiteVerification || "",
-        robotsTxt: settings?.seo?.robotsTxt || "",
-      },
-      analytics: {
-        googleAnalyticsID: settings?.analytics?.googleAnalyticsID || "",
-        facebookPixelID: settings?.analytics?.facebookPixelID || "",
-        hotjarID: settings?.analytics?.hotjarID || "",
-        segmentWriteKey: settings?.analytics?.segmentWriteKey || "",
-      },
-      currencySettings: {
-        currency: settings?.currencySettings?.currency || "USD",
-        currencySymbol: settings?.currencySettings?.currencySymbol || "$",
-        taxRate: settings?.currencySettings?.taxRate ?? 0,
-        taxEnabled: settings?.currencySettings?.taxEnabled ?? false,
-        taxInclusivePricing:
-          settings?.currencySettings?.taxInclusivePricing ?? false,
-      },
-      payment: {
-        paymentMethods: settings?.payment?.paymentMethods?.join(",") || "",
-        enabledMFA: settings?.payment?.enabledMFA ?? false,
-        defaultPaymentMethod: settings?.payment?.defaultPaymentMethod || "",
-        stripePublicKey: settings?.payment?.stripePublicKey || "",
-        stripeSecretKey: settings?.payment?.stripeSecretKey || "",
-        paypalClientId: settings?.payment?.paypalClientId || "",
-        paypalSecret: settings?.payment?.paypalSecret || "",
-        currencyConversionEnabled:
-          settings?.payment?.currencyConversionEnabled ?? false,
-      },
-      socialMediaLinks: {
-        facebook: settings?.socialMediaLinks?.facebook || "",
-        twitter: settings?.socialMediaLinks?.twitter || "",
-        instagram: settings?.socialMediaLinks?.instagram || "",
-        linkedin: settings?.socialMediaLinks?.linkedin || "",
-        youtube: settings?.socialMediaLinks?.youtube || "",
-        pinterest: settings?.socialMediaLinks?.pinterest || "",
-        tiktok: settings?.socialMediaLinks?.tiktok || "",
-      },
-      featuredCategories:
-        settings?.featuredCategories?.map((id) => id.toString())?.join(",") ||
-        "",
-      loyaltyProgram: {
-        enabled: settings?.loyaltyProgram?.enabled ?? false,
-        pointsPerDollar: settings?.loyaltyProgram?.pointsPerDollar ?? 1,
-        tieredRewardsEnabled:
-          settings?.loyaltyProgram?.tieredRewardsEnabled ?? false,
-        extraRewardMultiplier:
-          settings?.loyaltyProgram?.extraRewardMultiplier ?? 1,
-      },
-      policies: {
-        returnPolicy: settings?.policies?.returnPolicy || "",
-        privacyPolicy: settings?.policies?.privacyPolicy || "",
-        termsOfService: settings?.policies?.termsOfService || "",
-        cookiePolicy: settings?.policies?.cookiePolicy || "",
-        gdprComplianceEnabled:
-          settings?.policies?.gdprComplianceEnabled ?? false,
-      },
-      security: {
-        passwordMinLength: settings?.security?.passwordMinLength ?? 8,
-        passwordRequireSymbols:
-          settings?.security?.passwordRequireSymbols ?? true,
-        passwordRequireNumbers:
-          settings?.security?.passwordRequireNumbers ?? true,
-        passwordRequireUppercase:
-          settings?.security?.passwordRequireUppercase ?? true,
-        maxLoginAttempts: settings?.security?.maxLoginAttempts ?? 5,
-        accountLockoutDurationMinutes:
-          settings?.security?.accountLockoutDurationMinutes ?? 30,
-        sessionTimeoutMinutes: settings?.security?.sessionTimeoutMinutes ?? 60,
-        refreshTokenExpiryDays:
-          settings?.security?.refreshTokenExpiryDays ?? 30,
-        enableCaptchaOnLogin: settings?.security?.enableCaptchaOnLogin ?? false,
-        enableCaptchaOnSignup:
-          settings?.security?.enableCaptchaOnSignup ?? false,
-        enableIPRateLimiting: settings?.security?.enableIPRateLimiting ?? true,
-        maxRequestsPerMinute: settings?.security?.maxRequestsPerMinute ?? 60,
-        allowedIPRanges: settings?.security?.allowedIPRanges?.join(",") || "",
-        auditLoggingEnabled: settings?.security?.auditLoggingEnabled ?? true,
-        twoFactorAuthRequired:
-          settings?.security?.twoFactorAuthRequired ?? false,
-        jwtSecret: settings?.security?.jwtSecret || "",
-        jwtExpiryMinutes: settings?.security?.jwtExpiryMinutes ?? 60,
-        passwordResetTokenExpiryMinutes:
-          settings?.security?.passwordResetTokenExpiryMinutes ?? 15,
-      },
-      misc: {
-        allowGuestCheckout: settings?.misc?.allowGuestCheckout ?? true,
-        enableDarkMode: settings?.misc?.enableDarkMode ?? false,
-        defaultLanguage: settings?.misc?.defaultLanguage || "en",
-        supportedLanguages:
-          settings?.misc?.supportedLanguages?.join(",") || "en",
-        defaultPageSize: settings?.misc?.defaultPageSize ?? 20,
-        maxUploadSizeMB: settings?.misc?.maxUploadSizeMB ?? 10,
-        enablePushNotifications:
-          settings?.misc?.enablePushNotifications ?? false,
-        notificationSound: settings?.misc?.notificationSound || "default",
-        customCSSUrl: settings?.misc?.customCSSUrl || "",
-        customJSUrl: settings?.misc?.customJSUrl || "",
-      },
-    },
-  });
-
-  const formValues = watch();
-
-  const onSubmit = async (data: SettingsFormData) => {
-    setIsLoading(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      // Transform comma-separated strings back to arrays
-      const transformedData = {
-        ...data,
-        shipping: {
-          ...data.shipping,
-          shippingOptions: data.shipping.shippingOptions
-            ? data.shipping.shippingOptions.split(",").map((s) => s.trim())
-            : [],
-          shippingMethods: data.shipping.shippingMethods
-            ? data.shipping.shippingMethods.split(",").map((s) => s.trim())
-            : [],
-        },
-        seo: {
-          ...data.seo,
-          keywords: data.seo.keywords
-            ? data.seo.keywords.split(",").map((k) => k.trim())
-            : [],
-        },
-        payment: {
-          ...data.payment,
-          paymentMethods: data.payment.paymentMethods
-            ? data.payment.paymentMethods.split(",").map((m) => m.trim())
-            : [],
-        },
-        featuredCategories: data.featuredCategories
-          ? data.featuredCategories.split(",").map((id) => id.trim())
-          : [],
-        security: {
-          ...data.security,
-          allowedIPRanges: data.security.allowedIPRanges
-            ? data.security.allowedIPRanges.split(",").map((ip) => ip.trim())
-            : [],
-        },
-        misc: {
-          ...data.misc,
-          supportedLanguages: data.misc.supportedLanguages
-            ? data.misc.supportedLanguages.split(",").map((lang) => lang.trim())
-            : ["en"],
-        },
-      };
-      console.log("Updated settings:", transformedData);
-      toast.success("Settings updated successfully!");
-    } catch (error) {
-      toast.error("Failed to update settings. Please try again.");
-    } finally {
-      setIsLoading(false);
+  // Load tenants list
+  useEffect(() => {
+    const fetchTenants = async () => {
+      try {
+        setIsLoadingTenants(true);
+        const res = await settingServices.listTenants(session?.accessToken);
+        if (res.success && Array.isArray(res.data)) {
+          setTenants(res.data);
+          // If the current selected tenant is not in the list, we append it or select the first
+          if (res.data.length > 0 && !res.data.includes(selectedTenant)) {
+            setSelectedTenant(res.data[0]);
+          }
+        } else {
+          setTenants([selectedTenant]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch tenants list", err);
+        setTenants([selectedTenant]);
+      } finally {
+        setIsLoadingTenants(false);
+      }
+    };
+    
+    if (session?.accessToken) {
+      fetchTenants();
     }
-  };
+  }, [session?.accessToken]);
 
-  const handleCriticalToggle = (
-    field: "maintenanceMode" | "isLive",
-    checked: boolean
-  ) => {
-    if (field === "maintenanceMode" && checked) {
-      setDialogType("maintenance");
-      setDialogOpen(true);
-    } else if (field === "isLive" && !checked) {
-      setDialogType("disable-site");
-      setDialogOpen(true);
-    } else {
-      setValue(field, checked, { shouldValidate: true });
+  // Load dynamic schema for selectedTenant
+  useEffect(() => {
+    const fetchSchema = async () => {
+      try {
+        setIsLoadingSchema(true);
+        const res = await settingServices.getDynamicSchema(selectedTenant, session?.accessToken);
+        if (res.success && Array.isArray(res.data)) {
+          setSections(res.data);
+          // Ensure activeSectionId exists in new schema, otherwise default to first
+          if (res.data.length > 0) {
+            const hasActive = res.data.some(s => s.id === activeSectionId);
+            if (!hasActive) {
+              setActiveSectionId(res.data[0].id);
+            }
+          }
+        } else {
+          toast.error("Failed to load settings schema");
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings schema", err);
+        toast.error("Failed to load settings schema");
+      } finally {
+        setIsLoadingSchema(false);
+      }
+    };
+
+    if (session?.accessToken && selectedTenant) {
+      fetchSchema();
     }
-  };
+  }, [selectedTenant, session?.accessToken]);
 
-  const handleConfirmDialog = () => {
-    if (dialogType === "maintenance") {
-      setValue("maintenanceMode", true, { shouldValidate: true });
-      toast.success("Maintenance mode enabled!");
-    } else if (dialogType === "disable-site") {
-      setValue("isLive", false, { shouldValidate: true });
-      toast.success("Site disabled!");
-    }
-    setDialogOpen(false);
-    setDialogType(null);
-  };
-
-  const handleCancelDialog = () => {
-    if (dialogType === "maintenance") {
-      setValue("maintenanceMode", false, { shouldValidate: true });
-    } else if (dialogType === "disable-site") {
-      setValue("isLive", true, { shouldValidate: true });
-    }
-    setDialogOpen(false);
-    setDialogType(null);
-  };
-
-  const socialPlatforms = [
-    {
-      name: "facebook" as const,
-      label: "Facebook",
-      icon: Facebook,
-      color: "text-blue-600",
-    },
-    {
-      name: "twitter" as const,
-      label: "Twitter",
-      icon: Twitter,
-      color: "text-sky-500",
-    },
-    {
-      name: "instagram" as const,
-      label: "Instagram",
-      icon: Instagram,
-      color: "text-pink-600",
-    },
-    {
-      name: "linkedin" as const,
-      label: "LinkedIn",
-      icon: Linkedin,
-      color: "text-blue-700",
-    },
-    {
-      name: "youtube" as const,
-      label: "YouTube",
-      icon: Youtube,
-      color: "text-red-600",
-    },
-  ];
+  const activeSection = sections.find((s) => s.id === activeSectionId);
 
   return (
-    <div className="">
-      <Card>
-        <CardHeader></CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left Column: Basic, Branding, Security, Currency */}
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Basic Settings</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="siteName">Site Name</Label>
-                    <Input
-                      id="siteName"
-                      {...register("siteName")}
-                      placeholder="Enter site name"
-                    />
-                    {errors.siteName && (
-                      <p className="text-sm text-destructive">
-                        {errors.siteName.message}
-                      </p>
-                    )}
-                  </div>
+    <div className="space-y-6">
+      {/* Header and Tenant Switcher */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 bg-card border border-border/60 rounded-xl shadow-sm">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Platform Settings</h1>
+          <p className="text-muted-foreground text-sm">
+            Configure settings for tenant settings dynamically at runtime.
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Database className="h-4 w-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-muted-foreground">Tenant:</span>
+          {isLoadingTenants ? (
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          ) : (
+            <Select
+              value={selectedTenant}
+              onValueChange={(val) => {
+                setSelectedTenant(val);
+                toast.info(`Switched to tenant: ${val}`);
+              }}
+            >
+              <SelectTrigger className="w-[200px] bg-background">
+                <SelectValue placeholder="Select Tenant" />
+              </SelectTrigger>
+              <SelectContent>
+                {tenants.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
 
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="isLive" className="cursor-pointer">
-                      Site Live
-                    </Label>
-                    <Switch
-                      id="isLive"
-                      checked={formValues.isLive}
-                      onCheckedChange={(checked) =>
-                        handleCriticalToggle("isLive", checked)
-                      }
-                      disabled={isLoading}
-                    />
-                    {errors.isLive && (
-                      <p className="text-sm text-destructive">
-                        {errors.isLive.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="maintenanceMode" className="cursor-pointer">
-                      Maintenance Mode
-                    </Label>
-                    <Switch
-                      id="maintenanceMode"
-                      checked={formValues.maintenanceMode}
-                      onCheckedChange={(checked) =>
-                        handleCriticalToggle("maintenanceMode", checked)
-                      }
-                      disabled={isLoading}
-                    />
-                    {errors.maintenanceMode && (
-                      <p className="text-sm text-destructive">
-                        {errors.maintenanceMode.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="siteTimezone">Site Timezone</Label>
-                    <Input
-                      id="siteTimezone"
-                      {...register("siteTimezone")}
-                      placeholder="Enter timezone (e.g., UTC)"
-                    />
-                    {errors.siteTimezone && (
-                      <p className="text-sm text-destructive">
-                        {errors.siteTimezone.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="siteLocale">Site Locale</Label>
-                    <Input
-                      id="siteLocale"
-                      {...register("siteLocale")}
-                      placeholder="Enter locale (e.g., en-US)"
-                    />
-                    {errors.siteLocale && (
-                      <p className="text-sm text-destructive">
-                        {errors.siteLocale.message}
-                      </p>
-                    )}
-                  </div>
+      {isLoadingSchema ? (
+        <div className="flex flex-col md:flex-row gap-6 animate-pulse">
+          <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="h-10 bg-muted rounded-md" />
+            ))}
+          </div>
+          <div className="flex-1 space-y-4">
+            <div className="h-6 bg-muted rounded-md w-1/4" />
+            <div className="h-4 bg-muted rounded-md w-2/3" />
+            <div className="space-y-6 pt-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 bg-muted rounded-md w-1/5" />
+                  <div className="h-10 bg-muted rounded-md" />
                 </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Branding</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="branding.logo">Logo URL</Label>
-                    <Input
-                      id="branding.logo"
-                      {...register("branding.logo")}
-                      placeholder="Enter logo URL"
-                    />
-                    {errors.branding?.logo && (
-                      <p className="text-sm text-destructive">
-                        {errors.branding.logo.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="branding.themeColor">Theme Color</Label>
-                    <Input
-                      id="branding.themeColor"
-                      {...register("branding.themeColor")}
-                      placeholder="Enter theme color (e.g., #000000)"
-                    />
-                    {errors.branding?.themeColor && (
-                      <p className="text-sm text-destructive">
-                        {errors.branding.themeColor.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Security</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="security.passwordMinLength">
-                      Password Minimum Length
-                    </Label>
-                    <Input
-                      id="security.passwordMinLength"
-                      type="number"
-                      {...register("security.passwordMinLength", {
-                        valueAsNumber: true,
-                      })}
-                      placeholder="Enter minimum length"
-                    />
-                    {errors.security?.passwordMinLength && (
-                      <p className="text-sm text-destructive">
-                        {errors.security.passwordMinLength.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="security.twoFactorAuthRequired"
-                      className="cursor-pointer"
-                    >
-                      Two-Factor Auth Required
-                    </Label>
-                    <Switch
-                      id="security.twoFactorAuthRequired"
-                      checked={formValues.security.twoFactorAuthRequired}
-                      onCheckedChange={(checked) =>
-                        setValue("security.twoFactorAuthRequired", checked, {
-                          shouldValidate: true,
-                        })
-                      }
-                      disabled={isLoading}
-                    />
-                    {errors.security?.twoFactorAuthRequired && (
-                      <p className="text-sm text-destructive">
-                        {errors.security.twoFactorAuthRequired.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="security.jwtSecret">JWT Secret</Label>
-                    <Input
-                      id="security.jwtSecret"
-                      type="password"
-                      {...register("security.jwtSecret")}
-                      placeholder="Enter JWT secret"
-                    />
-                    {errors.security?.jwtSecret && (
-                      <p className="text-sm text-destructive">
-                        {errors.security.jwtSecret.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Currency Settings</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="currencySettings.currency">Currency</Label>
-                    <Input
-                      id="currencySettings.currency"
-                      {...register("currencySettings.currency")}
-                      placeholder="Enter currency (e.g., USD)"
-                    />
-                    {errors.currencySettings?.currency && (
-                      <p className="text-sm text-destructive">
-                        {errors.currencySettings.currency.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="currencySettings.taxEnabled"
-                      className="cursor-pointer"
-                    >
-                      Tax Enabled
-                    </Label>
-                    <Switch
-                      id="currencySettings.taxEnabled"
-                      checked={formValues.currencySettings.taxEnabled}
-                      onCheckedChange={(checked) =>
-                        setValue("currencySettings.taxEnabled", checked, {
-                          shouldValidate: true,
-                        })
-                      }
-                      disabled={isLoading}
-                    />
-                    {errors.currencySettings?.taxEnabled && (
-                      <p className="text-sm text-destructive">
-                        {errors.currencySettings.taxEnabled.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Contact, Social Media, Shipping, Payment, SEO, etc. */}
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Contact Information</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="contactInfo.email">Email</Label>
-                    <Input
-                      id="contactInfo.email"
-                      {...register("contactInfo.email")}
-                      placeholder="Enter contact email"
-                    />
-                    {errors.contactInfo?.email && (
-                      <p className="text-sm text-destructive">
-                        {errors.contactInfo.email.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contactInfo.phone">Phone</Label>
-                    <Input
-                      id="contactInfo.phone"
-                      {...register("contactInfo.phone")}
-                      placeholder="Enter contact phone"
-                    />
-                    {errors.contactInfo?.phone && (
-                      <p className="text-sm text-destructive">
-                        {errors.contactInfo.phone.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="contactInfo.address.street">Street</Label>
-                    <Input
-                      id="contactInfo.address.street"
-                      {...register("contactInfo.address.street")}
-                      placeholder="Enter street"
-                    />
-                    {errors.contactInfo?.address?.street && (
-                      <p className="text-sm text-destructive">
-                        {errors.contactInfo.address.street.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Social Media Links</h3>
-                  {socialPlatforms.map((platform) => (
-                    <div key={platform.name} className="space-y-2">
-                      <Label
-                        htmlFor={`socialMediaLinks.${platform.name}`}
-                        className="flex items-center gap-2"
-                      >
-                        <platform.icon
-                          className={`h-4 w-4 ${platform.color}`}
-                        />
-                        {platform.label}
-                      </Label>
-                      <Input
-                        id={`socialMediaLinks.${platform.name}`}
-                        {...register(`socialMediaLinks.${platform.name}`)}
-                        placeholder={`Enter ${platform.label} URL`}
-                        disabled={isLoading}
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Left Sidebar for Tabs */}
+          <div className="w-full md:w-64 shrink-0 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0 border-b md:border-b-0 md:border-r border-border md:pr-4">
+            {sections.map((section) => {
+              const Icon = sectionIcons[section.id] || SettingsIcon;
+              const isActive = activeSectionId === section.id;
+              return (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => setActiveSectionId(section.id)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all whitespace-nowrap w-full text-left",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span>{section.title}</span>
+                  <ChevronRight className={cn("ml-auto h-4 w-4 hidden md:block opacity-60", isActive && "text-primary-foreground opacity-100")} />
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Right Content Area */}
+          <div className="flex-1">
+            <Card className="border border-border/80 shadow-md">
+              <CardHeader className="border-b border-border/50 bg-muted/20 px-6 py-4">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  {activeSection ? (
+                    <>
+                      {(() => {
+                        const Icon = sectionIcons[activeSection.id] || SettingsIcon;
+                        return <Icon className="h-5 w-5 text-primary" />;
+                      })()}
+                      {activeSection.title}
+                    </>
+                  ) : (
+                    "Settings Section"
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  Configure fields for this category. Changes are auto-saved.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6">
+                {activeSection && activeSection.fields.length > 0 ? (
+                  <div className="space-y-6">
+                    {activeSection.fields.map((field) => (
+                      <FieldRow
+                        key={field.key}
+                        field={field}
+                        selectedTenant={selectedTenant}
+                        session={session}
                       />
-                      {errors.socialMediaLinks?.[platform.name] && (
-                        <p className="text-sm text-destructive">
-                          {errors.socialMediaLinks[platform.name]?.message}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Shipping</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="shipping.shippingOptions">
-                      Shipping Options (comma-separated)
-                    </Label>
-                    <Input
-                      id="shipping.shippingOptions"
-                      {...register("shipping.shippingOptions")}
-                      placeholder="e.g., Standard,Express"
-                    />
-                    {errors.shipping?.shippingOptions && (
-                      <p className="text-sm text-destructive">
-                        {errors.shipping.shippingOptions.message}
-                      </p>
-                    )}
+                    ))}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="shipping.freeShippingThreshold">
-                      Free Shipping Threshold
-                    </Label>
-                    <Input
-                      id="shipping.freeShippingThreshold"
-                      type="number"
-                      {...register("shipping.freeShippingThreshold", {
-                        valueAsNumber: true,
-                      })}
-                      placeholder="Enter threshold"
-                    />
-                    {errors.shipping?.freeShippingThreshold && (
-                      <p className="text-sm text-destructive">
-                        {errors.shipping.freeShippingThreshold.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Payment</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="payment.paymentMethods">
-                      Payment Methods (comma-separated)
-                    </Label>
-                    <Input
-                      id="payment.paymentMethods"
-                      {...register("payment.paymentMethods")}
-                      placeholder="e.g., Stripe,Paypal"
-                    />
-                    {errors.payment?.paymentMethods && (
-                      <p className="text-sm text-destructive">
-                        {errors.payment.paymentMethods.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="payment.enabledMFA"
-                      className="cursor-pointer"
-                    >
-                      Enable MFA
-                    </Label>
-                    <Switch
-                      id="payment.enabledMFA"
-                      checked={formValues.payment.enabledMFA}
-                      onCheckedChange={(checked) =>
-                        setValue("payment.enabledMFA", checked, {
-                          shouldValidate: true,
-                        })
-                      }
-                      disabled={isLoading}
-                    />
-                    {errors.payment?.enabledMFA && (
-                      <p className="text-sm text-destructive">
-                        {errors.payment.enabledMFA.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="payment.stripeSecretKey">
-                      Stripe Secret Key
-                    </Label>
-                    <Input
-                      id="payment.stripeSecretKey"
-                      type="password"
-                      {...register("payment.stripeSecretKey")}
-                      placeholder="Enter Stripe secret key"
-                    />
-                    {errors.payment?.stripeSecretKey && (
-                      <p className="text-sm text-destructive">
-                        {errors.payment.stripeSecretKey.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">SEO</h3>
-                  <div className="space-y-2">
-                    <Label htmlFor="seo.title">SEO Title</Label>
-                    <Input
-                      id="seo.title"
-                      {...register("seo.title")}
-                      placeholder="Enter SEO title"
-                    />
-                    {errors.seo?.title && (
-                      <p className="text-sm text-destructive">
-                        {errors.seo.title.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="seo.keywords">
-                      Keywords (comma-separated)
-                    </Label>
-                    <Input
-                      id="seo.keywords"
-                      {...register("seo.keywords")}
-                      placeholder="e.g., e-commerce,shopping"
-                    />
-                    {errors.seo?.keywords && (
-                      <p className="text-sm text-destructive">
-                        {errors.seo.keywords.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Loyalty Program</h3>
-                  <div className="flex items-center justify-between">
-                    <Label
-                      htmlFor="loyaltyProgram.enabled"
-                      className="cursor-pointer"
-                    >
-                      Enable Loyalty Program
-                    </Label>
-                    <Switch
-                      id="loyaltyProgram.enabled"
-                      checked={formValues.loyaltyProgram.enabled}
-                      onCheckedChange={(checked) =>
-                        setValue("loyaltyProgram.enabled", checked, {
-                          shouldValidate: true,
-                        })
-                      }
-                      disabled={isLoading}
-                    />
-                    {errors.loyaltyProgram?.enabled && (
-                      <p className="text-sm text-destructive">
-                        {errors.loyaltyProgram.enabled.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="loyaltyProgram.pointsPerDollar">
-                      Points Per Dollar
-                    </Label>
-                    <Input
-                      id="loyaltyProgram.pointsPerDollar"
-                      type="number"
-                      {...register("loyaltyProgram.pointsPerDollar", {
-                        valueAsNumber: true,
-                      })}
-                      placeholder="Enter points per dollar"
-                    />
-                    {errors.loyaltyProgram?.pointsPerDollar && (
-                      <p className="text-sm text-destructive">
-                        {errors.loyaltyProgram.pointsPerDollar.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">Privacy Notice</h4>
-              <p className="text-sm text-muted-foreground">
-                Your site settings, including social media links and API keys,
-                may be publicly visible or sensitive. Ensure sensitive
-                information is not exposed.
-              </p>
-            </div>
-
-            <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
                 ) : (
-                  "Save Changes"
+                  <div className="text-center py-8 text-muted-foreground">
+                    No settings fields available in this section.
+                  </div>
                 )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {dialogType === "maintenance"
-                ? "Enable Maintenance Mode"
-                : "Disable Site"}
-            </DialogTitle>
-            <DialogDescription>
-              {dialogType === "maintenance"
-                ? "Are you sure you want to enable maintenance mode? This will make the site inaccessible to users."
-                : "Are you sure you want to disable the site? This will prevent all user access."}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCancelDialog}>
-              Cancel
-            </Button>
-            <Button onClick={handleConfirmDialog}>
-              {dialogType === "maintenance" ? "Enable" : "Disable"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+interface FieldRowProps {
+  field: SettingField;
+  selectedTenant: string;
+  session: any;
+}
+
+function FieldRow({ field, selectedTenant, session }: FieldRowProps) {
+  const [val, setVal] = useState(field.value);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Keep local value in sync if schema changes (e.g. switching tenants)
+  useEffect(() => {
+    setVal(field.value);
+    setStatus('idle');
+    setErrorMsg('');
+  }, [field.value]);
+
+  const onSave = async (newVal: any) => {
+    // If password and unchanged, skip
+    if (field.type === 'password' && newVal === '••••••••') {
+      return;
+    }
+
+    setStatus('saving');
+    try {
+      const res = await settingServices.updateField(
+        selectedTenant,
+        { key: field.key, value: newVal },
+        session?.accessToken
+      );
+      if (res.success) {
+        setStatus('saved');
+        toast.success(`Saved "${field.label}" successfully`);
+        // If it's a password and was saved, mask it
+        if (field.type === 'password' && newVal !== '••••••••' && newVal !== '') {
+          setVal('••••••••');
+        }
+        setTimeout(() => setStatus('idle'), 3000);
+      } else {
+        setStatus('error');
+        setErrorMsg(res.error || 'Failed to save');
+        toast.error(`Error saving "${field.label}": ${res.error}`);
+      }
+    } catch (e: any) {
+      setStatus('error');
+      setErrorMsg(e.message || 'Error occurred');
+      toast.error(`Error saving "${field.label}": ${e.message}`);
+    }
+  };
+
+  const isSaving = status === 'saving';
+  const isSaved = status === 'saved';
+  const isError = status === 'error';
+
+  return (
+    <div className="space-y-2 pb-5 border-b border-border/40 last:border-0 last:pb-0">
+      <div className="flex items-center justify-between">
+        <Label htmlFor={field.key} className="text-sm font-semibold text-foreground">
+          {field.label}
+        </Label>
+        <div className="flex items-center gap-1.5 text-xs">
+          {isSaving && (
+            <span className="flex items-center gap-1 text-muted-foreground animate-pulse">
+              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+              Saving...
+            </span>
+          )}
+          {isSaved && (
+            <span className="flex items-center gap-1 text-emerald-600 font-medium">
+              <Check className="h-3.5 w-3.5" />
+              Saved
+            </span>
+          )}
+          {isError && (
+            <span className="flex items-center gap-1 text-destructive font-medium" title={errorMsg}>
+              <AlertCircle className="h-3.5 w-3.5" />
+              Failed
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="relative">
+        {field.type === 'boolean' ? (
+          <div className="flex items-center h-10">
+            <Switch
+              id={field.key}
+              checked={!!val}
+              disabled={field.disabled || isSaving}
+              onCheckedChange={(checked) => {
+                setVal(checked);
+                onSave(checked);
+              }}
+            />
+          </div>
+        ) : field.type === 'select' ? (
+          <Select
+            value={val || ''}
+            disabled={field.disabled || isSaving}
+            onValueChange={(selected) => {
+              setVal(selected);
+              onSave(selected);
+            }}
+          >
+            <SelectTrigger className="w-full bg-background" id={field.key}>
+              <SelectValue placeholder="Select option" />
+            </SelectTrigger>
+            <SelectContent>
+              {field.options?.map((opt) => (
+                <SelectItem key={opt} value={opt}>
+                  {opt}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : field.type === 'text' || field.type === 'textarea' ? (
+          <Textarea
+            id={field.key}
+            value={val || ''}
+            disabled={field.disabled || isSaving}
+            onChange={(e) => setVal(e.target.value)}
+            onBlur={() => {
+              if (val !== field.value) {
+                onSave(val);
+              }
+            }}
+            placeholder={`Enter ${field.label.toLowerCase()}`}
+            className="min-h-[100px] bg-background"
+          />
+        ) : field.type === 'color' ? (
+          <div className="flex gap-2 items-center">
+            <Input
+              id={field.key}
+              type="color"
+              value={val || '#000000'}
+              disabled={field.disabled || isSaving}
+              onChange={(e) => setVal(e.target.value)}
+              onBlur={() => {
+                if (val !== field.value) {
+                  onSave(val);
+                }
+              }}
+              className="w-12 h-10 p-1 border rounded-md cursor-pointer shrink-0"
+            />
+            <Input
+              type="text"
+              value={val || ''}
+              disabled={field.disabled || isSaving}
+              onChange={(e) => setVal(e.target.value)}
+              onBlur={() => {
+                if (val !== field.value) {
+                  onSave(val);
+                }
+              }}
+              className="bg-background font-mono"
+              placeholder="#000000"
+            />
+          </div>
+        ) : (
+          <Input
+            id={field.key}
+            type={field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'}
+            value={val === null || val === undefined ? '' : val}
+            disabled={field.disabled || isSaving}
+            onChange={(e) => setVal(e.target.value)}
+            onBlur={() => {
+              if (val !== field.value) {
+                onSave(val);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (val !== field.value) {
+                  onSave(val);
+                }
+              }
+            }}
+            autoComplete={field.type === 'password' ? 'new-password' : 'off'}
+            placeholder={
+              field.type === 'password'
+                ? field.isConfigured
+                  ? '••••••••'
+                  : 'Enter password/secret'
+                : `Enter ${field.label.toLowerCase()}`
+            }
+            className="bg-background"
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -298,6 +298,30 @@ const settingServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() => requests.get(`/settings/docs/routes`, token, undefined, undefined, headers, 1));
+  },
+
+  listTenants: async (
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get("/settings/tenants", token, undefined, undefined, headers, 1));
+  },
+
+  getDynamicSchema: async (
+    siteKey: string,
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.get(`/settings/${siteKey}/dynamic-schema`, token, undefined, undefined, headers, 1));
+  },
+
+  updateField: async (
+    siteKey: string,
+    body: { key: string; value: any },
+    token?: string,
+    headers?: Record<string, any>
+  ): Promise<ApiResponse> => {
+    return safeApiCall(() => requests.patch(`/settings/${siteKey}/update-field`, body, token, headers));
   }
 };
 
