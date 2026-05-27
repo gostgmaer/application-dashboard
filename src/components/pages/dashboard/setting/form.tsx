@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -36,7 +36,17 @@ import {
   Shield,
   Layers,
   ChevronRight,
-  Database
+  Database,
+  Link,
+  Cloud,
+  Server,
+
+  Users,
+  ToggleLeft,
+  Bell,
+  Building2,
+  Smartphone,
+  Lock,
 } from "lucide-react";
 import settingServices from "@/lib/http/settngsServices";
 import { sitekey } from "@/config/setting";
@@ -63,16 +73,35 @@ interface SettingsPageProps {
 }
 
 const sectionIcons: Record<string, any> = {
-  basic: SettingsIcon,
-  contact: Mail,
-  branding: Globe,
-  currency: DollarSign,
-  email: Mail,
-  stripe: CreditCard,
-  paypal: Layers,
-  razorpay: Shield,
-  otp: Key,
-  policies: FileText,
+  // Core
+  basic:          SettingsIcon,
+  contact:        Mail,
+  branding:       Globe,
+  currency:       DollarSign,
+  client:         Link,
+  security:       Lock,
+  // Email
+  email:          Mail,
+  email_fallback: Server,
+  // Payments
+  stripe:         CreditCard,
+  paypal:         Layers,
+  razorpay:       Shield,
+  // Storage
+  storage:        Database,
+  storage_azure:  Cloud,
+  storage_s3:     Cloud,
+  storage_gcs:    Cloud,
+  storage_r2:     Cloud,
+  // Services
+  twilio:         Smartphone,
+  oauth:          Users,
+  // Misc
+  otp:            Key,
+  business:       Building2,
+  features:       ToggleLeft,
+  notifications:  Bell,
+  policies:       FileText,
 };
 
 export default function SettingsPage({ settings }: SettingsPageProps) {
@@ -440,9 +469,15 @@ function FieldRow({ field, selectedTenant, session }: FieldRowProps) {
             />
           </div>
         ) : (
+          // Default: 'string', 'number', 'password', 'url', and any unknown type → Input
           <Input
             id={field.key}
-            type={field.type === 'password' ? 'password' : field.type === 'number' ? 'number' : 'text'}
+            type={
+              field.type === 'password' ? 'password' :
+              field.type === 'number'   ? 'number'   :
+              field.type === 'url'      ? 'url'      :
+              'text'
+            }
             value={val === null || val === undefined ? '' : val}
             disabled={field.disabled || isSaving}
             onChange={(e) => setVal(e.target.value)}
