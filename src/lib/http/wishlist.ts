@@ -36,7 +36,7 @@ const wishlistServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/wishlist/${userId}/${productId}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/wishlist/${userId}/${productId}`, undefined, token, undefined, headers));
   },
 
   approveWishlistItem: async (
@@ -80,7 +80,7 @@ const wishlistServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/wishlist/clear/${userId}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/wishlist/clear/${userId}`, undefined, token, undefined, headers));
   },
 
   bulkAddToWishlist: async (

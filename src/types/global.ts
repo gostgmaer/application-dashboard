@@ -14,6 +14,8 @@ export interface ApiResponse<T = any> {
     nextPage?: number;
     prevPage?: number;
     lastPage?: number;
+    hasNext?: boolean;
+    hasPrev?: boolean;
   }
   raw?: string;
 }

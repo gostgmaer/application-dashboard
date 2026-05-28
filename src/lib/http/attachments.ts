@@ -43,7 +43,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/files/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/files/${id}`, undefined, token, undefined, headers));
   },
 
   listByTag: async (
@@ -126,7 +126,7 @@ const attachmentService = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/files/tenant/${tenantId}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/files/tenant/${tenantId}`, undefined, token, undefined, headers));
   },
 
   getStats: async (

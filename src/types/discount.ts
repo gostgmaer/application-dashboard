@@ -27,10 +27,7 @@ export interface UpdateDiscountInput extends Partial<CreateDiscountInput> {
   id: string;
 }
 
-export interface ApiResponse<T> {
-  data: T;
-  message?: string;
-}
+// ApiResponse: use canonical definition from @/types/global
 
 export interface ApiError {
   message: string;

@@ -68,7 +68,7 @@ const addressServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() =>
-      requests.delete(`/addresses/${id}`, token, undefined, headers)
+      requests.delete(`/addresses/${id}`, undefined, token, undefined, headers)
     );
   },
 
@@ -87,7 +87,7 @@ const addressServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() =>
-      requests.delete("/addresses", token, undefined, headers)
+      requests.delete("/addresses", undefined, token, undefined, headers)
     );
   },
 

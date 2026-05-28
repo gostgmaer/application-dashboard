@@ -49,12 +49,7 @@ export interface CheckoutData {
   guestEmail: string;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  errors?: Record<string, string>;
-}
+// ApiResponse: use canonical definition from @/types/global
 
 export interface Order {
   id: string;

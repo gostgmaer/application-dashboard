@@ -213,7 +213,7 @@ const paymentServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/payment/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/payment/${id}`, undefined, token, undefined, headers));
   },
 
   exportPayments: async (

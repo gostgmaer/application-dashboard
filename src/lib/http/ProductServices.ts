@@ -26,7 +26,7 @@ const productService = {
 
   // Bulk Operations
   bulkDelete: async (body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/products/bulk/delete`, body, token, headers)),
+    safeApiCall(() => requests.delete(`/products/bulk/delete`, body, token, undefined, headers)),
 
 
   bulkUpdateStatus: async (body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
@@ -163,7 +163,7 @@ const productService = {
     safeApiCall(() => requests.post(`/products/favorites/${id}`, {}, token, headers)),
 
   removeFavorite: async (id: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/products/favorites/${id}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/products/favorites/${id}`, undefined, token, undefined, headers)),
 
   listFavorites: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get(`/products/favorites`, token, undefined, undefined, headers, 1)),
@@ -181,7 +181,7 @@ const productService = {
     safeApiCall(() => requests.put(`/products/${id}/reviews/${reviewId}/approve`, {}, token, headers)),
 
   removeReview: async (id: string, reviewId: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/products/${id}/reviews/${reviewId}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/products/${id}/reviews/${reviewId}`, undefined, token, undefined, headers)),
 
   lowStockAlerts: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get(`/products/alerts/low-stock`, token, undefined, undefined, headers, 1)),

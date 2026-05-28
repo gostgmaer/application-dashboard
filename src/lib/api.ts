@@ -1,204 +1,132 @@
-import { User, Address, Device, ActivityLog, SocialConnection, TOTPSetup, UserPreferences } from '@/types/user';
+import { User, Address, UserPreferences } from '@/types/user';
+import { ApiResponse } from '@/types/global';
+import userServices from '@/lib/http/userService';
+import authService from '@/lib/http/authService';
+import addressService from '@/lib/http/address';
 
-// API response wrapper
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-}
-
-// Mock API functions - replace with actual API calls
+/**
+ * User API - delegates to real HTTP services.
+ * Each method accepts a token and optional headers for auth.
+ * Components should retrieve the token from session/context and pass it in.
+ */
 export const userApi = {
-  // User data
-
-
-  updateUser: async (data: Partial<User>): Promise<ApiResponse> => {
-    console.log('Updating user:', data);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  updateUser: async (data: Partial<User>, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.updatePatch(id, data, token, headers);
   },
 
-  // OTP operations
-  sendOTP: async (type: 'email' | 'phone'): Promise<ApiResponse> => {
-    console.log('Sending OTP to:', type);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  sendOTP: async (type: 'email' | 'phone', token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.resendOTP({ method: type }, token, headers);
   },
 
-  verifyOTP: async (code: string, type: 'email' | 'phone'): Promise<ApiResponse> => {
-    console.log('Verifying OTP:', code, type);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  verifyOTP: async (code: string, type: 'email' | 'phone', token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.verifyOTPAndLogin({ otp: code, method: type }, token, headers);
   },
 
-  // Security
-  changePassword: async (oldPassword: string, newPassword: string): Promise<ApiResponse> => {
-    console.log('Changing password');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  changePassword: async (oldPassword: string, newPassword: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.changePassword(id, { oldPassword, newPassword }, token, headers);
   },
 
-  // TOTP
-  setupTOTP: async (): Promise<ApiResponse<TOTPSetup>> => {
-    console.log('Setting up TOTP');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return {
-      success: true,
-      data: {
-        secret: 'JBSWY3DPEHPK3PXP',
-        qrCode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-        backupCodes: ['123456', '789012', '345678']
-      }
-    };
+  setupTOTP: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.setupTOTP(token, headers);
   },
 
-  confirmTOTP: async (code: string): Promise<ApiResponse> => {
-    console.log('Confirming TOTP:', code);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  confirmTOTP: async (code: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.verifyTOTP({ token: code }, token, headers);
   },
 
-  disableTOTP: async (password: string): Promise<ApiResponse> => {
-    console.log('Disabling TOTP');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  disableTOTP: async (password: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.disableTOTP({ password }, token, headers);
   },
 
-  // Request 2FA disable (sends verification code)
-  request2FADisable: async (): Promise<ApiResponse> => {
-    console.log('Requesting 2FA disable verification');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  request2FADisable: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    // TODO: Implement when backend endpoint exists
+    return { success: false, error: 'Not implemented' };
   },
 
-  // Verify and disable 2FA
-  verifyAndDisable2FA: async (code: string, password: string, method: string): Promise<ApiResponse> => {
-    console.log('Verifying and disabling 2FA:', code, method);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  verifyAndDisable2FA: async (code: string, password: string, method: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.disableTOTP({ password, code, method }, token, headers);
   },
 
-
-
-  getSecurityLogs: async (page: number = 1): Promise<ApiResponse<{ logs: ActivityLog[], total: number }>> => {
-    console.log('Fetching security logs, page:', page);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      success: true,
-      data: {
-        logs: [
-
-        ],
-        total: 10
-      }
-    };
+  getSecurityLogs: async (page: number = 1, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.getLoginHistory(id, token, headers);
   },
 
-
-
-  logoutDevice: async (deviceId: string): Promise<ApiResponse> => {
-    console.log('Logging out device:', deviceId);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  logoutDevice: async (deviceId: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.logoutDevice({ deviceId }, token, headers);
   },
 
-  logoutAllDevices: async (): Promise<ApiResponse> => {
-    console.log('Logging out all devices');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  logoutAllDevices: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.logoutAll({}, token, headers);
   },
 
-  updateDeviceTrust: async (deviceId: string, trusted: boolean): Promise<ApiResponse> => {
-    console.log('Updating device trust:', deviceId, trusted);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true };
+  updateDeviceTrust: async (deviceId: string, trusted: boolean, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    // TODO: Implement when backend endpoint exists
+    return { success: false, error: 'Not implemented' };
   },
 
-
-
-  createAddress: async (address: Omit<Address, 'id'>): Promise<ApiResponse> => {
-    console.log('Creating address:', address);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  createAddress: async (address: Omit<Address, 'id'>, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return addressService.create(address, token, headers);
   },
 
-  updateAddress: async (id: string, address: Partial<Address>): Promise<ApiResponse> => {
-    console.log('Updating address:', id, address);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  updateAddress: async (addressId: string, address: Partial<Address>, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!addressId || !token) return { success: false, error: 'Missing address id or token' };
+    return addressService.updatePatch(addressId, address, token, headers);
   },
 
-  deleteAddress: async (id: string): Promise<ApiResponse> => {
-    console.log('Deleting address:', id);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  deleteAddress: async (addressId: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!addressId || !token) return { success: false, error: 'Missing address id or token' };
+    return addressService.remove(addressId, token, headers);
   },
 
-  // Social connections
-  getSocialConnections: async (): Promise<ApiResponse<SocialConnection[]>> => {
-    console.log('Fetching social connections');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      success: true,
-      data: [
-        { provider: 'google', verified: true, email: 'john@gmail.com', connectedAt: '2024-01-01T00:00:00Z' },
-        { provider: 'github', verified: false },
-        { provider: 'facebook', verified: false },
-        { provider: 'twitter', verified: true, email: 'john@twitter.com', connectedAt: '2024-01-01T00:00:00Z' }
-      ]
-    };
+  getSocialConnections: async (id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.getSocialMedia(id, token, headers);
   },
 
-  connectSocial: async (provider: string): Promise<ApiResponse> => {
-    console.log('Connecting social:', provider);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  connectSocial: async (provider: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.updateSocialMedia(id, { provider, action: 'connect' }, token, headers);
   },
 
-  disconnectSocial: async (provider: string): Promise<ApiResponse> => {
-    console.log('Disconnecting social:', provider);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  disconnectSocial: async (provider: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.updateSocialMedia(id, { provider, action: 'disconnect' }, token, headers);
   },
 
-  // Preferences
-  getPreferences: async (): Promise<ApiResponse<UserPreferences>> => {
-    console.log('Fetching preferences');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return {
-      success: true,
-      data: {
-        notifications: true,
-        newsletter: false,
-        privacyMode: false,
-        securityAlerts: true,
-        theme: 'system'
-      }
-    };
+  getPreferences: async (id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse<UserPreferences>> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.getPreferences(id, token, headers);
   },
 
-  updatePreferences: async (preferences: Partial<UserPreferences>): Promise<ApiResponse> => {
-    console.log('Updating preferences:', preferences);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true };
+  updatePreferences: async (preferences: Partial<UserPreferences>, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.updatePreferences(id, preferences, token, headers);
   },
 
-  // Account actions
-  deactivateAccount: async (password: string): Promise<ApiResponse> => {
-    console.log('Deactivating account');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  deactivateAccount: async (password: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.deactivateAccount(id, { password }, token, headers);
   },
 
-  deleteAccount: async (password: string): Promise<ApiResponse> => {
-    console.log('Deleting account');
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { success: true };
+  deleteAccount: async (password: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!id || !token) return { success: false, error: 'Missing user id or token' };
+    return userServices.remove(id, token, headers);
   },
 
-  logout: async (): Promise<ApiResponse> => {
-    console.log('Logging out');
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true };
+  logout: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
+    if (!token) return { success: false, error: 'Missing token' };
+    return authService.logout(token, headers);
   }
 };

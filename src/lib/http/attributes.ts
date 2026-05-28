@@ -22,7 +22,7 @@ const attributeService = {
     safeApiCall(() => requests.put(`/attribute/${id}`, body, token, headers)),
 
   remove: async (id: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/attribute/${id}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/attribute/${id}`, undefined, token, undefined, headers)),
 
   addChildAttributes: async (id: string, body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.post(`/attribute/${id}/children`, body, token, headers)),

@@ -176,7 +176,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/wishlistclear`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}/wishlistclear`, undefined, token, undefined, headers));
   },
 
   getWishlistCount: async (
@@ -220,7 +220,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/cartclear`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}/cartclear`, undefined, token, undefined, headers));
   },
 
   getCartTotal: async (
@@ -354,7 +354,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/subscription`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}/subscription`, undefined, token, undefined, headers));
   },
 
   // Account status
@@ -488,7 +488,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/social-mediaclear`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}/social-mediaclear`, undefined, token, undefined, headers));
   },
 
   // Interests
@@ -524,7 +524,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/users/${id}/interestsclear`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/users/${id}/interestsclear`, undefined, token, undefined, headers));
   },
 
   // Sessions

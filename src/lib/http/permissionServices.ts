@@ -58,7 +58,7 @@ const permissionServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/permission/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/permission/${id}`, undefined, token, undefined, headers));
   },
 
   getActive: async (

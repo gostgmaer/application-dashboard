@@ -7,13 +7,13 @@ const cartService = {
     safeApiCall(() => requests.post(`/cart/add`, body, token, headers)),
 
   remove: (productId: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/cart/remove/${productId}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/cart/remove/${productId}`, undefined, token, undefined, headers)),
 
   update: (productId: string, body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.patch(`/cart/update/${productId}`, body, token, headers)),
 
   clear: (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/cart/clear`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/cart/clear`, undefined, token, undefined, headers)),
 
   get: (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get(`/cart`, token, undefined, undefined, headers)),
@@ -40,10 +40,10 @@ const cartService = {
     safeApiCall(() => requests.get(`/cart/analytics`, token, query, undefined, headers)),
 
   removeProduct: (productId: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/cart/product/${productId}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/cart/product/${productId}`, undefined, token, undefined, headers)),
 
   clearAll: (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/cart/all`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/cart/all`, undefined, token, undefined, headers)),
 
   docs: (token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get(`/cart/docs`, token, undefined, undefined, headers)),

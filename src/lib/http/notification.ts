@@ -46,7 +46,7 @@ const notificationServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/notification/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/notification/${id}`, undefined, token, undefined, headers));
   },
 
   create: async (

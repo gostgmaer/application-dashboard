@@ -6,12 +6,7 @@ export interface Permission {
   actions: string[];
 }
 
-export interface ApiResponse {
-  success: boolean;
-  status: number;
-  data: Permission[];
-  message: string;
-}
+// ApiResponse: use canonical definition from @/types/global
 
 export interface SessionData {
   userId: string;

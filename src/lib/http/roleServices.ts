@@ -50,7 +50,7 @@ const roleServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/roles/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/roles/${id}`, undefined, token, undefined, headers));
   },
 
   getActive: async (
@@ -157,7 +157,7 @@ const roleServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/roles/${id}/permission`, token, permission, headers));
+    return safeApiCall(() => requests.delete(`/roles/${id}/permission`, permission, token, undefined, headers));
   },
 
   hasPermission: async (

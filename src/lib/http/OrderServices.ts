@@ -41,7 +41,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/order/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/order/${id}`, undefined, token, undefined, headers));
   },
 
   markAsPaid: async (

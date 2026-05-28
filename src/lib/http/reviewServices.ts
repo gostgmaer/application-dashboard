@@ -33,7 +33,7 @@ const reviewServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/review/${id}`, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/review/${id}`, undefined, token, undefined, headers));
   },
 
   getByProduct: async (

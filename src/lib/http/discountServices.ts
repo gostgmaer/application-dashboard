@@ -32,7 +32,7 @@ const discountServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     // PUT /discounts/rules/:id
-    return safeApiCall(() => requests.delete(`/discounts/rules/${id}`, undefined, token, headers));
+    return safeApiCall(() => requests.delete(`/discounts/rules/${id}`, undefined, token, undefined, headers));
   },
 
   listRules: async (

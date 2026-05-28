@@ -14,8 +14,8 @@ export interface User {
   emailVerified: boolean
   createdAt: string
   updatedAt: string
-  status: 'active' | 'inactive' | 'banned'
-  accountType: 'free' | 'premium' | 'enterprise'
+  isActive: boolean
+  isBlocked: boolean
   loyaltyPoints: number
   preferences: {
     language: string
@@ -144,7 +144,7 @@ export interface UserPreferences {
 export interface Address {
   id: string;
   label: string;
-  aaddressLine1?: string;
+  addressLine1?: string;
   addressLine2?: string;
   city: string;
   state?: string;
