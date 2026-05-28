@@ -1,9 +1,12 @@
 // import { Product, Sale, Customer, DashboardFilters, DashboardStats, ChartData, TopListItem } from '@/types/dashboard';
-import { DashboardFilters, DashboardStats, ProductList, TopListItem } from '@/types/product';
+import { DashboardFilters, DashboardStats, TopListItem } from '@/types/product';
 import { mockProducts, mockSales, mockCategories, mockBrands } from './mockData';
 import { ChartData } from '@/types/dashboard';
 
-export function filterProducts(products: ProductList[], filters: DashboardFilters): ProductList[] {
+// TODO: Replace mock data types with real ProductList when backend dashboard endpoints are implemented
+type MockProduct = any;
+
+export function filterProducts(products: MockProduct[], filters: DashboardFilters): MockProduct[] {
   return products.filter(product => {
     // Search filter
     if (filters.search) {
@@ -70,7 +73,7 @@ export function filterProducts(products: ProductList[], filters: DashboardFilter
   });
 }
 
-export function getChartData(filteredProducts: ProductList[]): {
+export function getChartData(filteredProducts: MockProduct[]): {
   productsByCategory: ChartData[];
   salesTrend: ChartData[];
   stockDistribution: ChartData[];
@@ -160,7 +163,7 @@ export function getChartData(filteredProducts: ProductList[]): {
   };
 }
 
-export function getTopLists(filteredProducts: ProductList[]): {
+export function getTopLists(filteredProducts: MockProduct[]): {
   recentlyAdded: TopListItem[];
   topDiscounted: TopListItem[];
   lowStock: TopListItem[];

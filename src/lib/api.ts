@@ -27,17 +27,17 @@ export const userApi = {
 
   changePassword: async (oldPassword: string, newPassword: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!id || !token) return { success: false, error: 'Missing user id or token' };
-    return userServices.changePassword(id, { oldPassword, newPassword }, token, headers);
+    return userServices.changePassword(id, { currentPassword: oldPassword, newPassword, confirmPassword: newPassword }, token, headers);
   },
 
   setupTOTP: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!token) return { success: false, error: 'Missing token' };
-    return authService.setupTOTP(token, headers);
+    return authService.setupTOTP({}, token, headers);
   },
 
   confirmTOTP: async (code: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!token) return { success: false, error: 'Missing token' };
-    return authService.verifyTOTP({ token: code }, token, headers);
+    return authService.verifyTOTPSetup({ token: code }, token, headers);
   },
 
   disableTOTP: async (password: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
@@ -57,12 +57,12 @@ export const userApi = {
 
   getSecurityLogs: async (page: number = 1, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!id || !token) return { success: false, error: 'Missing user id or token' };
-    return userServices.getLoginHistory(id, token, headers);
+    return authService.getSecurityLogs(token, headers);
   },
 
   logoutDevice: async (deviceId: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!token) return { success: false, error: 'Missing token' };
-    return authService.logoutDevice({ deviceId }, token, headers);
+    return authService.logoutAll({ deviceId }, token, headers);
   },
 
   logoutAllDevices: async (token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
@@ -92,7 +92,8 @@ export const userApi = {
 
   getSocialConnections: async (id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!id || !token) return { success: false, error: 'Missing user id or token' };
-    return userServices.getSocialMedia(id, token, headers);
+    const result = await userServices.getProfile(token, headers);
+    return { ...result, data: result.data?.socialMedia };
   },
 
   connectSocial: async (provider: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
@@ -107,7 +108,8 @@ export const userApi = {
 
   getPreferences: async (id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse<UserPreferences>> => {
     if (!id || !token) return { success: false, error: 'Missing user id or token' };
-    return userServices.getPreferences(id, token, headers);
+    const result = await userServices.getProfile(token, headers);
+    return { ...result, data: result.data?.preferences };
   },
 
   updatePreferences: async (preferences: Partial<UserPreferences>, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
@@ -117,7 +119,7 @@ export const userApi = {
 
   deactivateAccount: async (password: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {
     if (!id || !token) return { success: false, error: 'Missing user id or token' };
-    return userServices.deactivateAccount(id, { password }, token, headers);
+    return userServices.deactivateAccount(id, token, headers);
   },
 
   deleteAccount: async (password: string, id?: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> => {

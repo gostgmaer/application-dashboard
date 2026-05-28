@@ -1,4 +1,6 @@
-import { Brand, Category, ProductList, Sale } from "@/types/product";
+import { Brand, Category, Sale } from "@/types/product";
+
+// TODO: Replace mock data with real backend API when dashboard endpoints are implemented
 
 
 export const mockCategories: Category[] = [
@@ -19,7 +21,7 @@ export const mockBrands: Brand[] = [
   { id: '6', name: 'BeautyPlus', productCount: 8 },
 ];
 
-export const mockProducts: ProductList[] = [
+export const mockProducts: any[] = [
   {
     id: '1',
     name: 'Wireless Bluetooth Headphones',

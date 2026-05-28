@@ -22,14 +22,3 @@ export interface CreateDiscountInput {
   discountValue: number;
   status: 'active' | 'inactive';
 }
-
-export interface UpdateDiscountInput extends Partial<CreateDiscountInput> {
-  id: string;
-}
-
-// ApiResponse: use canonical definition from @/types/global
-
-export interface ApiError {
-  message: string;
-  statusCode: number;
-}

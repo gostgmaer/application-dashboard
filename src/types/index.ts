@@ -91,13 +91,3 @@ export interface CallSession {
   endedAt?: Date;
   teamsUrl?: string;
 }
-
-export interface CallNotification {
-  id: string;
-  callId: string;
-  type: 'incoming_call' | 'missed_call' | 'call_ended';
-  from: User;
-  conversationId: string;
-  callType: 'audio' | 'video';
-  createdAt: Date;
-}

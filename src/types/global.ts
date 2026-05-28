@@ -34,30 +34,10 @@ export interface Master {
   sortOrder?: number;
   isActive?: boolean;
 }
-// Paginated List Response
-export interface MasterList {
-  data: Master[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    pages: number;
-    hasNext: boolean;
-    hasPrev: boolean;
-  };
-}
 
 // Grouped by Type Response
 export interface MasterGroup {
   type: string;
   values: Master[];
   count: number;      // returned records
-}
-
-export interface MasterGrouped {
-  grouped: MasterGroup[];
-  summary: {
-    totalTypes: number;
-    totalRecords: number;
-  };
 }

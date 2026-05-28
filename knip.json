@@ -10,7 +10,8 @@
   ],
   "project": ["src/**/*.{ts,tsx,js,jsx}"],
   "ignore": [
-    "src/components/ui/**"
+    "src/components/ui/**",
+    "src/types/**"
   ],
   "ignoreDependencies": [
     "eslint",

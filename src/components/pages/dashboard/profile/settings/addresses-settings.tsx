@@ -401,7 +401,7 @@ export function AddressesSettings() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2 text-sm">
-                      <p>{address.aaddressLine1}</p>
+                      <p>{address.addressLine1}</p>
                       {address.addressLine2 && <p>{address.addressLine2}</p>}
                       <p>
                         {address.city}
