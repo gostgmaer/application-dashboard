@@ -50,5 +50,3 @@ export function useApiService() {
         callApi,
     };
 }
-
-export default useApiService;

@@ -38,7 +38,7 @@ const actionTypes = {
 // Zod schema based on the provided Mongoose schema
 // lib/validations/master.ts
 
-export const MasterSchema = z.object({
+const MasterSchema = z.object({
   type: z.string().min(1, "Type is required").max(50, "Type max 50 characters"),
 
   code: z.string().min(1, "Code is required").max(50, "Code max 50 characters"),

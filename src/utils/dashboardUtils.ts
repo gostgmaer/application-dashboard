@@ -70,47 +70,6 @@ export function filterProducts(products: ProductList[], filters: DashboardFilter
   });
 }
 
-export function calculateStats(filteredProducts: ProductList[]): DashboardStats {
-  const totalProducts = filteredProducts.length;
-  const activeProducts = filteredProducts.filter(p => p.status === 'active').length;
-  const outOfStockCount = filteredProducts.filter(p => p.stock === 0).length;
-  const productsOnSale = filteredProducts.filter(p => p.price < p.originalPrice).length;
-  const avgBasePrice = filteredProducts.reduce((sum, p) => sum + p.price, 0) / totalProducts || 0;
-  const totalRevenue = mockSales.reduce((sum, s) => sum + s.amount, 0);
-  const lowStockProductsCount = filteredProducts.filter(p => p.stock > 0 && p.stock <= 10).length;
-
-  const categorySales = mockCategories.map(cat => ({
-    name: cat.name,
-    count: filteredProducts.filter(p => p.category === cat.name).length
-  }));
-  const topSellingCategory = categorySales.sort((a, b) => b.count - a.count)[0]?.name || 'N/A';
-  
-  const thisMonth = new Date();
-  thisMonth.setDate(1);
-  const thisMonthProducts = filteredProducts.filter(p => 
-    new Date(p.createdDate) >= thisMonth
-  ).length;
-  
-  const averageStockPerProduct = filteredProducts.reduce((sum, p) => sum + p.stock, 0) / totalProducts || 0;
-
-  return {
-    totalProducts,
-    activeProducts,
-    outOfStockCount,
-    productsOnSale,
-    avgBasePrice,
-    totalRevenue,
-    lowStockProductsCount,
-    topSellingCategory,
-    thisMonthProducts,
-    revenueGrowth: 12.5, // Mock data
-    averageStockPerProduct,
-    topDiscountedProductsCount: productsOnSale,
-    productsWithDiscounts: 10
- 
-  };
-}
-
 export function getChartData(filteredProducts: ProductList[]): {
   productsByCategory: ChartData[];
   salesTrend: ChartData[];

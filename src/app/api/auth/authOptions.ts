@@ -77,7 +77,7 @@ interface CustomUser extends User {
 }
 
 // Custom error for 2FA requirement
-export class TwoFactorRequiredError extends Error {
+class TwoFactorRequiredError extends Error {
   constructor(
     public tempUserId: string,
     public email: string,

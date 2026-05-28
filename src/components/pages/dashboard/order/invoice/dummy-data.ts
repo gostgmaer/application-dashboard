@@ -1,6 +1,6 @@
 import { Invoice, InvoiceStats, PaginatedResponse } from '@/types/invoice';
 
-export const dummyInvoices: Invoice[] = [
+const dummyInvoices: Invoice[] = [
   {
     id: '1',
     invoiceNumber: 'INV-2025-001',

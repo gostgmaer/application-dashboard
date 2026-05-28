@@ -455,59 +455,7 @@ export function useSecurityLogs() {
 
   return { fetchSecurityLogs, securityLogs };
 }
-export function useLoginHistory() {
-  const { data: session } = useSession()
-  const { setLoading } = useSetting();
-  const [loginHistory, setLoginHistory] = useState<ActivityLog[]>([]);
-  const fetchLoginHistory = async (page: number = 1) => {
-    try {
-      setLoading(true);
-      const response = await authService.getLoginHistory(session?.accessToken);
-      if (response.success && response.data) {
-        setLoginHistory(response.data);
-      }
-    } catch (error) {
-      toast.error('Failed to load security logs');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    if (session?.accessToken) {
-      fetchLoginHistory();
-    }
-  }, [session]);
-
-  return { fetchLoginHistory, loginHistory };
-}
-export function useActiveSessions() {
-  const { data: session } = useSession()
-  const { setLoading } = useSetting();
-  const [activeSessions, setActiveSessions] = useState<ActivityLog[]>([]);
-
-  const fetchActiveSession = async (page: number = 1) => {
-    try {
-      setLoading(true);
-      const response = await authService.getAllActiveSessions(session?.accessToken);
-      if (response.success && response.data) {
-        setActiveSessions(response.data);
-      }
-    } catch (error) {
-      toast.error('Failed to load security logs');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (session?.accessToken) {
-      fetchActiveSession();
-    }
-  }, [session]);
-
-  return { fetchActiveSession, activeSessions };
-}
 export function useMyActivity() {
   const { data: session } = useSession()
   const { setLoading } = useSetting();

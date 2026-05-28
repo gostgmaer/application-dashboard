@@ -13,16 +13,5 @@ export const couponSchema = z.object({
   code: z.string().min(3, 'Coupon code must be at least 3 characters').max(20, 'Coupon code too long'),
 });
 
-export const guestCheckoutSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  agreeToTerms: z.boolean().refine(val => val === true, 'You must agree to terms and conditions'),
-});
-
-export const cartUpdateSchema = z.object({
-  itemId: z.string(),
-  quantity: z.number().min(1, 'Quantity must be at least 1'),
-});
-
 export type AddressFormData = z.infer<typeof addressSchema>;
 export type CouponFormData = z.infer<typeof couponSchema>;
-export type GuestCheckoutFormData = z.infer<typeof guestCheckoutSchema>;

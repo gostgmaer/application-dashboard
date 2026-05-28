@@ -23,7 +23,7 @@ const NotificationContext = createContext<NotificationContextType>({
   isConnected: false,
 });
 
-export const useNotification = () => useContext(NotificationContext);
+const useNotification = () => useContext(NotificationContext);
 
 interface NotificationProviderProps {
   children: ReactNode;

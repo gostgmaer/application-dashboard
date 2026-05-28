@@ -18,7 +18,7 @@ const initialState: ThemeState = {
   theme: 'system', // Will be updated in the ThemeProvider component
 };
 
-export const themeSlice = createSlice({
+const themeSlice = createSlice({
   name: 'theme',
   initialState,
   reducers: {

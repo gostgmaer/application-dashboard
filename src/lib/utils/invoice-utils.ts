@@ -1,6 +1,6 @@
 import { Invoice, Customer } from '@/types/invoice';
 
-export function generateInvoiceNumber(): string {
+function generateInvoiceNumber(): string {
   const year = new Date().getFullYear();
   const random = Math.floor(Math.random() * 9000) + 1000;
   return `INV-${year}-${random}`;
@@ -46,15 +46,4 @@ export function generateAutoInvoice(customer?: Partial<Customer>): Partial<Invoi
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-}
-
-export function downloadBlob(blob: Blob, filename: string) {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  window.URL.revokeObjectURL(url);
 }
