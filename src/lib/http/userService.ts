@@ -245,7 +245,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/users/${id}/cartmove-to-wishlist`, body, token, headers));
+    return safeApiCall(() => requests.post(`/users/${id}/cart/move-to-wishlist`, body, token, headers));
   },
 
   moveItemWishlistToFavorites: async (
@@ -273,7 +273,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/users/${id}/preferencesnewsletter`, body, token, headers));
+    return safeApiCall(() => requests.put(`/users/${id}/preferences/newsletter`, body, token, headers));
   },
 
   toggleNotifications: async (
@@ -282,7 +282,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/users/${id}/preferencesnotifications`, body, token, headers));
+    return safeApiCall(() => requests.put(`/users/${id}/preferences/notifications`, body, token, headers));
   },
 
   setThemePreference: async (
@@ -452,7 +452,7 @@ const userServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/users/${id}/payment-methodsdefault`, body, token, headers));
+    return safeApiCall(() => requests.put(`/users/${id}/payment-methods/default`, body, token, headers));
   },
 
   // Social media

@@ -53,8 +53,7 @@ import RecentlyAddedList from "@/components/pages/dashboard/data/dashboard/table
 // New Tables
 import TopCountriesTable from "@/components/pages/dashboard/data/dashboard/tables/TopCountriesTable";
 
-import { useStats } from "@/hooks/useDashboardData";
-import { filterOptions } from "@/lib/mockData";
+import { useStats, useFilterOptions } from "@/hooks/useDashboardData";
 import SalesChart from "@/components/pages/dashboard/data/dashboard/charts/SalesChart";
 import PrivateLayout from "@/components/layout/dashboard";
 
@@ -68,6 +67,14 @@ export default function Dashboard() {
 
   // SWR hook for stats data with filters
   const { stats, isLoading: statsLoading } = useStats(filters);
+  const { filterOptions } = useFilterOptions();
+
+  const defaultFilterOptions = {
+    timeRange: ['Today', 'Week', 'Month', 'Quarter', 'Year'],
+    category: ['All Categories'],
+    status: ['All Status'],
+  };
+  const options = filterOptions || defaultFilterOptions;
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -88,7 +95,7 @@ export default function Dashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <SelectFilter
                       label="Time Range"
-                      options={filterOptions.timeRange}
+                      options={options.timeRange}
                       value={filters.timeRange}
                       onChange={(value) =>
                         handleFilterChange("timeRange", value)
@@ -96,7 +103,7 @@ export default function Dashboard() {
                     />
                     <SelectFilter
                       label="Category"
-                      options={filterOptions.category}
+                      options={options.category}
                       value={filters.category}
                       onChange={(value) =>
                         handleFilterChange("category", value)
@@ -104,7 +111,7 @@ export default function Dashboard() {
                     />
                     <SelectFilter
                       label="Status"
-                      options={filterOptions.status}
+                      options={options.status}
                       value={filters.status}
                       onChange={(value) => handleFilterChange("status", value)}
                     />

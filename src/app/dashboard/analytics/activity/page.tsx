@@ -1,18 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import useSWR from "swr";
+import { useSession } from "next-auth/react";
 
-import {
-  mockActivities,
-  activityMetrics,
-  chartData,
-  systemMetrics,
-  userSessions,
-  securityEvents,
-  performanceMetrics,
-  realtimeData,
-  geographicData,
-} from "@/data/mockData";
 import { FilterState } from "@/types/dashboard";
 import { MetricCard } from "@/components/elements/items/common/MetricCard";
 import { ExportButton } from "@/components/elements/items/export/ExportButton";
@@ -27,8 +18,34 @@ import { LineChart } from "@/components/elements/items/charts/LineChart";
 import { ActivityTable } from "@/components/elements/items/activity/ActivityTable";
 import PrivateLayout from "@/components/layout/dashboard";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { safeApiCall } from "@/lib/http/apiUtils";
+import requests from "@/lib/http";
 
 export default function ActivityDashboard() {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+
+  const fetcher = async () => {
+    const res = await safeApiCall(() => requests.get("/activity-logs", token));
+    return res?.success ? res.data : null;
+  };
+
+  const { data: activityData, isLoading } = useSWR(
+    token ? "/api/activity-logs" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const activities = activityData?.activities || [];
+  const activityMetrics = activityData?.metrics || [];
+  const chartData = activityData?.chartData || [];
+  const systemMetrics = activityData?.systemMetrics || [];
+  const userSessions = activityData?.userSessions || [];
+  const securityEvents = activityData?.securityEvents || [];
+  const performanceMetrics = activityData?.performanceMetrics || [];
+  const realtimeData = activityData?.realtimeData || [];
+  const geographicData = activityData?.geographicData || [];
+
   const [filters, setFilters] = useState<FilterState>({
     dateRange: { start: null, end: null },
     category: "",
@@ -36,12 +53,12 @@ export default function ActivityDashboard() {
     search: "",
   });
 
-  const filteredActivities = mockActivities.filter((activity) => {
+  const filteredActivities = activities.filter((activity: any) => {
     if (
       filters.search &&
-      !activity.user.toLowerCase().includes(filters.search.toLowerCase()) &&
-      !activity.action.toLowerCase().includes(filters.search.toLowerCase()) &&
-      !activity.resource.toLowerCase().includes(filters.search.toLowerCase())
+      !activity.user?.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !activity.action?.toLowerCase().includes(filters.search.toLowerCase()) &&
+      !activity.resource?.toLowerCase().includes(filters.search.toLowerCase())
     ) {
       return false;
     }

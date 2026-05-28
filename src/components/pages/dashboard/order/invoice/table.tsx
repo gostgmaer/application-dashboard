@@ -16,8 +16,10 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Invoice, InvoiceFilters, InvoiceStats } from '@/types/invoice';
-import { dummyStats, getDummyInvoices } from './dummy-data';
 import { generateAutoInvoice } from '@/lib/utils/invoice-utils';
+import { safeApiCall } from '@/lib/http/apiUtils';
+import requests from '@/lib/http';
+import { useSession } from 'next-auth/react';
 import { InvoiceStatsCards } from './invoices/invoice-stats';
 import { InvoiceTable } from './invoices/invoice-table';
 import { InvoicePagination } from './invoices/invoice-pagination';
@@ -26,8 +28,18 @@ import { InvoiceFormModal } from './invoices/invoice-form-modal';
 import { InvoiceFilters as FilterComponent } from './invoices/invoice-filters';
 
 export default function InvoiceDashboard() {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [stats, setStats] = useState<InvoiceStats>(dummyStats);
+  const [stats, setStats] = useState<InvoiceStats>({
+    totalInvoices: 0,
+    totalPaid: 0,
+    totalPending: 0,
+    totalOverdue: 0,
+    totalRevenue: 0,
+    averageInvoice: 0,
+  });
   const [filters, setFilters] = useState<InvoiceFilters>({
     page: 1,
     limit: 10,
@@ -53,10 +65,25 @@ export default function InvoiceDashboard() {
   const fetchInvoices = async () => {
     setIsLoading(true);
     try {
-      const result = getDummyInvoices(filters);
-      setInvoices(result.data);
-      setTotalPages(result.totalPages);
-      setTotalItems(result.total);
+      const query = {
+        page: filters.page,
+        limit: filters.limit,
+        sortBy: filters.sortBy,
+        sortOrder: filters.sortOrder,
+        ...(filters.status && { status: filters.status }),
+        ...(filters.search && { search: filters.search }),
+      };
+      const res = await safeApiCall(() => requests.get('/invoices', token, query));
+      if (res?.success && res.data) {
+        setInvoices(res.data.data || res.data.invoices || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalItems(res.data.total || 0);
+        if (res.data.stats) {
+          setStats(res.data.stats);
+        }
+      } else {
+        setInvoices([]);
+      }
     } catch (error) {
       toast.error('Failed to fetch invoices');
       console.error(error);
@@ -93,11 +120,11 @@ export default function InvoiceDashboard() {
   const handleSave = async (invoiceData: Partial<Invoice>) => {
     setIsSaving(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       if (formMode === 'create') {
+        await safeApiCall(() => requests.post('/invoices', invoiceData, token));
         toast.success('Invoice created successfully!');
       } else {
+        await safeApiCall(() => requests.put(`/invoices/${selectedInvoice?._id}`, invoiceData, token));
         toast.success('Invoice updated successfully!');
       }
 
@@ -120,7 +147,7 @@ export default function InvoiceDashboard() {
     if (!invoiceToDelete) return;
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await safeApiCall(() => requests.delete(`/invoices/${(invoiceToDelete as any)._id}`, undefined, token));
       toast.success('Invoice deleted successfully!');
       setDeleteDialogOpen(false);
       setInvoiceToDelete(null);
@@ -134,8 +161,12 @@ export default function InvoiceDashboard() {
   const handleDownloadPDF = async (invoice: Invoice) => {
     try {
       toast.info('Generating PDF...');
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success('PDF downloaded successfully!');
+      const res = await safeApiCall(() => requests.get(`/invoices/${(invoice as any)._id}/pdf`, token));
+      if (res?.success) {
+        toast.success('PDF downloaded successfully!');
+      } else {
+        toast.error('PDF generation not available');
+      }
     } catch (error) {
       toast.error('Failed to download PDF');
       console.error(error);

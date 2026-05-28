@@ -37,33 +37,19 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
 
     setIsConnected(true);
 
-    const interval = setInterval(() => {
-      if (Math.random() > 0.8) {
-        const eventTypes = [
-          "notification:new",
-          "message:new",
-          "typing:start",
-          "call:incoming",
-        ];
-
-        const randomEvent =
-          eventTypes[Math.floor(Math.random() * eventTypes.length)];
-
-        listenersRef.current
-          .get(randomEvent)
-          ?.forEach((cb) => cb(generateMockData(randomEvent)));
-      }
-    }, 5000);
+    // TODO: Connect to real WebSocket server
+    // const ws = new WebSocket(process.env.NEXT_PUBLIC_WS_URL);
+    // ws.onmessage = (event) => { ... };
 
     return () => {
-      clearInterval(interval);
       setIsConnected(false);
     };
   }, []);
 
   const sendMessage = (event: WebSocketEvent) => {
     if (!socketEnabled) return;
-    console.log("Mock send:", event);
+    // TODO: Send via real WebSocket connection
+    console.log("WebSocket send:", event);
   };
 
   const addEventListener = (type: string, callback: (data: any) => void) => {
@@ -87,55 +73,3 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function generateMockData(eventType: string) {
-  switch (eventType) {
-    case "notification:new":
-      return {
-        id: Date.now().toString(),
-        type: ["info", "warning", "success"][Math.floor(Math.random() * 3)],
-        priority: "medium",
-        title: "New Notification",
-        message: "You have received a new notification",
-        read: false,
-        createdAt: new Date(),
-        userId: "user1",
-      };
-    case "message:new":
-      return {
-        id: Date.now().toString(),
-        conversationId: "conv1",
-        senderId: "user2",
-        content: "Hello there! This is a real-time message.",
-        type: "text",
-        createdAt: new Date(),
-        status: "sent",
-      };
-    case "typing:start":
-      return {
-        conversationId: "conv1",
-        userId: "user2",
-        userName: "John Doe",
-      };
-    case "call:incoming":
-      return {
-        id: Date.now().toString(),
-        conversationId: "conv1",
-        initiatorId: "user2",
-        participants: [
-          {
-            id: "user2",
-            name: "John Doe",
-            email: "john@example.com",
-            online: true,
-          },
-          { id: "user1", name: "You", email: "you@example.com", online: true },
-        ],
-        type: Math.random() > 0.5 ? "video" : "audio",
-        status: "ringing",
-        startedAt: new Date(),
-        teamsUrl: "https://teams.microsoft.com/l/meetup-join/...",
-      };
-    default:
-      return {};
-  }
-}

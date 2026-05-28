@@ -1,14 +1,9 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useMemo } from "react";
+import useSWR from "swr";
+import { useSession } from "next-auth/react";
 
-import {
-  mockReports,
-  reportMetrics,
-  chartData,
-  pieChartData,
-  deviceData,
-} from "@/data/mockData";
 import { FilterState, ReportItem } from "@/types/dashboard";
 import { GeographicWidget } from "@/components/elements/widgets/GeographicWidget";
 import { ExportButton } from "@/components/elements/items/export/ExportButton";
@@ -20,8 +15,30 @@ import { LineChart } from "@/components/elements/items/charts/LineChart";
 import { ReportTable } from "@/components/elements/items/reports/ReportTable";
 import PrivateLayout from "@/components/layout/dashboard";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
+import { safeApiCall } from "@/lib/http/apiUtils";
+import requests from "@/lib/http";
 
 export default function ReportsDashboard() {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+
+  const fetcher = async () => {
+    const res = await safeApiCall(() => requests.get("/admin/reports", token));
+    return res?.success ? res.data : null;
+  };
+
+  const { data: reportsData, isLoading } = useSWR(
+    token ? "/api/admin/reports" : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const reports: ReportItem[] = reportsData?.reports || [];
+  const reportMetrics = reportsData?.metrics || [];
+  const chartData = reportsData?.chartData || [];
+  const pieChartData = reportsData?.pieChartData || [];
+  const deviceData = reportsData?.deviceData || [];
+
   const [filters, setFilters] = useState<FilterState>({
     dateRange: { start: null, end: null },
     category: "",
@@ -30,10 +47,10 @@ export default function ReportsDashboard() {
   });
 
   const categories = Array.from(
-    new Set(mockReports.map((report) => report.category))
+    new Set(reports.map((report: any) => report.category))
   );
 
-  const filteredReports = mockReports.filter((report) => {
+  const filteredReports = reports.filter((report: any) => {
     if (
       filters.search &&
       !report.title.toLowerCase().includes(filters.search.toLowerCase()) &&
@@ -93,7 +110,7 @@ export default function ReportsDashboard() {
               btn={{ show: false} }
               btnComp={
                 <ExportButton
-                  data={mockReports}
+                  data={reports}
                   filename="report-data"
                   title="Export Report Data"
                 />}
@@ -161,7 +178,7 @@ export default function ReportsDashboard() {
                         </span>
                         <span className="text-sm font-medium text-green-600 dark:text-green-400">
                           {
-                            mockReports.filter((r) => r.status === "completed")
+                          {reports.filter((r: any) => r.status === "completed")
                               .length
                           }
                         </span>
@@ -172,7 +189,7 @@ export default function ReportsDashboard() {
                         </span>
                         <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
                           {
-                            mockReports.filter((r) => r.status === "pending")
+                          {reports.filter((r: any) => r.status === "pending")
                               .length
                           }
                         </span>
@@ -183,7 +200,7 @@ export default function ReportsDashboard() {
                         </span>
                         <span className="text-sm font-medium text-red-600 dark:text-red-400">
                           {
-                            mockReports.filter((r) => r.status === "failed")
+                          {reports.filter((r: any) => r.status === "failed")
                               .length
                           }
                         </span>
@@ -201,7 +218,7 @@ export default function ReportsDashboard() {
                           PDF Reports
                         </span>
                         <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                          {mockReports.filter((r) => r.type === "pdf").length}
+                          {reports.filter((r: any) => r.type === "pdf").length}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -209,7 +226,7 @@ export default function ReportsDashboard() {
                           Excel Files
                         </span>
                         <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                          {mockReports.filter((r) => r.type === "excel").length}
+                          {reports.filter((r: any) => r.type === "excel").length}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
@@ -217,7 +234,7 @@ export default function ReportsDashboard() {
                           CSV Files
                         </span>
                         <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                          {mockReports.filter((r) => r.type === "csv").length}
+                          {reports.filter((r: any) => r.type === "csv").length}
                         </span>
                       </div>
                     </div>

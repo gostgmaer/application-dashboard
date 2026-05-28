@@ -9,7 +9,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { DashboardFilters } from '@/types/product';
-import { mockBrands, mockCategories } from '@/utils/mockData';
+import { useApiSWR } from '@/hooks/useApiSWR';
+import { useSession } from 'next-auth/react';
 
 
 interface GlobalFiltersProps {
@@ -19,6 +20,14 @@ interface GlobalFiltersProps {
 
 export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+
+  const { data: categoriesRes } = useApiSWR('/categories', token);
+  const { data: brandsRes } = useApiSWR('/brands', token);
+
+  const categories = Array.isArray(categoriesRes?.data) ? categoriesRes.data : [];
+  const brands = Array.isArray(brandsRes?.data) ? brandsRes.data : [];
 
   const updateFilter = (key: keyof DashboardFilters, value: any) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -113,8 +122,8 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {mockCategories.map(cat => (
-                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                    {categories.map((cat: any) => (
+                      <SelectItem key={cat._id || cat.id} value={cat.title || cat.name}>{cat.title || cat.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -129,8 +138,8 @@ export function GlobalFilters({ filters, onFiltersChange }: GlobalFiltersProps) 
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Brands</SelectItem>
-                    {mockBrands.map(brand => (
-                      <SelectItem key={brand.id} value={brand.name}>{brand.name}</SelectItem>
+                    {brands.map((brand: any) => (
+                      <SelectItem key={brand._id || brand.id} value={brand.brandName || brand.name}>{brand.brandName || brand.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
