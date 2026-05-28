@@ -125,7 +125,7 @@ export default function ReportsDashboard() {
 
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {reportMetrics.map((metric, index) => (
+                  {reportMetrics.map((metric: any, index: number) => (
                     <MetricCard key={index} metric={metric} />
                   ))}
                 </div>
@@ -177,7 +177,6 @@ export default function ReportsDashboard() {
                           Completed
                         </span>
                         <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                          {
                           {reports.filter((r: any) => r.status === "completed")
                               .length
                           }
@@ -188,7 +187,6 @@ export default function ReportsDashboard() {
                           Pending
                         </span>
                         <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-                          {
                           {reports.filter((r: any) => r.status === "pending")
                               .length
                           }
@@ -199,7 +197,6 @@ export default function ReportsDashboard() {
                           Failed
                         </span>
                         <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                          {
                           {reports.filter((r: any) => r.status === "failed")
                               .length
                           }

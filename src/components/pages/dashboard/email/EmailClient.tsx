@@ -220,7 +220,7 @@ export function EmailClient() {
 
         {/* Sidebar */}
         <Sidebar
-          folders={sampleFolders}
+          folders={fetchedFolders}
           selectedFolder={selectedFolder}
           onFolderSelect={setSelectedFolder}
           onComposeClick={() => setIsComposeOpen(true)}

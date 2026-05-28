@@ -35,10 +35,12 @@ export default function InvoiceDashboard() {
   const [stats, setStats] = useState<InvoiceStats>({
     totalInvoices: 0,
     totalPaid: 0,
-    totalPending: 0,
+    totalUnpaid: 0,
     totalOverdue: 0,
-    totalRevenue: 0,
-    averageInvoice: 0,
+    totalAmount: 0,
+    paidAmount: 0,
+    unpaidAmount: 0,
+    overdueAmount: 0,
   });
   const [filters, setFilters] = useState<InvoiceFilters>({
     page: 1,
@@ -124,7 +126,7 @@ export default function InvoiceDashboard() {
         await safeApiCall(() => requests.post('/invoices', invoiceData, token));
         toast.success('Invoice created successfully!');
       } else {
-        await safeApiCall(() => requests.put(`/invoices/${selectedInvoice?._id}`, invoiceData, token));
+        await safeApiCall(() => requests.put(`/invoices/${selectedInvoice?.id}`, invoiceData, token));
         toast.success('Invoice updated successfully!');
       }
 

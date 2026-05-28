@@ -105,7 +105,7 @@ export default function ActivityDashboard() {
 
               {/* Metrics Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {activityMetrics.map((metric, index) => (
+                {activityMetrics.map((metric: any, index: number) => (
                   <MetricCard key={index} metric={metric} />
                 ))}
               </div>
