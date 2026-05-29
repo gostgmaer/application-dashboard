@@ -33,13 +33,8 @@ import OrdersTrendChart from "@/components/pages/dashboard/data/dashboard/charts
 import CustomerGrowthChart from "@/components/pages/dashboard/data/dashboard/charts/CustomerGrowthChart";
 import DiscountUsageChart from "@/components/pages/dashboard/data/dashboard/charts/DiscountUsageChart";
 
-// New Charts
-import ConversionFunnelChart from "@/components/pages/dashboard/data/dashboard/charts/ConversionFunnelChart";
 import SalesByChannelChart from "@/components/pages/dashboard/data/dashboard/charts/SalesByChannelChart";
-import HourlyTrafficChart from "@/components/pages/dashboard/data/dashboard/charts/HourlyTrafficChart";
 import ProductPerformanceChart from "@/components/pages/dashboard/data/dashboard/charts/ProductPerformanceChart";
-import AgeGroupChart from "@/components/pages/dashboard/data/dashboard/charts/AgeGroupChart";
-import DeviceTypeChart from "@/components/pages/dashboard/data/dashboard/charts/DeviceTypeChart";
 import PaymentMethodChart from "@/components/pages/dashboard/data/dashboard/charts/PaymentMethodChart";
 
 // Tables
@@ -49,9 +44,6 @@ import RecentOrdersTable from "@/components/pages/dashboard/data/dashboard/table
 import TopDiscountedTable from "@/components/pages/dashboard/data/dashboard/tables/TopDiscountedTable";
 import LowStockTable from "@/components/pages/dashboard/data/dashboard/tables/LowStockTable";
 import RecentlyAddedList from "@/components/pages/dashboard/data/dashboard/tables/RecentlyAddedList";
-
-// New Tables
-import TopCountriesTable from "@/components/pages/dashboard/data/dashboard/tables/TopCountriesTable";
 
 import { useStats, useFilterOptions } from "@/hooks/useDashboardData";
 import SalesChart from "@/components/pages/dashboard/data/dashboard/charts/SalesChart";
@@ -75,6 +67,33 @@ export default function Dashboard() {
     status: ['All Status'],
   };
   const options = filterOptions || defaultFilterOptions;
+
+  const getMetric = (key: string) => {
+    const metric = (stats as Record<string, { value?: number | string; change?: number; trend?: 'up' | 'down' }> | undefined)?.[key];
+
+    return {
+      value: metric?.value ?? 0,
+      change: metric?.change,
+      trend: metric?.trend,
+    };
+  };
+
+  const totalSales = getMetric("totalSales");
+  const totalOrders = getMetric("totalOrders");
+  const totalCustomers = getMetric("totalCustomers");
+  const totalRevenue = getMetric("totalRevenue");
+  const totalProducts = getMetric("totalProducts");
+  const totalBrands = getMetric("totalBrands");
+  const averageOrderValue = getMetric("averageOrderValue");
+  const totalDiscounts = getMetric("totalDiscounts");
+  const conversionRate = getMetric("conversionRate");
+  const cartAbandonmentRate = getMetric("cartAbandonmentRate");
+  const returnRate = getMetric("returnRate");
+  const customerLifetimeValue = getMetric("customerLifetimeValue");
+  const monthlyRecurringRevenue = getMetric("monthlyRecurringRevenue");
+  const grossMargin = getMetric("grossMargin");
+  const inventoryTurnover = getMetric("inventoryTurnover");
+  const customerAcquisitionCost = getMetric("customerAcquisitionCost");
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -122,130 +141,130 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                   <StatsCard
                     title="Total Sales"
-                    value={stats?.totalSales.value || 0}
-                    change={stats?.totalSales.change}
-                    trend={stats?.totalSales.trend}
+                    value={totalSales.value}
+                    change={totalSales.change}
+                    trend={totalSales.trend}
                     icon={<DollarSign className="w-6 h-6" />}
                     isLoading={statsLoading}
                     link="/dashboard/sales"
                   />
                   <StatsCard
                     title="Total Orders"
-                    value={stats?.totalOrders.value || 0}
-                    change={stats?.totalOrders.change}
-                    trend={stats?.totalOrders.trend}
+                    value={totalOrders.value}
+                    change={totalOrders.change}
+                    trend={totalOrders.trend}
                     icon={<ShoppingCart className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Total Customers"
-                    value={stats?.totalCustomers.value || 0}
-                    change={stats?.totalCustomers.change}
-                    trend={stats?.totalCustomers.trend}
+                    value={totalCustomers.value}
+                    change={totalCustomers.change}
+                    trend={totalCustomers.trend}
                     icon={<Users className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Total Revenue"
-                    value={stats?.totalRevenue.value || 0}
-                    change={stats?.totalRevenue.change}
-                    trend={stats?.totalRevenue.trend}
+                    value={totalRevenue.value}
+                    change={totalRevenue.change}
+                    trend={totalRevenue.trend}
                     icon={<TrendingUp className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Total Products"
-                    value={stats?.totalProducts.value || 0}
-                    change={stats?.totalProducts.change}
-                    trend={stats?.totalProducts.trend}
+                    value={totalProducts.value}
+                    change={totalProducts.change}
+                    trend={totalProducts.trend}
                     icon={<Package className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Total Brands"
-                    value={stats?.totalBrands.value || 0}
-                    change={stats?.totalBrands.change}
-                    trend={stats?.totalBrands.trend}
+                    value={totalBrands.value}
+                    change={totalBrands.change}
+                    trend={totalBrands.trend}
                     icon={<Award className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Avg Order Value"
-                    value={`$${stats?.averageOrderValue.value || 0}`}
-                    change={stats?.averageOrderValue.change}
-                    trend={stats?.averageOrderValue.trend}
+                    value={`$${averageOrderValue.value}`}
+                    change={averageOrderValue.change}
+                    trend={averageOrderValue.trend}
                     icon={<CreditCard className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Total Discounts"
-                    value={stats?.totalDiscounts.value || 0}
-                    change={stats?.totalDiscounts.change}
-                    trend={stats?.totalDiscounts.trend}
+                    value={totalDiscounts.value}
+                    change={totalDiscounts.change}
+                    trend={totalDiscounts.trend}
                     icon={<Percent className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Conversion Rate"
-                    value={`${stats?.conversionRate.value || 0}%`}
-                    change={stats?.conversionRate.change}
-                    trend={stats?.conversionRate.trend}
+                    value={`${conversionRate.value}%`}
+                    change={conversionRate.change}
+                    trend={conversionRate.trend}
                     icon={<Target className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Cart Abandonment"
-                    value={`${stats?.cartAbandonmentRate.value || 0}%`}
-                    change={stats?.cartAbandonmentRate.change}
-                    trend={stats?.cartAbandonmentRate.trend}
+                    value={`${cartAbandonmentRate.value}%`}
+                    change={cartAbandonmentRate.change}
+                    trend={cartAbandonmentRate.trend}
                     icon={<ShoppingBag className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Return Rate"
-                    value={`${stats?.returnRate.value || 0}%`}
-                    change={stats?.returnRate.change}
-                    trend={stats?.returnRate.trend}
+                    value={`${returnRate.value}%`}
+                    change={returnRate.change}
+                    trend={returnRate.trend}
                     icon={<RotateCcw className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Customer LTV"
-                    value={`$${stats?.customerLifetimeValue.value || 0}`}
-                    change={stats?.customerLifetimeValue.change}
-                    trend={stats?.customerLifetimeValue.trend}
+                    value={`$${customerLifetimeValue.value}`}
+                    change={customerLifetimeValue.change}
+                    trend={customerLifetimeValue.trend}
                     icon={<Heart className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Monthly Recurring Revenue"
-                    value={stats?.monthlyRecurringRevenue.value || 0}
-                    change={stats?.monthlyRecurringRevenue.change}
-                    trend={stats?.monthlyRecurringRevenue.trend}
+                    value={monthlyRecurringRevenue.value}
+                    change={monthlyRecurringRevenue.change}
+                    trend={monthlyRecurringRevenue.trend}
                     icon={<Repeat className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Gross Margin"
-                    value={`${stats?.grossMargin.value || 0}%`}
-                    change={stats?.grossMargin.change}
-                    trend={stats?.grossMargin.trend}
+                    value={`${grossMargin.value}%`}
+                    change={grossMargin.change}
+                    trend={grossMargin.trend}
                     icon={<Zap className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Inventory Turnover"
-                    value={`${stats?.inventoryTurnover.value || 0}x`}
-                    change={stats?.inventoryTurnover.change}
-                    trend={stats?.inventoryTurnover.trend}
+                    value={`${inventoryTurnover.value}x`}
+                    change={inventoryTurnover.change}
+                    trend={inventoryTurnover.trend}
                     icon={<BarChart3 className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
                   <StatsCard
                     title="Customer Acquisition Cost"
-                    value={`$${stats?.customerAcquisitionCost.value || 0}`}
-                    change={stats?.customerAcquisitionCost.change}
-                    trend={stats?.customerAcquisitionCost.trend}
+                    value={`$${customerAcquisitionCost.value}`}
+                    change={customerAcquisitionCost.change}
+                    trend={customerAcquisitionCost.trend}
                     icon={<MousePointer className="w-6 h-6" />}
                     isLoading={statsLoading}
                   />
@@ -259,12 +278,8 @@ export default function Dashboard() {
                   <OrdersTrendChart />
                   <CustomerGrowthChart />
                   <DiscountUsageChart />
-                  <ConversionFunnelChart />
                   <SalesByChannelChart />
-                  <HourlyTrafficChart />
                   <ProductPerformanceChart />
-                  <AgeGroupChart />
-                  <DeviceTypeChart />
                   <PaymentMethodChart />
                 </div>
 
@@ -276,7 +291,6 @@ export default function Dashboard() {
                   <TopDiscountedTable />
                   <LowStockTable />
                   <RecentlyAddedList />
-                  <TopCountriesTable />
                 </div>
           </div>
         </Suspense>
