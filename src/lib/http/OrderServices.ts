@@ -8,7 +8,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/order", body, token, headers));
+    return safeApiCall(() => requests.post("/orders", body, token, headers));
   },
 
   getOrderById: async (
@@ -16,7 +16,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}`, token, undefined, undefined, headers, 1));
   },
 
   getOrders: async (
@@ -24,7 +24,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders", token, query, undefined, headers, 1));
   },
 
   updateOrder: async (
@@ -33,7 +33,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}`, body, token, headers));
   },
 
   deleteOrder: async (
@@ -41,7 +41,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.delete(`/order/${id}`, undefined, token, undefined, headers));
+    return safeApiCall(() => requests.delete(`/orders/${id}`, undefined, token, undefined, headers));
   },
 
   markAsPaid: async (
@@ -49,7 +49,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/pay`, {}, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/pay`, {}, token, headers));
   },
 
   refundOrder: async (
@@ -57,7 +57,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/refund`, {}, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/refund`, {}, token, headers));
   },
 
   bulkRefundOrders: async (
@@ -65,7 +65,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put("/order/bulk-refund", body, token, headers));
+    return safeApiCall(() => requests.put("/orders/bulk-refund", body, token, headers));
   },
 
   redeemLoyaltyPoints: async (
@@ -74,7 +74,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/redeem-points`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/redeem-points`, body, token, headers));
   },
 
   updateOrderStatus: async (
@@ -83,7 +83,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/status`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/status`, body, token, headers));
   },
 
   bulkUpdateOrderStatus: async (
@@ -91,7 +91,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put("/order/bulk-status", body, token, headers));
+    return safeApiCall(() => requests.put("/orders/bulk-status", body, token, headers));
   },
 
   splitOrder: async (
@@ -100,7 +100,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/split`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/split`, body, token, headers));
   },
 
   addTrackingInfo: async (
@@ -109,7 +109,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/tracking`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/tracking`, body, token, headers));
   },
 
   markOrderAsDelivered: async (
@@ -117,7 +117,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/mark-delivered`, {}, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/mark-delivered`, {}, token, headers));
   },
 
   setPriorityLevel: async (
@@ -126,7 +126,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/priority`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/priority`, body, token, headers));
   },
 
   updateItemQuantity: async (
@@ -136,7 +136,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/items/${itemIndex}/quantity`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/items/${itemIndex}/quantity`, body, token, headers));
   },
 
   addGiftMessage: async (
@@ -145,7 +145,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/gift-message`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/gift-message`, body, token, headers));
   },
 
   applyCoupon: async (
@@ -154,7 +154,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/apply-coupon`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/apply-coupon`, body, token, headers));
   },
 
   requestReturn: async (
@@ -163,7 +163,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/request-return`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/request-return`, body, token, headers));
   },
 
   resolveReturnRequest: async (
@@ -172,7 +172,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/resolve-return`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/resolve-return`, body, token, headers));
   },
 
   getReturnRequests: async (
@@ -180,7 +180,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/return-requests", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/return-requests", token, query, undefined, headers, 1));
   },
 
   getTopCustomers: async (
@@ -188,7 +188,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/top-customers", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/top-customers", token, query, undefined, headers, 1));
   },
 
   getCustomerOrderHistory: async (
@@ -197,7 +197,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/user/${userId}/history`, token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/user/${userId}/history`, token, query, undefined, headers, 1));
   },
 
   getOrderStats: async (
@@ -205,7 +205,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/stats", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/stats", token, query, undefined, headers, 1));
   },
 
   getOrderTrends: async (
@@ -213,7 +213,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/trends", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/trends", token, query, undefined, headers, 1));
   },
 
   getRevenueBySource: async (
@@ -221,7 +221,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/revenue-by-source", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/revenue-by-source", token, query, undefined, headers, 1));
   },
 
   getProductPerformance: async (
@@ -229,7 +229,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/product-performance", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/product-performance", token, query, undefined, headers, 1));
   },
 
   getOrderConversionFunnel: async (
@@ -237,7 +237,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/conversion-funnel", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/conversion-funnel", token, query, undefined, headers, 1));
   },
 
   getFeaturedOrders: async (
@@ -245,7 +245,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/featured", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/featured", token, query, undefined, headers, 1));
   },
 
   getLowStockOrders: async (
@@ -253,7 +253,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/low-stock", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/low-stock", token, query, undefined, headers, 1));
   },
 
   getAverageOrderValue: async (
@@ -261,7 +261,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/average-order-value", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/average-order-value", token, query, undefined, headers, 1));
   },
 
   searchOrdersByCustomerName: async (
@@ -269,7 +269,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/search-by-customer", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/search-by-customer", token, query, undefined, headers, 1));
   },
 
   getOrdersByPaymentMethod: async (
@@ -277,7 +277,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/by-payment-method", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/by-payment-method", token, query, undefined, headers, 1));
   },
 
   getDelayedOrders: async (
@@ -285,7 +285,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/delayed-orders", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/delayed-orders", token, query, undefined, headers, 1));
   },
 
   getLoyaltyPointsSummary: async (
@@ -293,7 +293,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/analytics/loyalty-points-summary", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/analytics/loyalty-points-summary", token, query, undefined, headers, 1));
   },
 
   estimateDelivery: async (
@@ -301,7 +301,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/estimate-delivery`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/estimate-delivery`, token, undefined, undefined, headers, 1));
   },
 
   getOrderSummary: async (
@@ -309,7 +309,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/summary`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/summary`, token, undefined, undefined, headers, 1));
   },
 
   reorder: async (
@@ -317,7 +317,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/reorder`, {}, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/reorder`, {}, token, headers));
   },
 
   getFraudulentOrders: async (
@@ -325,7 +325,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/fraudulent", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/fraudulent", token, query, undefined, headers, 1));
   },
 
   checkOrderCompliance: async (
@@ -333,7 +333,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/compliance-check`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/compliance-check`, token, undefined, undefined, headers, 1));
   },
 
   flagOrder: async (
@@ -342,7 +342,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/flag`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/flag`, body, token, headers));
   },
 
   validateStockBulk: async (
@@ -350,7 +350,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/order/validate-stock", body, token, headers));
+    return safeApiCall(() => requests.post("/orders/validate-stock", body, token, headers));
   },
 
   updateStockBulk: async (
@@ -358,7 +358,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/order/update-stock", body, token, headers));
+    return safeApiCall(() => requests.post("/orders/update-stock", body, token, headers));
   },
 
   exportOrdersReport: async (
@@ -366,7 +366,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/export", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/export", token, query, undefined, headers, 1));
   },
 
   importOrdersBulk: async (
@@ -374,7 +374,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/order/import", body, token, headers));
+    return safeApiCall(() => requests.post("/orders/import", body, token, headers));
   },
 
   auditOrderChanges: async (
@@ -382,7 +382,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/audit`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/audit`, token, undefined, undefined, headers, 1));
   },
 
   pushStatusNotification: async (
@@ -390,7 +390,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/order/status-notification", body, token, headers));
+    return safeApiCall(() => requests.post("/orders/status-notification", body, token, headers));
   },
 
   logOrderEvent: async (
@@ -399,7 +399,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/log-event`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/log-event`, body, token, headers));
   },
 
   restoreCanceledOrder: async (
@@ -407,7 +407,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/restore`, {}, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/restore`, {}, token, headers));
   },
 
   archiveCompletedOrders: async (
@@ -415,7 +415,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post("/order/archive-completed", body, token, headers));
+    return safeApiCall(() => requests.post("/orders/archive-completed", body, token, headers));
   },
 
   sendOrderInvoice: async (
@@ -423,7 +423,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/send-invoice`, {}, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/send-invoice`, {}, token, headers));
   },
 
   getHistoricalOrderData: async (
@@ -431,7 +431,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/historical-data", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/historical-data", token, query, undefined, headers, 1));
   },
 
   getOrderGrowthStats: async (
@@ -439,7 +439,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/growth-stats", token, query, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/growth-stats", token, query, undefined, headers, 1));
   },
 
   rateOrderItems: async (
@@ -448,7 +448,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/rate-items`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/rate-items`, body, token, headers));
   },
 
   reviewOrderExperience: async (
@@ -457,7 +457,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/review`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/review`, body, token, headers));
   },
 
   getOrderEventsTimeline: async (
@@ -465,7 +465,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/events-timeline`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/events-timeline`, token, undefined, undefined, headers, 1));
   },
 
   assignOrderToAgent: async (
@@ -474,7 +474,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/assign-agent`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/assign-agent`, body, token, headers));
   },
 
   trackOrderRoute: async (
@@ -482,7 +482,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/track-route`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/track-route`, token, undefined, undefined, headers, 1));
   },
 
   calculateOrderProfit: async (
@@ -490,7 +490,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/calculate-profit`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/calculate-profit`, token, undefined, undefined, headers, 1));
   },
 
   checkOrderPaymentReconciliation: async (
@@ -498,7 +498,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get(`/order/${id}/payment-reconciliation`, token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get(`/orders/${id}/payment-reconciliation`, token, undefined, undefined, headers, 1));
   },
 
   flagSuspectedReturnAbuse: async (
@@ -507,7 +507,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/flag-return-abuse`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/flag-return-abuse`, body, token, headers));
   },
 
   handleOrderEscalation: async (
@@ -516,7 +516,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/escalate`, body, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/escalate`, body, token, headers));
   },
 
   syncOrderWithERP: async (
@@ -524,7 +524,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/sync-erp`, {}, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/sync-erp`, {}, token, headers));
   },
 
   integrateOrderWithCRM: async (
@@ -532,7 +532,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.post(`/order/${id}/integrate-crm`, {}, token, headers));
+    return safeApiCall(() => requests.post(`/orders/${id}/integrate-crm`, {}, token, headers));
   },
 
   lockOrderForAudit: async (
@@ -540,7 +540,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/lock-audit`, {}, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/lock-audit`, {}, token, headers));
   },
 
   releaseOrderLock: async (
@@ -548,7 +548,7 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/release-lock`, {}, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/release-lock`, {}, token, headers));
   },
 
   cancelOrderByAdmin: async (
@@ -557,14 +557,14 @@ const orderServices = {
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.put(`/order/${id}/cancel-admin`, body, token, headers));
+    return safeApiCall(() => requests.put(`/orders/${id}/cancel-admin`, body, token, headers));
   },
 
   getRouteDocs: async (
     token?: string,
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
-    return safeApiCall(() => requests.get("/order/docs/routes", token, undefined, undefined, headers, 1));
+    return safeApiCall(() => requests.get("/orders/docs/routes", token, undefined, undefined, headers, 1));
   },
 };
 

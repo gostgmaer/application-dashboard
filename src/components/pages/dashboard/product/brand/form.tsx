@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
-import BrandServices from "@/lib/http/brands";
 import brandService from "@/lib/http/brands";
 import { useSession } from "next-auth/react";
 
@@ -165,7 +164,7 @@ export function BrandForm({ data, id }: any) {
     switch (status) {
       case "draft":
         {
-          const res = await BrandServices.create({ ...updateData, status },  session?.accessToken );
+          const res = await brandService.create({ ...updateData, status }, session?.accessToken);
         }
 
         break;
@@ -177,7 +176,7 @@ export function BrandForm({ data, id }: any) {
 
       default:
         {
-          const res = await BrandServices.create(updateData, session?.accessToken);
+          const res = await brandService.create(updateData, session?.accessToken);
         }
         break;
     }
