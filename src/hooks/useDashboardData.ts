@@ -1,295 +1,245 @@
 'use client';
 
 import useSWR from 'swr';
-import {
-  statsData,
-  salesChartData,
-  topCategoriesData,
-  revenueDistributionData,
-  ordersTrendData,
-  customerGrowthData,
-  discountUsageData,
-  topProductsData,
-  topBrandsData,
-  recentOrdersData,
-  topDiscountedData,
-  lowStockData,
-  recentlyAddedData,
-  conversionFunnelData,
-  salesByChannelData,
-  topCountriesData,
-  hourlyTrafficData,
-  productPerformanceData,
-  ageGroupData,
-  deviceTypeData,
-  paymentMethodData
-} from '@/lib/mockData';
+import { useSession } from 'next-auth/react';
+import dashboardService from '@/lib/http/dashboardService';
 
-// Mock fetcher - in production, this would be a real API call
-const fetcher = (url: string) => {
-  // Simulate API delay
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(getMockData(url));
-    }, 100);
-  });
-};
-
-const getMockData = (url: string) => {
-  switch (url) {
-    case '/api/stats':
-      return statsData;
-    case '/api/sales':
-      return salesChartData;
-    case '/api/categories':
-      return topCategoriesData;
-    case '/api/revenue-distribution':
-      return revenueDistributionData;
-    case '/api/orders':
-      return ordersTrendData;
-    case '/api/customers':
-      return customerGrowthData;
-    case '/api/discount-usage':
-      return discountUsageData;
-    case '/api/products/top':
-      return topProductsData;
-    case '/api/brands/top':
-      return topBrandsData;
-    case '/api/orders/recent':
-      return recentOrdersData;
-    case '/api/products/discounted':
-      return topDiscountedData;
-    case '/api/products/low-stock':
-      return lowStockData;
-    case '/api/products/recently-added':
-      return recentlyAddedData;
-    case '/api/conversion-funnel':
-      return conversionFunnelData;
-    case '/api/sales-by-channel':
-      return salesByChannelData;
-    case '/api/top-countries':
-      return topCountriesData;
-    case '/api/hourly-traffic':
-      return hourlyTrafficData;
-    case '/api/product-performance':
-      return productPerformanceData;
-    case '/api/age-groups':
-      return ageGroupData;
-    case '/api/device-types':
-      return deviceTypeData;
-    case '/api/payment-methods':
-      return paymentMethodData;
-    default:
-      return null;
+// SWR fetcher that calls dashboard service with auth token
+const createFetcher = (serviceFn: Function, token?: string) => async () => {
+  const response = await serviceFn(token);
+  if (response?.success && response?.data) {
+    return response.data;
   }
+  throw new Error(response?.error || response?.message || 'Failed to fetch');
 };
 
 // Custom hooks for dashboard data
-export const useStats: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/stats', fetcher);
+export const useStats = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/stats' : null,
+    () => createFetcher(dashboardService.getStats, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    stats: data,
-    isLoading,
-    error,
-  };
+  return { stats: data, isLoading, error };
 };
 
-export const useSalesData: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/sales', fetcher);
+export const useSalesData = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/sales' : null,
+    () => createFetcher(dashboardService.getSalesTrend, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    salesData: data,
-    isLoading,
-    error,
-  };
+  return { salesData: data, isLoading, error };
 };
 
-export const useCategoriesData: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/categories', fetcher);
+export const useCategoriesData = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/top-categories' : null,
+    () => createFetcher(dashboardService.getTopCategories, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    categoriesData: data,
-    isLoading,
-    error,
-  };
+  return { categoriesData: data, isLoading, error };
 };
 
-export const useRevenueDistribution: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/revenue-distribution', fetcher);
+export const useRevenueDistribution = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/revenue-distribution' : null,
+    () => createFetcher(dashboardService.getRevenueDistribution, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    revenueData: data,
-    isLoading,
-    error,
-  };
+  return { revenueData: data, isLoading, error };
 };
 
-export const useOrdersData: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/orders', fetcher);
+export const useOrdersData = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/orders-trend' : null,
+    () => createFetcher(dashboardService.getOrdersTrend, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    ordersData: data,
-    isLoading,
-    error,
-  };
+  return { ordersData: data, isLoading, error };
 };
 
-export const useCustomersData: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/customers', fetcher);
+export const useCustomersData = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/customer-growth' : null,
+    () => createFetcher(dashboardService.getCustomerGrowth, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    customersData: data,
-    isLoading,
-    error,
-  };
+  return { customersData: data, isLoading, error };
 };
 
-export const useDiscountUsage: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/discount-usage', fetcher);
+export const useDiscountUsage = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/discount-usage' : null,
+    () => createFetcher(dashboardService.getDiscountUsage, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    discountData: data,
-    isLoading,
-    error,
-  };
+  return { discountData: data, isLoading, error };
 };
 
-export const useTopProducts: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/products/top', fetcher);
+export const useTopProducts = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/top-products' : null,
+    () => createFetcher(dashboardService.getTopProducts, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    products: data,
-    isLoading,
-    error,
-  };
+  return { products: data, isLoading, error };
 };
 
-export const useTopBrands: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/brands/top', fetcher);
+export const useTopBrands = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/top-brands' : null,
+    () => createFetcher(dashboardService.getTopBrands, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    brands: data,
-    isLoading,
-    error,
-  };
+  return { brands: data, isLoading, error };
 };
 
-export const useRecentOrders: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/orders/recent', fetcher);
+export const useRecentOrders = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/recent-orders' : null,
+    () => createFetcher(dashboardService.getRecentOrders, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    orders: data,
-    isLoading,
-    error,
-  };
+  return { orders: data, isLoading, error };
 };
 
-export const useDiscountedProducts: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/products/discounted', fetcher);
+export const useDiscountedProducts = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/discounted-products' : null,
+    () => createFetcher(dashboardService.getDiscountedProducts, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    discountedProducts: data,
-    isLoading,
-    error,
-  };
+  return { discountedProducts: data, isLoading, error };
 };
 
-export const useLowStockProducts: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/products/low-stock', fetcher);
+export const useLowStockProducts = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/low-stock' : null,
+    () => createFetcher(dashboardService.getLowStock, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    lowStockProducts: data,
-    isLoading,
-    error,
-  };
+  return { lowStockProducts: data, isLoading, error };
 };
 
-export const useRecentlyAdded: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/products/recently-added', fetcher);
+export const useRecentlyAdded = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/recently-added' : null,
+    () => createFetcher(dashboardService.getRecentlyAdded, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    recentlyAdded: data,
-    isLoading,
-    error,
-  };
-};
-export const useConversionFunnel: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/conversion-funnel', fetcher);
-
-  return {
-    funnelData: data,
-    isLoading,
-    error,
-  };
+  return { recentlyAdded: data, isLoading, error };
 };
 
-export const useSalesByChannel: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/sales-by-channel', fetcher);
-
-  return {
-    channelData: data,
-    isLoading,
-    error,
-  };
+export const useConversionFunnel = (filters?: any) => {
+  // Conversion funnel requires analytics tracking — not available from backend yet
+  return { funnelData: null, isLoading: false, error: null };
 };
 
-export const useTopCountries: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/top-countries', fetcher);
+export const useSalesByChannel = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/sales-by-channel' : null,
+    () => createFetcher(dashboardService.getSalesByChannel, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    countriesData: data,
-    isLoading,
-    error,
-  };
+  return { channelData: data, isLoading, error };
 };
 
-export const useHourlyTraffic: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/hourly-traffic', fetcher);
-
-  return {
-    trafficData: data,
-    isLoading,
-    error,
-  };
+export const useTopCountries = (filters?: any) => {
+  // Geographic data requires address aggregation — not available yet
+  return { countriesData: null, isLoading: false, error: null };
 };
 
-export const useProductPerformance: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/product-performance', fetcher);
-
-  return {
-    performanceData: data,
-    isLoading,
-    error,
-  };
+export const useHourlyTraffic = (filters?: any) => {
+  // Hourly traffic requires analytics tracking — not available from backend
+  return { trafficData: null, isLoading: false, error: null };
 };
 
-export const useAgeGroups: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/age-groups', fetcher);
+export const useProductPerformance = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/product-performance' : null,
+    () => createFetcher(dashboardService.getProductPerformance, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
 
-  return {
-    ageData: data,
-    isLoading,
-    error,
-  };
+  return { performanceData: data, isLoading, error };
 };
 
-export const useDeviceTypes: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/device-types', fetcher);
-
-  return {
-    deviceData: data,
-    isLoading,
-    error,
-  };
+export const useAgeGroups = (filters?: any) => {
+  // Age group data requires user demographics — not tracked in user model
+  return { ageData: null, isLoading: false, error: null };
 };
 
-export const usePaymentMethods: any = (filters?: any) => {
-  const { data, error, isLoading } = useSWR('/api/payment-methods', fetcher);
+export const useDeviceTypes = (filters?: any) => {
+  // Device type data requires session analytics — not available from backend
+  return { deviceData: null, isLoading: false, error: null };
+};
 
-  return {
-    paymentData: data,
-    isLoading,
-    error,
-  };
+export const usePaymentMethods = (filters?: any) => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/payment-methods' : null,
+    () => createFetcher(dashboardService.getPaymentMethods, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 30000 }
+  );
+
+  return { paymentData: data, isLoading, error };
+};
+
+// Filter options
+export const useFilterOptions = () => {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+  const { data, error, isLoading } = useSWR(
+    token ? '/api/admin/dashboard/filter-options' : null,
+    () => createFetcher(dashboardService.getFilterOptions, token)(),
+    { revalidateOnFocus: false, dedupingInterval: 60000 }
+  );
+
+  return { filterOptions: data, isLoading, error };
 };

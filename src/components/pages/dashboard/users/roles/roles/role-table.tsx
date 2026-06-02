@@ -10,7 +10,6 @@ import {
   Clock,
 } from "lucide-react";
 import { format } from "date-fns";
-import { Role } from "@/lib/mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -25,6 +24,17 @@ import { useSession } from "next-auth/react";
 import { useModal } from "@/contexts/modal-context";
 import RoleForm from "../form";
 import { usePermissions } from "@/hooks/usePermissions";
+
+interface Role {
+  _id: string;
+  name: string;
+  description: string;
+  userCount: number;
+  permissionsCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 interface RoleTableProps {
   roles: Role[];

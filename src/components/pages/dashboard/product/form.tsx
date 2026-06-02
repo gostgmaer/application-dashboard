@@ -27,6 +27,9 @@ import {
   Eye,
   Video,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useToast } from "@/hooks/useToast";
+import productService from "@/lib/http/ProductServices";
 
 // Zod schema for ProductVariant
 const ProductVariantSchema = z.object({
@@ -343,6 +346,11 @@ interface ProductData {
   augmentedRealityEnabled: boolean;
 }
 
+type ProductRecord = ProductData & {
+  _id?: string;
+  id?: string;
+};
+
 const categories = {
   Electronics: ["Smartphones", "Laptops", "Tablets", "Accessories", "Gaming"],
   Clothing: ["Men", "Women", "Kids", "Shoes", "Accessories"],
@@ -414,8 +422,11 @@ const robotsOptions = [
   "noindex,follow",
 ];
 
-export default function ProductCreate({ data }: { data?: ProductData }) {
+export default function ProductCreate({ data }: { data?: ProductRecord }) {
   const isUpdateMode = !!data;
+  const productId = data?._id || data?.id;
+  const { data: session } = useSession();
+  const { toast } = useToast();
 
   const {
     register,
@@ -678,10 +689,12 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
   };
 
   const onSubmit =
-    (status: "draft" | "published") => (formData: ProductData) => {
+    (status: "draft" | "published") => async (formData: ProductData) => {
       const updatedProduct = {
         ...formData,
         status,
+        tags: tags.map((tag) => tag.trim()).filter(Boolean),
+        videoUrls: videoUrls.map((url) => url.trim()).filter(Boolean),
         seo: {
           ...formData.seo,
           slug: formData.seo.slug || generateSlug(formData.title),
@@ -697,27 +710,37 @@ export default function ProductCreate({ data }: { data?: ProductData }) {
 
       const jsonString = JSON.stringify(updatedProduct, null, 2);
 
-      if (isUpdateMode) {
-        // console.log(`Updating product with ID: ${data?.id || 'unknown'}`, jsonString);
-        // Example: Send to API for update
-        // fetch(`/api/products/${data.id}`, {
-        //   method: 'PUT',
-        //   body: jsonString,
-        //   headers: { 'Content-Type': 'application/json' },
-        // });
-      } else {
-        console.log("Creating new product:", jsonString);
-        // Example: Send to API for create
-        // fetch('/api/products', {
-        //   method: 'POST',
-        //   body: jsonString,
-        //   headers: { 'Content-Type': 'application/json' },
-        // });
-      }
+      try {
+        const response = isUpdateMode
+          ? await (() => {
+              if (!productId) {
+                throw new Error("Missing product identifier for update.");
+              }
 
-      // For demonstration, show JSON output
-      setJsonOutput(jsonString);
-      setShowJsonOutput(true);
+              return productService.update(
+                productId,
+                updatedProduct,
+                session?.accessToken
+              );
+            })()
+          : await productService.create(updatedProduct, session?.accessToken);
+
+        toast({
+          title: isUpdateMode ? "Product updated" : "Product created",
+          description:
+            response.message || "The product changes were saved successfully.",
+        });
+
+        setJsonOutput(jsonString);
+        setShowJsonOutput(true);
+      } catch (error: any) {
+        toast({
+          title: "Product save failed",
+          description:
+            error?.message || "Unable to save the product right now.",
+          variant: "destructive",
+        });
+      }
     };
 
   return (

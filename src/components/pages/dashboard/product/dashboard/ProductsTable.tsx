@@ -25,15 +25,6 @@ import { Product } from "@/types/product";
 import productService from "@/lib/http/ProductServices";
 import { usePermissions } from "@/hooks/usePermissions";
 
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  status: "active" | "inactive" | "pending";
-  role: "admin" | "user" | "moderator";
-  createdAt: string;
-};
-
 
 
 export function ProductsTable({ category }: any) {

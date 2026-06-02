@@ -61,7 +61,7 @@ const categoryServices = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() =>
-      requests.delete(`/categories/${id}`, token, undefined, headers)
+      requests.delete(`/categories/${id}`, undefined, token, undefined, headers)
     );
   },
 

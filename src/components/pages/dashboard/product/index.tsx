@@ -1,35 +1,14 @@
 
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 
 import { Package } from "lucide-react";
-import { DashboardFilters } from "@/types/product";
-import {
-  filterProducts,
-  getChartData,
-  getTopLists,
-} from "@/utils/dashboardUtils";
-import { mockProducts } from "@/utils/mockData";
-import { GlobalFilters } from "./dashboard/GlobalFilters";
 import { StatsCards } from "./dashboard/StatsCards";
-import { ChartsSection } from "./dashboard/ChartsSection";
-import { TopLists } from "./dashboard/TopLists";
 import { ProductsTable } from "./dashboard/ProductsTable";
 import { useApiSWR } from "@/hooks/useApiSWR";
 
 export default function DashboardPage({token, category}: any) {
-  const [filters, setFilters] = useState<DashboardFilters>({
-    dateRange: "month",
-    category: "all",
-    brand: "all",
-    priceRange: [0, 500],
-    stockStatus: "all",
-    search: "",
-  });
-
-  // const [isLoading, setIsLoading] = useState(true);
-
   const { data, error, isLoading, mutate } = useApiSWR(
     "/products/database-stats",
     token,
@@ -37,22 +16,6 @@ export default function DashboardPage({token, category}: any) {
     undefined,
     undefined,
     { refreshInterval: 0 }
-  );
-  // Memoize filtered data and calculations
-  const filteredProducts = useMemo(
-    () => filterProducts(mockProducts, filters),
-    [filters]
-  );
-
-
-  const chartData = useMemo(
-    () => getChartData(filteredProducts),
-    [filteredProducts]
-  );
-
-  const topLists = useMemo(
-    () => getTopLists(filteredProducts),
-    [filteredProducts]
   );
 
   if (isLoading) {

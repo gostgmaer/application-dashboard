@@ -27,7 +27,7 @@ export default function ConversionFunnelChart() {
         xAxisFormatter={(value) => `${value / 1000}k`}
         tooltipFormatter={(value: any, name: any) => [
           `${value.toLocaleString()} (${
-            funnelData?.find((d: any) => d.count === value)?.percentage
+            (funnelData as unknown as any[])?.find((d: any) => d.count === value)?.percentage
           }%)`,
           "Count",
         ]}

@@ -77,7 +77,7 @@ interface CustomUser extends User {
 }
 
 // Custom error for 2FA requirement
-export class TwoFactorRequiredError extends Error {
+class TwoFactorRequiredError extends Error {
   constructor(
     public tempUserId: string,
     public email: string,
@@ -143,10 +143,45 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
         otp: { label: "OTP", type: "text", placeholder: "Enter 6-digit OTP" },
         tempUserId: { label: "Temp User ID", type: "hidden" },
+        token: { label: "Token", type: "text" },
       },
       async authorize(credentials) {
         try {
           console.log("🔐 Authorizing credentials...");
+
+          if (credentials?.token) {
+            console.log("🎟️ SSO token login detected in authorize");
+            const response = await fetch(`${baseurl}/auth/profile-data`, {
+              headers: {
+                Authorization: `Bearer ${credentials.token}`,
+              },
+            });
+
+            if (!response.ok) {
+              console.error("❌ SSO token verification failed at backend");
+              return null;
+            }
+
+            const result = await response.json();
+            if (!result || (result.status !== "OK" && !result.success)) {
+              console.error("❌ SSO token profile load failed:", result?.message);
+              return null;
+            }
+
+            const user = result.data || result;
+            console.log("✅ SSO login successful, returning user data");
+
+            return {
+              id: user.id || user._id,
+              name: user.fullName || user.username || user.name,
+              email: user.email,
+              role: user.role,
+              accessToken: credentials.token,
+              token_type: "Bearer",
+              "2fa_required": false,
+              "2fa_verified": true,
+            };
+          }
 
           const payload = {
             identifier: credentials?.email,

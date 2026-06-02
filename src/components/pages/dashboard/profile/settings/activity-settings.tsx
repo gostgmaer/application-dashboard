@@ -49,7 +49,7 @@ import { ActivityLog, securityEvent } from "@/types/user";
 
 const ITEMS_PER_PAGE = 10;
 
-export function SecurityLogsTable(props: any) {
+function SecurityLogsTable(props: any) {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const filters: DataTableFilter[] = [
@@ -209,7 +209,7 @@ export function SecurityLogsTable(props: any) {
   );
 }
 
-export function ActivityLogsTable(props: any) {
+function ActivityLogsTable(props: any) {
   const { data: session } = useSession();
   const { showConfirm, showAlert, showCustom } = useModal();
   const filters: DataTableFilter[] = [

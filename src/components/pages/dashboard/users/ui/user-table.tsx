@@ -21,7 +21,7 @@ interface UserTableProps {
   users: User[];
 }
 
-export function UserTable({ users }: UserTableProps) {
+function UserTable({ users }: UserTableProps) {
   return (
     <div className="rounded-md border">
       <Table>

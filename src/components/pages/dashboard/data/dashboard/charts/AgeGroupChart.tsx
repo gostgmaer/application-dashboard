@@ -22,7 +22,7 @@ export default function AgeGroupChart() {
         height={320}
         layout="vertical"
         tooltipFormatter={(value, name) => [
-          `${value.toLocaleString()} (${(Array.isArray(ageData) ? ageData : []).find(d => d.customers === value)?.percentage ?? 0}%)`,
+                  `${value.toLocaleString()} (${((Array.isArray(ageData) ? ageData : []) as any[]).find((d) => d.customers === value)?.percentage ?? 0}%)`,
           'Customers'
         ]}
       />

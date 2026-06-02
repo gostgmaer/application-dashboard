@@ -118,14 +118,3 @@ export interface ProtectedComponentProps {
   modalDescription?: string;
   onModalClose?: () => void;
 }
-
-export interface UserP {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-  permissions: Permission[];
-  avatar?: string;
-  createdAt: string;
-  lastLogin?: string;
-}

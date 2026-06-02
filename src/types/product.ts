@@ -1,28 +1,65 @@
 // types/product.ts
+
+export interface FileReference {
+  id?: string;
+  url?: string;
+  name?: string;
+  size?: number;
+  type?: string;
+}
+
 export interface Product {
   id: string;
   _id: string;
   title: string;
-  images: string[];
-  price: {
-    original: number;
-    discounted?: number;
-    currency: string;
-  };
-  stock: {
-    quantity: number;
-    status: 'in_stock' | 'low_stock' | 'out_of_stock';
-  };
+  slug: string;
   sku: string;
-  brand: string;
-  category: string;
-  shortDescription: string;
-  longDescription: string;
-  variants: ProductVariant[];
+  productType?: 'physical' | 'digital' | 'service';
+  category: string | { _id: string; title: string };
+  categories?: string[];
+  subcategory?: string;
+  brand?: string | { _id: string; name: string };
+  descriptions?: Record<string, any>;
+  shortDescription?: string;
+  overview?: string;
+  basePrice: number;
+  finalPrice?: number;
+  comparePrice?: number;
+  costPrice?: number;
+  salePrice?: number;
+  discount?: number;
+  discountType?: 'none' | 'percentage' | 'fixed';
+  discountValue?: number;
+  inventory: number;
+  trackInventory?: boolean;
+  lowStockThreshold?: number;
+  isActive: boolean;
+  isDeleted?: boolean;
+  status: 'active' | 'inactive' | 'draft' | 'pending' | 'archived' | 'published';
+  mainImage?: FileReference;
+  images: FileReference[];
+  tags?: string[];
+  isFeatured?: boolean;
+  trending?: boolean;
+  newArrival?: boolean;
+  bestseller?: boolean;
+  onSale?: boolean;
   averageRating?: number;
-  totalReviews: number;
-  seoTitle?: string;
-  seoDescription?: string;
+  totalReviews?: number;
+  views?: number;
+  soldCount?: number;
+  metaTitle?: string;
+  metaDescription?: string;
+  weight?: number;
+  dimensions?: { length?: number; width?: number; height?: number };
+  created_by?: string;
+  updated_by?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Computed fields from controller enrichment
+  stockStatus?: string;
+  discountPercent?: number;
+  isLowStock?: boolean;
 }
 
 export interface ProductVariant {
@@ -64,17 +101,6 @@ export interface RelatedProduct {
     currency: string;
   };
   averageRating?: number;
-}
-
-export interface CartItem {
-  productId: string;
-  variantId?: string;
-  quantity: number;
-}
-
-export interface WishlistItem {
-  productId: string;
-  variantId?: string;
 }
 
 export interface ReviewsResponse {
@@ -154,20 +180,24 @@ export interface Sale {
 
 export interface ProductList {
   id: string;
-  name: string;
+  _id: string;
+  title: string;
+  slug: string;
   sku: string;
-  category: string;
-  brand: string;
-  price: number;
-  originalPrice: number;
-  stock: number;
-  status: 'active' | 'draft' | 'out-of-stock';
-  image: string;
-  createdDate: string;
-  updatedDate: string;
-  sales: number;
-  views: number;
-  returnRate: number;
-  rating: number;
-  region: string;
+  category: string | { _id: string; title: string };
+  brand: string | { _id: string; name: string };
+  basePrice: number;
+  finalPrice?: number;
+  comparePrice?: number;
+  inventory: number;
+  status: 'active' | 'inactive' | 'draft' | 'pending' | 'archived' | 'published';
+  mainImage?: FileReference;
+  images: FileReference[];
+  createdAt: string;
+  updatedAt: string;
+  soldCount?: number;
+  views?: number;
+  averageRating?: number;
+  isActive: boolean;
+  stockStatus?: string;
 }

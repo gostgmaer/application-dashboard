@@ -26,7 +26,6 @@ import {
   Info,
   Loader2,
 } from "lucide-react";
-import UserServices from "@/lib/http/userService";
 import { useToast } from "@/hooks/useToast";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -195,7 +194,7 @@ export default function UserCreate({ u, id, master }: any) {
 
         default:
           {
-            res = await UserServices.create(updatedUser, session?.accessToken);
+              res = await userServices.create(updatedUser, session?.accessToken);
           }
           break;
       }

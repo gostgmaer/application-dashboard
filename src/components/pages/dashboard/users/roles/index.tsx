@@ -2,7 +2,18 @@
 
 import { useState } from "react";
 import { Package, Shield } from "lucide-react";
-import { Role } from "@/lib/mock-data";
+
+interface Role {
+  _id: string;
+  name: string;
+  description: string;
+  userCount: number;
+  permissionsCount: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 import {
   RoleTableSkeleton,
   StatCardsSkeleton,

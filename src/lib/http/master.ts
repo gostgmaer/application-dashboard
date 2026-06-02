@@ -73,7 +73,7 @@ const masterServices = {
         token?: string,
         headers?: Record<string, any>
     ): Promise<ApiResponse> => {
-        return safeApiCall(() => requests.delete("/masters/bulk", body, token, headers));
+        return safeApiCall(() => requests.delete("/masters/bulk", body, token, undefined, headers));
     },
 
     // Soft delete

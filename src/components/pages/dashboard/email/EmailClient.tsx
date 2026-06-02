@@ -12,25 +12,60 @@ import { CalendarModal } from "./CalendarModal";
 import { NotificationCenter } from "./NotificationCenter";
 import { useSocket } from "@/contexts/NotificationContext";
 import { Email, Folder } from "@/types/email";
-import { sampleEmails, sampleFolders } from "@/data/sampleData";
+import { useSession } from "next-auth/react";
+import useSWR from "swr";
+import { safeApiCall } from "@/lib/http/apiUtils";
+import requests from "@/lib/http";
+
+const defaultFolders: Folder[] = [
+  { id: "inbox", name: "Inbox", icon: "inbox", count: 0 },
+  { id: "sent", name: "Sent", icon: "send", count: 0 },
+  { id: "drafts", name: "Drafts", icon: "file-text", count: 0 },
+  { id: "spam", name: "Spam", icon: "alert-triangle", count: 0 },
+  { id: "archive", name: "Archive", icon: "archive", count: 0 },
+  { id: "trash", name: "Trash", icon: "trash-2", count: 0 },
+];
 
 export function EmailClient() {
+  const { data: session } = useSession();
+  const token = session?.accessToken as string | undefined;
+
+  const { data: emailData } = useSWR(
+    token ? "/api/emails" : null,
+    async () => {
+      const res = await safeApiCall(() => requests.get("/emails", token));
+      return res?.success ? res.data : null;
+    },
+    { revalidateOnFocus: false }
+  );
+
+  const fetchedEmails: Email[] = emailData?.emails || [];
+  const fetchedFolders: Folder[] = emailData?.folders || defaultFolders;
+
   const [selectedFolder, setSelectedFolder] = useState<Folder>(
-    sampleFolders[0]
+    defaultFolders[0]
   );
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-  const [emails, setEmails] = useState<Email[]>(sampleEmails);
+  const [emails, setEmails] = useState<Email[]>([]);
   const [isComposeOpen, setIsComposeOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isContactsOpen, setIsContactsOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredEmails, setFilteredEmails] = useState<Email[]>(sampleEmails);
+  const [filteredEmails, setFilteredEmails] = useState<Email[]>([]);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<"date" | "sender" | "subject">("date");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [notifications, setNotifications] = useState<any[]>([]);
+
+  // Sync fetched emails when data arrives
+  useEffect(() => {
+    if (fetchedEmails.length > 0) {
+      setEmails(fetchedEmails);
+      setFilteredEmails(fetchedEmails);
+    }
+  }, [fetchedEmails]);
 
   const { socket } = useSocket();
 
@@ -185,7 +220,7 @@ export function EmailClient() {
 
         {/* Sidebar */}
         <Sidebar
-          folders={sampleFolders}
+          folders={fetchedFolders}
           selectedFolder={selectedFolder}
           onFolderSelect={setSelectedFolder}
           onComposeClick={() => setIsComposeOpen(true)}

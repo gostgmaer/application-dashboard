@@ -7,13 +7,13 @@ const brandService = {
     safeApiCall(() => requests.post("/brands", body, token, headers)),
 
   get: async (idOrSlug: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.get(`/brand/${idOrSlug}`, token, undefined, undefined, headers, 1)),
+    safeApiCall(() => requests.get(`/brands/${idOrSlug}`, token, undefined, undefined, headers, 1)),
 
   update: async (id: string, body: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.put(`/brand/${id}`, body, token, headers)),
+    safeApiCall(() => requests.put(`/brands/${id}`, body, token, headers)),
 
   remove: async (id: string, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
-    safeApiCall(() => requests.delete(`/brand/${id}`, token, undefined, headers)),
+    safeApiCall(() => requests.delete(`/brands/${id}`, undefined, token, undefined, headers)),
 
   getPaginated: async (query?: any, token?: string, headers?: Record<string, any>): Promise<ApiResponse> =>
     safeApiCall(() => requests.get("/brands", token, query, undefined, headers, 1)),

@@ -28,15 +28,6 @@ import PermissionForm from "./form";
 import Breadcrumbs from "@/components/layout/common/breadcrumb";
 import { usePermissions } from "@/hooks/usePermissions";
 
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  status: "active" | "inactive" | "pending";
-  role: "admin" | "user" | "moderator";
-  createdAt: string;
-};
-
 const filters: DataTableFilter[] = [
   {
     id: "category",

@@ -1,4 +1,5 @@
-import { CartItem, Address, Coupon, PriceBreakdown, ApiResponse, Order, CheckoutData } from '@/types/checkout';
+import { CartItem, Address, Coupon, PriceBreakdown, Order, CheckoutData } from '@/types/checkout';
+import { ApiResponse } from '@/types/global';
 
 // Simulated API delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

@@ -100,7 +100,7 @@ const inquiryService = {
     headers?: Record<string, any>
   ): Promise<ApiResponse> => {
     return safeApiCall(() =>
-      requests.delete(`/inquiry/${id}`, token, undefined, undefined, headers)
+      requests.delete(`/inquiry/${id}`, undefined, token, undefined, headers)
     );
   }
 
