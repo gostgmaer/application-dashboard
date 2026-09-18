@@ -141,7 +141,7 @@ export default function TaskManagement() {
             {completedTasks}/{totalTasks} ({completionRate}%)
           </Badge>
         </CardTitle>
-        <CardDescription>Track and manage your team's tasks</CardDescription>
+        <CardDescription>Track and manage your team&apos;s tasks</CardDescription>
       </CardHeader>
       <CardContent>
         {/* Add New Task */}
